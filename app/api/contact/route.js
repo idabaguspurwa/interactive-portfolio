@@ -26,8 +26,8 @@ export async function POST(request) {
 
     // Send email using Resend
     const { data, error } = await resend.emails.send({
-      from: 'Portfolio Contact <onboarding@resend.dev>', // Resend's default sender
-      to: ['ida.adiputra@outlook.com'],
+      from: `Portfolio Contact <${process.env.FROM_EMAIL || 'onboarding@resend.dev'}>`,
+      to: [process.env.TO_EMAIL || 'ida.adiputra@outlook.com'],
       subject: `Portfolio Contact: ${subject}`,
       replyTo: email,
       html: `
