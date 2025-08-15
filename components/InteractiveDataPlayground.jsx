@@ -116,6 +116,30 @@ export function InteractiveDataPlayground() {
   // Set client flag to prevent hydration errors with dynamic content
   useEffect(() => {
     setIsClient(true);
+
+    // Prevent default drag behaviors globally to avoid browser opening files
+    const preventDefaults = (e) => {
+      e.preventDefault();
+      e.stopPropagation();
+    };
+
+    const handleGlobalDragOver = (e) => {
+      preventDefaults(e);
+    };
+
+    const handleGlobalDrop = (e) => {
+      preventDefaults(e);
+    };
+
+    // Add global event listeners
+    document.addEventListener('dragover', handleGlobalDragOver);
+    document.addEventListener('drop', handleGlobalDrop);
+
+    // Cleanup
+    return () => {
+      document.removeEventListener('dragover', handleGlobalDragOver);
+      document.removeEventListener('drop', handleGlobalDrop);
+    };
   }, []);
 
   // Consistent number formatting to prevent hydration errors
@@ -755,28 +779,68 @@ export function InteractiveDataPlayground() {
 
   const handleDragOver = useCallback((e) => {
     e.preventDefault();
-    setIsDragOver(true);
+    e.stopPropagation();
+    
+    // Only set drag state if we have files
+    if (e.dataTransfer.types && e.dataTransfer.types.includes('Files')) {
+      setIsDragOver(true);
+    }
   }, []);
 
   const handleDragLeave = useCallback((e) => {
     e.preventDefault();
-    setIsDragOver(false);
+    e.stopPropagation();
+    
+    // Only set drag state to false if we're actually leaving the drop zone
+    // Check if the related target is outside the drop zone
+    const dropZone = e.currentTarget;
+    const relatedTarget = e.relatedTarget;
+    
+    if (!dropZone.contains(relatedTarget)) {
+      setIsDragOver(false);
+    }
   }, []);
 
   const handleDrop = useCallback(
     (e) => {
       e.preventDefault();
+      e.stopPropagation();
       setIsDragOver(false);
 
-      const files = Array.from(e.dataTransfer.files);
-      const csvFile = files.find(
-        (file) => file.type === "text/csv" || file.name.endsWith(".csv")
-      );
+      try {
+        const files = Array.from(e.dataTransfer.files);
+        
+        if (files.length === 0) {
+          alert("No files detected. Please try again.");
+          return;
+        }
 
-      if (csvFile) {
-        processFile(csvFile);
-      } else {
-        alert("Please drop a valid CSV file");
+        // More robust CSV file detection
+        const csvFile = files.find((file) => {
+          const isCSVType = file.type === "text/csv" || 
+                           file.type === "application/csv" ||
+                           file.type === "text/plain";
+          const isCSVExtension = file.name.toLowerCase().endsWith(".csv");
+          return isCSVType || isCSVExtension;
+        });
+
+        if (csvFile) {
+          // Validate file size (max 10MB)
+          const maxSize = 10 * 1024 * 1024; // 10MB
+          if (csvFile.size > maxSize) {
+            alert("File too large. Please select a CSV file smaller than 10MB.");
+            return;
+          }
+          
+          processFile(csvFile);
+        } else if (files.length === 1) {
+          alert(`Invalid file type: ${files[0].name}. Please drop a valid CSV file.`);
+        } else {
+          alert("Multiple files detected. Please drop only one CSV file at a time.");
+        }
+      } catch (error) {
+        console.error("Error handling dropped files:", error);
+        alert("Error processing dropped files. Please try again.");
       }
     },
     [processFile]
@@ -1232,19 +1296,34 @@ export function InteractiveDataPlayground() {
 
               <div>
                 <p
-                  className={`text-lg font-semibold ${
+                  className={`text-lg font-semibold transition-colors duration-200 ${
                     isDragOver
                       ? "text-primary-light dark:text-primary-dark"
                       : "text-gray-700 dark:text-gray-300"
                   }`}
                 >
                   {isDragOver
-                    ? "Drop your CSV file here"
-                    : "Drag & drop your CSV file here"}
+                    ? "🎯 Drop your CSV file here!"
+                    : "📊 Drag & drop your CSV file here"}
                 </p>
-                <p className="text-sm text-gray-500 dark:text-gray-400 mt-2">
-                  or click to browse files
+                <p className={`text-sm mt-2 transition-colors duration-200 ${
+                  isDragOver 
+                    ? "text-primary-light/80 dark:text-primary-dark/80" 
+                    : "text-gray-500 dark:text-gray-400"
+                }`}>
+                  {isDragOver ? "Release to upload" : "or click to browse files"}
                 </p>
+                <div className="flex items-center justify-center gap-4 mt-3 text-xs text-gray-400 dark:text-gray-500">
+                  <span className="flex items-center gap-1">
+                    ✅ CSV files
+                  </span>
+                  <span className="flex items-center gap-1">
+                    📏 Max 10MB
+                  </span>
+                  <span className="flex items-center gap-1">
+                    🚀 AI Analysis
+                  </span>
+                </div>
               </div>
 
               <Button
