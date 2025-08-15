@@ -1,10 +1,9 @@
-package main
+package handler
 
 import (
 	"bytes"
 	"encoding/json"
 	"fmt"
-	"log"
 	"net/http"
 	"os"
 	"strings"
@@ -194,12 +193,6 @@ func sendEmail(req *ContactRequest) error {
 
 // contactHandler handles the contact form submission
 func contactHandler(w http.ResponseWriter, r *http.Request) {
-	enableCORS(w, r)
-
-	if r.Method == "OPTIONS" {
-		return
-	}
-
 	if r.Method != "POST" {
 		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
 		return
@@ -269,19 +262,22 @@ func healthHandler(w http.ResponseWriter, r *http.Request) {
 	})
 }
 
-func main() {
-	// Setup routes
-	http.HandleFunc("/api/contact", contactHandler)
-	http.HandleFunc("/api/health", healthHandler)
+// Handler is the main entry point for Vercel
+func Handler(w http.ResponseWriter, r *http.Request) {
+	// Enable CORS
+	enableCORS(w, r)
 
-	// Get port from environment
-	port := getEnv("PORT", "8080")
+	if r.Method == "OPTIONS" {
+		return
+	}
 
-	log.Printf("Server starting on port %s", port)
-	log.Printf("Resend API configured with from email: %s", resendConfig.FromEmail)
-
-	// Start server
-	if err := http.ListenAndServe(":"+port, nil); err != nil {
-		log.Fatal("Server failed to start:", err)
+	// Route to appropriate handler
+	switch r.URL.Path {
+	case "/api/contact":
+		contactHandler(w, r)
+	case "/api/health":
+		healthHandler(w, r)
+	default:
+		http.NotFound(w, r)
 	}
 }
