@@ -263,7 +263,7 @@ export default function AboutPage() {
                   My Journey
                 </h2>
                 <p className="text-lg text-gray-600 dark:text-gray-300 max-w-3xl mx-auto">
-                  From academic excellence to professional experience, here's how I've built my expertise 
+                  From academic excellence to professional experience, here&apos;s how I&apos;ve built my expertise 
                   in data engineering and business intelligence.
                 </p>
               </div>

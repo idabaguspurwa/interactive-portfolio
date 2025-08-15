@@ -36,11 +36,11 @@ type ResendConfig struct {
 
 // ResendEmailRequest represents the Resend API request structure
 type ResendEmailRequest struct {
-	From    string `json:"from"`
+	From    string   `json:"from"`
 	To      []string `json:"to"`
-	Subject string `json:"subject"`
-	HTML    string `json:"html"`
-	ReplyTo string `json:"reply_to"`
+	Subject string   `json:"subject"`
+	HTML    string   `json:"html"`
+	ReplyTo string   `json:"reply_to"`
 }
 
 var (

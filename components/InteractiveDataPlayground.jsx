@@ -601,7 +601,7 @@ export function InteractiveDataPlayground() {
     };
 
     return transformations;
-  }, []);
+  }, [isClient]);
 
   // Update transformations when data changes (but not when AI analysis is available)
   useEffect(() => {
@@ -626,6 +626,7 @@ export function InteractiveDataPlayground() {
     }
   }, [
     data,
+    dataContext,
     analyzeDataStructure,
     detectDataContext,
     generateTransformations,
@@ -740,7 +741,7 @@ export function InteractiveDataPlayground() {
     } else {
       alert("Please upload a valid CSV file");
     }
-  }, []);
+  }, [generateAITransformations]);
 
   const handleFileUpload = useCallback(
     (event) => {

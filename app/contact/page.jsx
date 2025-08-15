@@ -296,7 +296,7 @@ Best regards,`
                     className="mb-6"
                   >
                     <span className="bg-gradient-to-r from-primary-light to-accent-light dark:from-primary-dark dark:to-accent-dark bg-clip-text text-transparent text-lg font-semibold">
-                      Let's Connect
+                      Let&apos;s Connect
                     </span>
                   </motion.div>
 
@@ -311,7 +311,7 @@ Best regards,`
 
                   <p className="text-xl text-gray-600 dark:text-gray-300 mb-8 leading-relaxed">
                     Ready to collaborate on your next data engineering project?
-                    Let's discuss how we can transform your data infrastructure
+                    Let&apos;s discuss how we can transform your data infrastructure
                     and drive business value together.
                   </p>
 
@@ -380,7 +380,7 @@ Best regards,`
                   Contact Information
                 </h2>
                 <p className="text-lg text-gray-600 dark:text-gray-300 max-w-3xl mx-auto">
-                  Choose your preferred way to reach out. I'm always excited to
+                  Choose your preferred way to reach out. I&apos;m always excited to
                   discuss new projects and opportunities.
                 </p>
               </div>
@@ -444,8 +444,8 @@ Best regards,`
                   How Can I Help You?
                 </h2>
                 <p className="text-lg text-gray-600 dark:text-gray-300 max-w-3xl mx-auto">
-                  Select the type of collaboration you're interested in, and
-                  I'll get back to you with the best approach.
+                  Select the type of collaboration you&apos;re interested in, and
+                  I&apos;ll get back to you with the best approach.
                 </p>
               </div>
             </RevealOnScroll>
@@ -500,7 +500,7 @@ Best regards,`
                   Send Me a Message
                 </h2>
                 <p className="text-lg text-gray-600 dark:text-gray-300">
-                  Fill out the form below and I'll get back to you as soon as
+                  Fill out the form below and I&apos;ll get back to you as soon as
                   possible.
                 </p>
               </div>
@@ -589,7 +589,7 @@ Best regards,`
                     onChange={handleChange}
                     required
                     className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-primary-light dark:focus:ring-primary-dark focus:border-transparent bg-white dark:bg-gray-700 text-gray-900 dark:text-white transition-all duration-200"
-                    placeholder="What's this about?"
+                    placeholder="What&apos;s this about?"
                   />
                 </div>
 
@@ -638,7 +638,7 @@ Best regards,`
                     animate={{ opacity: 1, y: 0 }}
                     className="p-4 bg-green-100 dark:bg-green-900/30 border border-green-200 dark:border-green-800 rounded-lg text-green-700 dark:text-green-300"
                   >
-                    ✅ Thank you! Your message has been sent successfully. I'll
+                    ✅ Thank you! Your message has been sent successfully. I&apos;ll
                     get back to you soon.
                   </motion.div>
                 )}

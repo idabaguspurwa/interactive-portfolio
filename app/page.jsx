@@ -217,7 +217,7 @@ export default function Home() {
                         >
                           👋
                         </motion.span>
-                        Hello, I'm a Data Engineer
+                        Hello, I&apos;m a Data Engineer
                       </span>
                     </div>
                   </motion.div>
@@ -330,7 +330,7 @@ export default function Home() {
                           size="lg"
                           className="border-2 border-gray-300 dark:border-gray-600 hover:border-primary-light dark:hover:border-primary-dark text-gray-700 dark:text-gray-300 hover:text-primary-light dark:hover:text-primary-dark px-8 py-4 rounded-xl backdrop-blur-sm group"
                         >
-                          <span>Let's Connect</span>
+                          <span>Let&apos;s Connect</span>
                           <motion.div className="ml-2 group-hover:rotate-12 transition-transform duration-200">
                             <Mail className="w-5 h-5" />
                           </motion.div>
