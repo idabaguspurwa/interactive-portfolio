@@ -4,19 +4,8 @@
       "runtime": "go1.x"
     }
   },
-  "routes": [
-    {
-      "src": "/api/contact",
-      "dest": "/api/contact/main.go"
-    }
-  ],
-  "env": {
-    "SMTP_HOST": "@smtp_host",
-    "SMTP_USERNAME": "@smtp_username", 
-    "SMTP_PASSWORD": "@smtp_password",
-    "FROM_EMAIL": "@from_email",
-    "TO_EMAIL": "@to_email"
-  },
+
+
   "headers": [
     {
       "source": "/(.*)",
