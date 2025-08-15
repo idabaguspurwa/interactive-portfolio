@@ -188,7 +188,7 @@ Best regards,`
     setSubmitStatus(null);
 
     try {
-      const response = await fetch('/api/contact', {
+      const response = await fetch('/api/contact-go', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
