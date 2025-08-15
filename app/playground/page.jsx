@@ -1,10 +1,22 @@
 'use client'
 
 import { motion } from 'framer-motion'
-import { InteractiveDataPlayground } from '@/components/InteractiveDataPlayground'
 import { RevealOnScroll } from '@/components/ScrollAnimations'
 import { ArrowLeft, Database, Zap, BarChart3 } from 'lucide-react'
 import Link from 'next/link'
+import dynamic from 'next/dynamic'
+
+const InteractiveDataPlayground = dynamic(
+  () => import('@/components/InteractiveDataPlayground').then(mod => ({ default: mod.InteractiveDataPlayground })),
+  { 
+    ssr: false,
+    loading: () => (
+      <div className="flex items-center justify-center min-h-[400px]">
+        <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-primary-light dark:border-primary-dark"></div>
+      </div>
+    )
+  }
+)
 
 export default function PlaygroundPage() {
   return (
