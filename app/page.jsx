@@ -1,5 +1,6 @@
 "use client";
 
+import Image from "next/image";
 import { motion } from "framer-motion";
 import { Canvas } from "@react-three/fiber";
 import {
@@ -399,10 +400,12 @@ export default function Home() {
                       transition={{ duration: 0.3 }}
                     >
                       <div className="absolute inset-0 bg-gradient-to-br from-primary-light/20 to-accent-light/20 dark:from-primary-dark/20 dark:to-accent-dark/20"></div>
-                      <img
+                      <Image
                         src="/logo.jpg"
                         alt="Ida Bagus Gede Purwa Manik Adiputra"
-                        className="w-full h-full object-cover relative z-10"
+                        fill
+                        className="object-cover relative z-10"
+                        sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
                       />
 
                       {/* Overlay gradient */}

@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from 'react'
 import { motion, useReducedMotion } from 'framer-motion'
+import Image from 'next/image'
 
 // Performance monitoring hook
 export function usePerformanceMonitor() {
@@ -95,29 +96,43 @@ export function OptimizedImage({
   alt, 
   className = '',
   priority = false,
+  width,
+  height,
+  fill = false,
+  sizes,
   ...props 
 }) {
   const performance = usePerformanceMonitor()
-  const [imageSrc, setImageSrc] = useState('')
 
-  useEffect(() => {
-    // Use appropriate image quality based on connection speed
-    const quality = performance.connectionSpeed === 'slow' ? 'low' : 
-                   performance.connectionSpeed === 'medium' ? 'medium' : 'high'
-    
-    // You would implement actual image optimization here
-    // For now, using original src
-    setImageSrc(src)
-  }, [src, performance.connectionSpeed])
+  // Determine image quality based on connection speed
+  const quality = performance.connectionSpeed === 'slow' ? 50 : 
+                 performance.connectionSpeed === 'medium' ? 75 : 90
+
+  const imageProps = {
+    src,
+    alt,
+    className: `${className} ${performance.connectionSpeed === 'slow' ? 'loading' : ''}`,
+    priority,
+    quality,
+    ...props
+  }
+
+  if (fill) {
+    return (
+      <Image
+        {...imageProps}
+        fill
+        sizes={sizes || "(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"}
+      />
+    )
+  }
 
   return (
-    <img
-      src={imageSrc}
-      alt={alt}
-      className={`${className} ${performance.connectionSpeed === 'slow' ? 'loading' : ''}`}
-      loading={priority ? 'eager' : 'lazy'}
-      decoding="async"
-      {...props}
+    <Image
+      {...imageProps}
+      width={width}
+      height={height}
+      sizes={sizes}
     />
   )
 }

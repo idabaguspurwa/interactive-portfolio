@@ -162,7 +162,7 @@ export default function AboutPage() {
                   
                   <div className="space-y-6 text-lg text-gray-600 dark:text-gray-300 leading-relaxed">
                     <p>
-                      I'm a passionate <strong className="text-primary-light dark:text-primary-dark">Data Engineer</strong> and 
+                      I&apos;m a passionate <strong className="text-primary-light dark:text-primary-dark">Data Engineer</strong> and 
                       <strong className="text-primary-light dark:text-primary-dark"> Business Intelligence Specialist</strong> with 
                       a proven track record of building robust, scalable data solutions that drive business growth.
                     </p>
