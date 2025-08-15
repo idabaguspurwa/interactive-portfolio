@@ -1,11 +1,15 @@
 {
   "functions": {
     "api/contact/main.go": {
-      "runtime": "go1.x"
+      "runtime": "@vercel/go@3.0.0"
     }
   },
-
-
+  "rewrites": [
+    {
+      "source": "/api/contact",
+      "destination": "/api/contact/main.go"
+    }
+  ],
   "headers": [
     {
       "source": "/(.*)",

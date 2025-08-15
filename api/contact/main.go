@@ -1,6 +1,7 @@
 package main
 
 import (
+	"bytes"
 	"encoding/json"
 	"fmt"
 	"log"
@@ -10,7 +11,6 @@ import (
 	"time"
 
 	"github.com/go-playground/validator/v10"
-	"gopkg.in/gomail.v2"
 )
 
 // ContactRequest represents the structure of incoming contact form data
@@ -27,25 +27,28 @@ type ContactResponse struct {
 	Message string `json:"message"`
 }
 
-// EmailConfig holds email configuration
-type EmailConfig struct {
-	SMTPHost     string
-	SMTPPort     int
-	SMTPUsername string
-	SMTPPassword string
-	FromEmail    string
-	ToEmail      string
+// ResendConfig holds Resend API configuration
+type ResendConfig struct {
+	APIKey    string
+	FromEmail string
+	ToEmail   string
+}
+
+// ResendEmailRequest represents the Resend API request structure
+type ResendEmailRequest struct {
+	From    string `json:"from"`
+	To      []string `json:"to"`
+	Subject string `json:"subject"`
+	HTML    string `json:"html"`
+	ReplyTo string `json:"reply_to"`
 }
 
 var (
-	validate    = validator.New()
-	emailConfig = EmailConfig{
-		SMTPHost:     getEnv("SMTP_HOST", "smtp.gmail.com"),
-		SMTPPort:     587,
-		SMTPUsername: getEnv("SMTP_USERNAME", ""),
-		SMTPPassword: getEnv("SMTP_PASSWORD", ""),
-		FromEmail:    getEnv("FROM_EMAIL", "noreply@idabagusgedepm.dev"),
-		ToEmail:      getEnv("TO_EMAIL", "ida.adiputra@outlook.com"),
+	validate     = validator.New()
+	resendConfig = ResendConfig{
+		APIKey:    getEnv("RESEND_API_KEY", ""),
+		FromEmail: getEnv("FROM_EMAIL", "onboarding@resend.dev"),
+		ToEmail:   getEnv("TO_EMAIL", "ida.adiputra@outlook.com"),
 	}
 )
 
@@ -91,14 +94,8 @@ func validateRequest(req *ContactRequest) error {
 	return validate.Struct(req)
 }
 
-// sendEmail sends the contact form email
+// sendEmail sends the contact form email using Resend API
 func sendEmail(req *ContactRequest) error {
-	// Create email message
-	m := gomail.NewMessage()
-	m.SetHeader("From", emailConfig.FromEmail)
-	m.SetHeader("To", emailConfig.ToEmail)
-	m.SetHeader("Subject", fmt.Sprintf("Portfolio Contact: %s", req.Subject))
-
 	// Create HTML body
 	htmlBody := fmt.Sprintf(`
 		<!DOCTYPE html>
@@ -154,15 +151,45 @@ func sendEmail(req *ContactRequest) error {
 		strings.ReplaceAll(req.Message, "\n", "<br>"),
 		time.Now().Format("January 2, 2006 at 3:04 PM MST"))
 
-	m.SetBody("text/html", htmlBody)
+	// Prepare Resend API request
+	emailReq := ResendEmailRequest{
+		From:    fmt.Sprintf("Portfolio Contact <%s>", resendConfig.FromEmail),
+		To:      []string{resendConfig.ToEmail},
+		Subject: fmt.Sprintf("Portfolio Contact: %s", req.Subject),
+		HTML:    htmlBody,
+		ReplyTo: req.Email,
+	}
 
-	// Set reply-to header
-	m.SetHeader("Reply-To", req.Email)
+	// Convert to JSON
+	jsonData, err := json.Marshal(emailReq)
+	if err != nil {
+		return fmt.Errorf("failed to marshal email request: %v", err)
+	}
 
-	// Create dialer and send
-	d := gomail.NewDialer(emailConfig.SMTPHost, emailConfig.SMTPPort, emailConfig.SMTPUsername, emailConfig.SMTPPassword)
+	// Create HTTP request to Resend API
+	httpReq, err := http.NewRequest("POST", "https://api.resend.com/emails", bytes.NewBuffer(jsonData))
+	if err != nil {
+		return fmt.Errorf("failed to create HTTP request: %v", err)
+	}
 
-	return d.DialAndSend(m)
+	// Set headers
+	httpReq.Header.Set("Content-Type", "application/json")
+	httpReq.Header.Set("Authorization", fmt.Sprintf("Bearer %s", resendConfig.APIKey))
+
+	// Send request
+	client := &http.Client{Timeout: 10 * time.Second}
+	resp, err := client.Do(httpReq)
+	if err != nil {
+		return fmt.Errorf("failed to send email via Resend: %v", err)
+	}
+	defer resp.Body.Close()
+
+	// Check response status
+	if resp.StatusCode != http.StatusOK {
+		return fmt.Errorf("Resend API returned status %d", resp.StatusCode)
+	}
+
+	return nil
 }
 
 // contactHandler handles the contact form submission
@@ -251,7 +278,7 @@ func main() {
 	port := getEnv("PORT", "8080")
 
 	log.Printf("Server starting on port %s", port)
-	log.Printf("SMTP configured for host: %s", emailConfig.SMTPHost)
+	log.Printf("Resend API configured with from email: %s", resendConfig.FromEmail)
 
 	// Start server
 	if err := http.ListenAndServe(":"+port, nil); err != nil {
