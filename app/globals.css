@@ -1,0 +1,258 @@
+@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&family=Inter:wght@300;400;500;600&display=swap');
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  /* Light mode colors - Refined friendly professional scheme */
+  --background-light: #FFFFFF;         /* Pure white base */
+  --background-light-secondary: #F2F2F7; /* Subtle gradient end */
+  --surface-light: #FFFFFF;            /* Pure white for cards/surfaces */
+  --primary-light: #4B7BEC;            /* Cornflower Blue - approachable and friendly */
+  --secondary-light: #6C757D;          /* Slate Gray - maintained for neutrality */
+  --accent-light: #FF6F61;             /* Coral - lively and energetic */
+  --text-primary-light: #212529;       /* Dark Gray for readability */
+  --text-secondary-light: #6C757D;     /* Slate Gray for secondary text */
+  --text-muted-light: #868E96;         /* Muted gray for less important text */
+  --border-light: #E5E5EA;             /* Subtle border color */
+  
+  /* Dark mode colors - Refined modern scheme with warmth */
+  --background-dark: #2C2C2E;          /* Radial gradient start */
+  --background-dark-secondary: #1C1C1E; /* Radial gradient end */
+  --surface-dark: #343A40;             /* Elevated surface */
+  --primary-dark: #50A6FF;             /* Brighter blue for visibility */
+  --secondary-dark: #9AA5B1;           /* Lighter, cooler gray */
+  --accent-dark: #FF8A5C;              /* Subdued orange for warmth */
+  --text-primary-dark: #E0E0E0;        /* Soft off-white, less harsh */
+  --text-secondary-dark: #9AA5B1;      /* Lighter, cooler gray */
+  --text-muted-dark: #B0B8C1;          /* Slightly brighter for readability */
+  --border-dark: #48484A;              /* Medium border color */
+}
+
+* {
+  box-sizing: border-box;
+  padding: 0;
+  margin: 0;
+}
+
+html {
+  scroll-behavior: smooth;
+  overflow-y: scroll;
+  scrollbar-gutter: stable;
+  scrollbar-width: thin;
+  scrollbar-color: #9CA3AF #F3F4F6;
+}
+
+html.dark {
+  scrollbar-color: #4B5563 #1F2937;
+}
+
+body {
+  font-family: 'Inter', sans-serif;
+  line-height: 1.6;
+  transition: background-color 0.3s ease, color 0.3s ease;
+  @apply bg-background-light dark:bg-background-dark text-text-primary-light dark:text-text-primary-dark;
+}
+
+h1, h2, h3, h4, h5, h6 {
+  font-family: 'Poppins', sans-serif;
+  @apply text-text-primary-light dark:text-text-primary-dark;
+}
+
+/* Enhanced glass effect with your color scheme */
+.glass-effect {
+  @apply backdrop-blur-md bg-surface-light/40 dark:bg-surface-dark/40 border border-border-light dark:border-border-dark shadow-lg;
+}
+
+.glass-effect-strong {
+  @apply backdrop-blur-lg bg-surface-light/60 dark:bg-surface-dark/60 border border-border-light dark:border-border-dark shadow-xl;
+}
+
+/* Enhanced button styles with refined color scheme */
+.btn-primary {
+  @apply bg-primary-light hover:bg-primary-light/90 text-white font-semibold py-3 px-6 rounded-lg transition-all duration-300 shadow-lg hover:shadow-xl transform hover:scale-105;
+}
+
+.dark .btn-primary {
+  @apply bg-primary-dark hover:bg-primary-dark/90 text-background-dark;
+}
+
+.btn-secondary {
+  @apply bg-transparent border-2 border-primary-light text-primary-light hover:bg-primary-light hover:text-white font-semibold py-3 px-6 rounded-lg transition-all duration-300 hover:border-accent-light;
+}
+
+.dark .btn-secondary {
+  @apply border-primary-dark text-primary-dark hover:bg-primary-dark hover:text-background-dark hover:border-accent-dark;
+}
+
+/* Enhanced card styles with your color scheme */
+.card {
+  @apply bg-surface-light border border-border-light rounded-xl p-6 shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-105;
+}
+
+.dark .card {
+  @apply bg-surface-dark border-border-dark shadow-2xl;
+}
+
+.gradient-text {
+  @apply bg-gradient-to-r from-primary-light to-accent-light dark:from-primary-dark dark:to-accent-dark bg-clip-text text-transparent;
+}
+
+.line-clamp-3 {
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  line-clamp: 3;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.project-card {
+  @apply transition-all duration-300 ease-in-out bg-surface-light dark:bg-surface-dark border border-border-light dark:border-border-dark rounded-xl overflow-hidden shadow-lg hover:shadow-2xl transform hover:scale-105 hover:-translate-y-2;
+}
+
+/* Navigation styles */
+.nav-link {
+  @apply text-text-secondary-light hover:text-primary-light dark:text-text-secondary-dark dark:hover:text-primary-dark transition-colors duration-300 font-medium;
+}
+
+.nav-link.active {
+  @apply text-primary-light dark:text-primary-dark font-medium;
+}
+
+/* Custom scrollbar - Enhanced visibility */
+::-webkit-scrollbar {
+  width: 14px;
+}
+
+::-webkit-scrollbar-track {
+  background: #F3F4F6;
+  border-radius: 8px;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #9CA3AF;
+  border-radius: 8px;
+  border: 2px solid #F3F4F6;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #4B7BEC;
+}
+
+::-webkit-scrollbar-thumb:active {
+  background: #3B6BD9;
+}
+
+/* Dark mode scrollbar */
+.dark ::-webkit-scrollbar-track {
+  background: #1F2937;
+}
+
+.dark ::-webkit-scrollbar-thumb {
+  background: #4B5563;
+  border: 2px solid #1F2937;
+}
+
+.dark ::-webkit-scrollbar-thumb:hover {
+  background: #50A6FF;
+}
+
+.dark ::-webkit-scrollbar-thumb:active {
+  background: #3B82F6;
+}
+
+/* Improved focus styles */
+:focus-visible {
+  @apply outline-2 outline-offset-2 outline-primary-light dark:outline-primary-dark;
+}
+
+/* Selection colors */
+::selection {
+  @apply bg-primary-light/20 dark:bg-primary-dark/20;
+}
+
+/* Mobile-specific optimizations */
+@media (max-width: 768px) {
+  /* Improve touch targets */
+  button, a, input, textarea, select {
+    min-height: 44px;
+    min-width: 44px;
+  }
+  
+  /* Better text readability on mobile */
+  body {
+    -webkit-text-size-adjust: 100%;
+    -ms-text-size-adjust: 100%;
+    text-size-adjust: 100%;
+  }
+  
+  /* Prevent zoom on form inputs */
+  input[type="text"],
+  input[type="email"],
+  input[type="tel"],
+  input[type="password"],
+  textarea,
+  select {
+    font-size: 16px;
+  }
+  
+  /* Smooth scrolling performance */
+  * {
+    -webkit-overflow-scrolling: touch;
+  }
+  
+  /* Remove tap highlight */
+  * {
+    -webkit-tap-highlight-color: transparent;
+  }
+  
+  /* Optimize animations for mobile */
+  @media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after {
+      animation-duration: 0.01ms !important;
+      animation-iteration-count: 1 !important;
+      transition-duration: 0.01ms !important;
+      scroll-behavior: auto !important;
+    }
+  }
+}
+
+/* High DPI displays */
+@media (-webkit-min-device-pixel-ratio: 2), (min-resolution: 192dpi) {
+  /* Crisp images and icons */
+  img, svg {
+    image-rendering: -webkit-optimize-contrast;
+    image-rendering: crisp-edges;
+  }
+}
+
+/* Mobile landscape optimizations */
+@media (max-height: 500px) and (orientation: landscape) {
+  .hero-section {
+    min-height: 70vh;
+  }
+  
+  .mobile-nav {
+    max-height: 60vh;
+    overflow-y: auto;
+  }
+}
+
+/* Safe area for iOS devices with notch */
+@supports (padding: max(0px)) {
+  .safe-area-top {
+    padding-top: max(1rem, env(safe-area-inset-top));
+  }
+  
+  .safe-area-bottom {
+    padding-bottom: max(1rem, env(safe-area-inset-bottom));
+  }
+  
+  .safe-area-left {
+    padding-left: max(1rem, env(safe-area-inset-left));
+  }
+  
+  .safe-area-right {
+    padding-right: max(1rem, env(safe-area-inset-right));
+  }
+}

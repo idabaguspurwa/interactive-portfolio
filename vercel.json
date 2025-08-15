@@ -1,0 +1,46 @@
+{
+  "functions": {
+    "api/contact/main.go": {
+      "runtime": "go1.x"
+    }
+  },
+  "routes": [
+    {
+      "src": "/api/contact",
+      "dest": "/api/contact/main.go"
+    }
+  ],
+  "env": {
+    "SMTP_HOST": "@smtp_host",
+    "SMTP_USERNAME": "@smtp_username", 
+    "SMTP_PASSWORD": "@smtp_password",
+    "FROM_EMAIL": "@from_email",
+    "TO_EMAIL": "@to_email"
+  },
+  "headers": [
+    {
+      "source": "/(.*)",
+      "headers": [
+        {
+          "key": "X-Frame-Options",
+          "value": "DENY"
+        },
+        {
+          "key": "X-Content-Type-Options",
+          "value": "nosniff"
+        },
+        {
+          "key": "Referrer-Policy",
+          "value": "strict-origin-when-cross-origin"
+        }
+      ]
+    }
+  ],
+  "redirects": [
+    {
+      "source": "/www/(.*)",
+      "destination": "https://idabaguspurwa.com/$1",
+      "permanent": true
+    }
+  ]
+}
