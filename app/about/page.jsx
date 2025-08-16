@@ -1,7 +1,7 @@
 'use client'
 
 import { motion } from 'framer-motion'
-import { Canvas } from '@react-three/fiber'
+import { SafeCanvas } from '@/components/WebGLManager'
 import { OrbitControls, Float, Sphere, Box, Text3D, Environment } from '@react-three/drei'
 import { Code, Database, Cloud, Brain, Users, Zap, Award, Target, Coffee, BookOpen, Lightbulb } from 'lucide-react'
 import { ScrollProgress, RevealOnScroll, StaggerContainer, StaggerItem } from '@/components/ScrollAnimations'
@@ -142,16 +142,11 @@ export default function AboutPage() {
             <div className="grid lg:grid-cols-12 gap-12 items-center">
               <div className="lg:col-span-7">
                 <RevealOnScroll direction="left">
-                  <motion.div
-                    initial={{ opacity: 0, y: 20 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ duration: 0.6 }}
-                    className="mb-6"
-                  >
+                  <div className="mb-6">
                     <span className="bg-gradient-to-r from-primary-light to-accent-light dark:from-primary-dark dark:to-accent-dark bg-clip-text text-transparent text-lg font-semibold">
                       Get to know me
                     </span>
-                  </motion.div>
+                  </div>
                   
                   <h1 className="text-4xl md:text-6xl lg:text-7xl font-heading font-bold mb-8 leading-tight">
                     <span className="block text-gray-900 dark:text-white">Transforming</span>
@@ -188,7 +183,7 @@ export default function AboutPage() {
               <div className="lg:col-span-5">
                 <RevealOnScroll direction="right" delay={0.2}>
                   <div className="h-96 relative rounded-2xl overflow-hidden bg-gradient-to-br from-blue-50 to-indigo-100 dark:from-gray-800 dark:to-gray-700">
-                    <Canvas camera={{ position: [0, 0, 6], fov: 60 }}>
+                    <SafeCanvas camera={{ position: [0, 0, 6], fov: 60 }}>
                       <Suspense fallback={null}>
                         <ambientLight intensity={0.4} />
                         <directionalLight position={[10, 10, 5]} intensity={0.6} />
@@ -201,7 +196,7 @@ export default function AboutPage() {
                           autoRotateSpeed={0.5}
                         />
                       </Suspense>
-                    </Canvas>
+                    </SafeCanvas>
                   </div>
                 </RevealOnScroll>
               </div>

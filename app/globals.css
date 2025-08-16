@@ -43,6 +43,40 @@ html {
   scrollbar-color: #9CA3AF #F3F4F6;
 }
 
+/* Simplified page transitions without problematic classes */
+
+/* Lightweight hardware acceleration */
+.gpu-accelerated {
+  transform: translateZ(0);
+  backface-visibility: hidden;
+}
+
+/* Reduce animations on devices with limited resources */
+@media (prefers-reduced-motion: reduce) {
+  * {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
+/* Memory optimization for playground page */
+.data-playground-container {
+  contain: layout style paint;
+  isolation: isolate;
+}
+
+/* Removed problematic animation that was interfering with navbar */
+
+/* WebGL error state styling */
+.webgl-disabled {
+  background: linear-gradient(135deg, #f3f4f6 0%, #e5e7eb 100%);
+}
+
+.dark .webgl-disabled {
+  background: linear-gradient(135deg, #374151 0%, #1f2937 100%);
+}
+
 html.dark {
   scrollbar-color: #4B5563 #1F2937;
 }

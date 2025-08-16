@@ -125,13 +125,33 @@ export function Mobile3DWrapper({ children, fallback = null }) {
       return
     }
 
-    // For mobile, check device capabilities
+    // For mobile, check device capabilities with proper WebGL cleanup
     const checkMobileCapabilities = () => {
       const canvas = document.createElement('canvas')
-      const gl = canvas.getContext('webgl') || canvas.getContext('experimental-webgl')
+      // Set small canvas size to reduce memory usage
+      canvas.width = 1
+      canvas.height = 1
+      
+      const gl = canvas.getContext('webgl', { 
+        antialias: false,
+        alpha: false,
+        depth: false,
+        stencil: false,
+        preserveDrawingBuffer: false,
+        powerPreference: 'low-power'
+      }) || canvas.getContext('experimental-webgl', {
+        antialias: false,
+        alpha: false,
+        depth: false,
+        stencil: false,
+        preserveDrawingBuffer: false,
+        powerPreference: 'low-power'
+      })
       
       if (!gl) {
         setShouldRender3D(false)
+        // Clean up canvas
+        canvas.remove()
         return
       }
 
@@ -142,6 +162,13 @@ export function Mobile3DWrapper({ children, fallback = null }) {
                                navigator.connection.effectiveType === '4g'
       
       setShouldRender3D(isHighPerformance)
+      
+      // Properly dispose of WebGL context to prevent memory leaks
+      const loseContext = gl.getExtension('WEBGL_lose_context')
+      if (loseContext) {
+        loseContext.loseContext()
+      }
+      canvas.remove()
     }
 
     checkMobileCapabilities()

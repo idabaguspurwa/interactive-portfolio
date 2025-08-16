@@ -2,7 +2,7 @@
 
 import Image from "next/image";
 import { motion } from "framer-motion";
-import { Canvas } from "@react-three/fiber";
+import { SafeCanvas } from "@/components/WebGLManager";
 import {
   OrbitControls,
   Float,
@@ -178,7 +178,7 @@ export default function Home() {
 
           {/* 3D Background Elements */}
           <div className="absolute inset-0 z-0">
-            <Canvas
+            <SafeCanvas
               camera={{ position: [0, 0, 5], fov: 60 }}
               style={{ background: "transparent" }}
             >
@@ -194,7 +194,7 @@ export default function Home() {
                 <CreativeDataSphere />
                 <DataVisualization3D />
               </Suspense>
-            </Canvas>
+            </SafeCanvas>
           </div>
 
           {/* Main Content Grid */}
@@ -204,12 +204,7 @@ export default function Home() {
               <div className="lg:col-span-7 space-y-8">
                 <RevealOnScroll direction="left" delay={0.2}>
                   {/* Greeting Badge */}
-                  <motion.div
-                    initial={{ opacity: 0, y: 20 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ duration: 0.6, delay: 0.1 }}
-                    className="inline-block"
-                  >
+                  <div className="inline-block">
                     <div className="bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm rounded-full px-6 py-3 border border-primary-light/20 dark:border-primary-dark/20 shadow-lg">
                       <span className="text-sm font-medium text-primary-light dark:text-primary-dark flex items-center gap-2">
                         <motion.span
@@ -221,7 +216,7 @@ export default function Home() {
                         Hello, I&apos;m a Data Engineer
                       </span>
                     </div>
-                  </motion.div>
+                  </div>
                 </RevealOnScroll>
 
                 <RevealOnScroll direction="up" delay={0.4}>
@@ -423,23 +418,13 @@ export default function Home() {
           <div className="max-w-6xl mx-auto">
             <RevealOnScroll direction="up">
               <div className="text-center mb-16">
-                <motion.h2
-                  className="text-3xl md:text-4xl font-heading font-bold mb-6 text-gray-900 dark:text-white"
-                  initial={{ opacity: 0, y: 20 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ duration: 0.6 }}
-                >
+                <h2 className="text-3xl md:text-4xl font-heading font-bold mb-6 text-gray-900 dark:text-white">
                   What I Bring to the Table
-                </motion.h2>
-                <motion.p
-                  className="text-lg text-gray-600 dark:text-gray-300 max-w-3xl mx-auto leading-relaxed"
-                  initial={{ opacity: 0, y: 20 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ duration: 0.6, delay: 0.2 }}
-                >
+                </h2>
+                <p className="text-lg text-gray-600 dark:text-gray-300 max-w-3xl mx-auto leading-relaxed">
                   Transforming complex data challenges into scalable solutions
                   with modern cloud technologies and industry best practices.
-                </motion.p>
+                </p>
               </div>
             </RevealOnScroll>
 

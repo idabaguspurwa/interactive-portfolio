@@ -2,7 +2,7 @@
 
 import { useState } from 'react'
 import { motion } from 'framer-motion'
-import { Canvas } from '@react-three/fiber'
+import { SafeCanvas } from '@/components/WebGLManager'
 import { OrbitControls, Float, Box, Sphere, Cylinder, Torus } from '@react-three/drei'
 import { ExternalLink, Github, Star, Calendar, Users, Zap, Database, Cloud, Code, Brain, Smartphone, Eye, Palette, BarChart3 } from 'lucide-react'
 import { Button } from '@/components/ui/Button'
@@ -382,16 +382,11 @@ export default function ProjectsPage() {
             <div className="grid lg:grid-cols-12 gap-12 items-center">
               <div className="lg:col-span-7">
                 <RevealOnScroll direction="left">
-                  <motion.div
-                    initial={{ opacity: 0, y: 20 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ duration: 0.6 }}
-                    className="mb-6"
-                  >
+                  <div className="mb-6">
                     <span className="bg-gradient-to-r from-primary-light to-accent-light dark:from-primary-dark dark:to-accent-dark bg-clip-text text-transparent text-lg font-semibold">
                       My Work
                     </span>
-                  </motion.div>
+                  </div>
                   
                   <h1 className="text-4xl md:text-6xl lg:text-7xl font-heading font-bold mb-8 leading-tight">
                     <span className="block text-gray-900 dark:text-white">Building</span>
@@ -408,11 +403,8 @@ export default function ProjectsPage() {
                   {/* Stats */}
                   <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
                     {stats.map((stat, index) => (
-                      <motion.div
+                      <div
                         key={index}
-                        initial={{ opacity: 0, y: 20 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        transition={{ delay: index * 0.1, duration: 0.6 }}
                         className="text-center"
                       >
                         <div className="w-12 h-12 mx-auto mb-3 bg-gradient-to-br from-primary-light to-accent-light dark:from-primary-dark dark:to-accent-dark rounded-xl flex items-center justify-center">
@@ -420,7 +412,7 @@ export default function ProjectsPage() {
                         </div>
                         <div className="text-2xl font-bold text-gray-900 dark:text-white">{stat.value}</div>
                         <div className="text-sm text-gray-600 dark:text-gray-300">{stat.label}</div>
-                      </motion.div>
+                      </div>
                     ))}
                   </div>
                 </RevealOnScroll>
@@ -429,7 +421,7 @@ export default function ProjectsPage() {
               <div className="lg:col-span-5">
                 <RevealOnScroll direction="right" delay={0.2}>
                   <div className="h-96 relative rounded-2xl overflow-hidden bg-gradient-to-br from-blue-50 to-indigo-100 dark:from-gray-800 dark:to-gray-700">
-                    <Canvas camera={{ position: [0, 0, 8], fov: 60 }}>
+                    <SafeCanvas camera={{ position: [0, 0, 8], fov: 60 }}>
                       <ambientLight intensity={0.4} />
                       <directionalLight position={[10, 10, 5]} intensity={0.6} />
                       <ProjectsVisualization />
@@ -439,7 +431,7 @@ export default function ProjectsPage() {
                         autoRotate 
                         autoRotateSpeed={0.3}
                       />
-                    </Canvas>
+                    </SafeCanvas>
                   </div>
                 </RevealOnScroll>
               </div>
@@ -624,9 +616,6 @@ export default function ProjectsPage() {
               {filteredProjects.map((project, index) => (
                 <motion.div
                   key={project.id}
-                  initial={{ opacity: 0, y: 20 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: index * 0.1, duration: 0.5 }}
                   className="group bg-white dark:bg-gray-800 rounded-2xl shadow-lg hover:shadow-2xl transition-all duration-500 overflow-hidden h-full flex flex-col"
                   whileHover={{ y: -6, scale: 1.03 }}
                 >

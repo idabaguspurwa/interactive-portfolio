@@ -24,6 +24,18 @@ export async function POST(request) {
       )
     }
 
+    // Check if email service is configured
+    if (!process.env.RESEND_API_KEY) {
+      console.log('Email service not configured, logging message instead:', {
+        name, email, subject, message, timestamp: new Date().toISOString()
+      })
+      
+      return NextResponse.json(
+        { message: 'Message received successfully! (Email service not configured in development)' },
+        { status: 200 }
+      )
+    }
+
     // Send email using Resend
     const { data, error } = await resend.emails.send({
       from: `Portfolio Contact <${process.env.FROM_EMAIL || 'onboarding@resend.dev'}>`,

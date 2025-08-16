@@ -7,6 +7,7 @@ import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import { useTheme } from './ThemeProvider'
 import { Button } from './ui/Button'
+// Removed PageTransition dependency for simpler navbar
 
 const navItems = [
   { name: 'Home', href: '/' },
@@ -24,6 +25,7 @@ export function Navbar() {
   const [scrolled, setScrolled] = useState(false)
   const pathname = usePathname()
   const { theme, toggleTheme } = useTheme()
+  // Removed transition dependency for simpler navbar
 
   useEffect(() => {
     const handleScroll = () => {
@@ -35,13 +37,14 @@ export function Navbar() {
 
   return (
     <motion.nav
-      className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${
+      className={`fixed top-0 left-0 right-0 z-[100] transition-all duration-300 pointer-events-auto ${
         scrolled ? 'glass-effect shadow-lg' : 'bg-transparent'
       }`}
       initial={{ y: -100 }}
       animate={{ y: 0 }}
       transition={{ duration: 0.5 }}
     >
+      {/* Removed transition loading bar for simpler navbar */}
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between items-center h-16">
           {/* Logo */}
@@ -61,7 +64,7 @@ export function Navbar() {
                 <motion.div key={item.name} whileHover={{ scale: 1.05 }}>
                   <Link
                     href={item.href}
-                    className={`px-3 py-2 rounded-md text-sm font-medium transition-colors ${
+                    className={`px-3 py-2 rounded-md text-sm font-medium transition-all duration-200 ${
                       pathname === item.href
                         ? 'text-primary'
                         : 'text-secondary hover:text-primary'

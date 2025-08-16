@@ -1,7 +1,7 @@
 'use client'
 
 import { motion } from 'framer-motion'
-import { Canvas } from '@react-three/fiber'
+import { SafeCanvas } from '@/components/WebGLManager'
 import { OrbitControls, Float, Icosahedron, Octahedron, Dodecahedron, MeshDistortMaterial, Sphere, Box } from '@react-three/drei'
 import { 
   Code, 
@@ -271,16 +271,11 @@ export default function SkillsPage() {
             <div className="grid lg:grid-cols-12 gap-12 items-center">
               <div className="lg:col-span-7">
                 <RevealOnScroll direction="left">
-                  <motion.div
-                    initial={{ opacity: 0, y: 20 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ duration: 0.6 }}
-                    className="mb-6"
-                  >
+                  <div className="mb-6">
                     <span className="bg-gradient-to-r from-primary-light to-accent-light dark:from-primary-dark dark:to-accent-dark bg-clip-text text-transparent text-lg font-semibold">
                       My Expertise
                     </span>
-                  </motion.div>
+                  </div>
                   
                   <h1 className="text-4xl md:text-6xl lg:text-7xl font-heading font-bold mb-8 leading-tight">
                     <span className="block text-gray-900 dark:text-white">Technical</span>
@@ -299,9 +294,6 @@ export default function SkillsPage() {
                     {achievements.map((achievement, index) => (
                       <motion.div
                         key={index}
-                        initial={{ opacity: 0, y: 20 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        transition={{ delay: index * 0.1, duration: 0.6 }}
                         className="text-center p-4 bg-white dark:bg-gray-800 rounded-xl shadow-lg hover:shadow-xl transition-all duration-300"
                         whileHover={{ y: -4, scale: 1.05 }}
                       >
@@ -319,7 +311,7 @@ export default function SkillsPage() {
               <div className="lg:col-span-5">
                 <RevealOnScroll direction="right" delay={0.2}>
                   <div className="h-96 relative rounded-2xl overflow-hidden bg-gradient-to-br from-blue-50 to-indigo-100 dark:from-gray-800 dark:to-gray-700">
-                    <Canvas camera={{ position: [0, 0, 6], fov: 60 }}>
+                    <SafeCanvas camera={{ position: [0, 0, 6], fov: 60 }}>
                       <ambientLight intensity={0.4} />
                       <directionalLight position={[10, 10, 5]} intensity={0.6} />
                       <SkillsVisualization />
@@ -329,7 +321,7 @@ export default function SkillsPage() {
                         autoRotate 
                         autoRotateSpeed={0.4}
                       />
-                    </Canvas>
+                    </SafeCanvas>
                   </div>
                 </RevealOnScroll>
               </div>
@@ -391,9 +383,6 @@ export default function SkillsPage() {
             {/* Skills Display */}
             <motion.div
               key={selectedCategory}
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.5 }}
               className="bg-white dark:bg-gray-800 rounded-2xl shadow-xl p-8"
             >
               <h3 className="text-2xl font-bold text-gray-900 dark:text-white mb-8">

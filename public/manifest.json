@@ -12,6 +12,12 @@
   "categories": ["portfolio", "professional", "data-engineering"],
   "icons": [
     {
+      "src": "/favicon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any"
+    },
+    {
       "src": "/logo.jpg",
       "sizes": "512x512",
       "type": "image/jpeg",

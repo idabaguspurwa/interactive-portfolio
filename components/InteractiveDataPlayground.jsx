@@ -99,7 +99,7 @@ const dataLakehouseLayers = [
   },
 ];
 
-export function InteractiveDataPlayground() {
+export default function InteractiveDataPlayground() {
   const [currentStep, setCurrentStep] = useState(0);
   const [data, setData] = useState(sampleData);
   const [transformedData, setTransformedData] = useState(null);
@@ -111,35 +111,15 @@ export function InteractiveDataPlayground() {
   const [availableTransformations, setAvailableTransformations] = useState({});
   const [isDragOver, setIsDragOver] = useState(false);
   const [isClient, setIsClient] = useState(false);
+  const [isAnalyzing, setIsAnalyzing] = useState(false);
+  const [uploadedFile, setUploadedFile] = useState(null);
+  const [showUploadedData, setShowUploadedData] = useState(false);
   const fileInputRef = useRef(null);
 
   // Set client flag to prevent hydration errors with dynamic content
   useEffect(() => {
     setIsClient(true);
-
-    // Prevent default drag behaviors globally to avoid browser opening files
-    const preventDefaults = (e) => {
-      e.preventDefault();
-      e.stopPropagation();
-    };
-
-    const handleGlobalDragOver = (e) => {
-      preventDefaults(e);
-    };
-
-    const handleGlobalDrop = (e) => {
-      preventDefaults(e);
-    };
-
-    // Add global event listeners
-    document.addEventListener('dragover', handleGlobalDragOver);
-    document.addEventListener('drop', handleGlobalDrop);
-
-    // Cleanup
-    return () => {
-      document.removeEventListener('dragover', handleGlobalDragOver);
-      document.removeEventListener('drop', handleGlobalDrop);
-    };
+    // No global event listeners needed - drag/drop handled locally in the drag area
   }, []);
 
   // Consistent number formatting to prevent hydration errors
@@ -153,52 +133,63 @@ export function InteractiveDataPlayground() {
     return value;
   };
 
-  // Smart data analysis
+  // Smart data analysis with error handling
   const analyzeDataStructure = useCallback((data) => {
-    if (!data || data.length === 0) return null;
+    try {
+      if (!data || data.length === 0) return null;
 
-    const columns = Object.keys(data[0]);
-    const types = {};
-    const stats = {};
+      const columns = Object.keys(data[0]);
+      const types = {};
+      const stats = {};
 
-    columns.forEach((col) => {
-      const values = data
-        .map((row) => row[col])
-        .filter((val) => val !== null && val !== undefined && val !== "");
-      const numericValues = values.filter(
-        (val) => !isNaN(parseFloat(val)) && isFinite(val)
-      );
-      const dateValues = values.filter((val) => !isNaN(Date.parse(val)));
+      columns.forEach((col) => {
+        try {
+          const values = data
+            .map((row) => row[col])
+            .filter((val) => val !== null && val !== undefined && val !== "");
+          const numericValues = values.filter(
+            (val) => !isNaN(parseFloat(val)) && isFinite(val)
+          );
+          const dateValues = values.filter((val) => !isNaN(Date.parse(val)));
 
-      if (numericValues.length > values.length * 0.7) {
-        types[col] = "numeric";
-        const nums = numericValues.map((v) => parseFloat(v));
-        stats[col] = {
-          min: Math.min(...nums),
-          max: Math.max(...nums),
-          avg: nums.reduce((a, b) => a + b, 0) / nums.length,
-          count: nums.length,
-        };
-      } else if (dateValues.length > values.length * 0.5) {
-        types[col] = "date";
-        stats[col] = { count: dateValues.length };
-      } else {
-        types[col] = "text";
-        const uniqueValues = [...new Set(values)];
-        // Clean and truncate sample values for better display
-        const cleanedValues = uniqueValues.slice(0, 5).map((val) => {
-          const str = String(val);
-          return str.length > 30 ? str.substring(0, 30) + "..." : str;
-        });
-        stats[col] = {
-          unique: uniqueValues.length,
-          count: values.length,
-          top: cleanedValues,
-        };
-      }
-    });
+          if (numericValues.length > values.length * 0.7) {
+            types[col] = "numeric";
+            const nums = numericValues.map((v) => parseFloat(v));
+            stats[col] = {
+              min: Math.min(...nums),
+              max: Math.max(...nums),
+              avg: nums.reduce((a, b) => a + b, 0) / nums.length,
+              count: nums.length,
+            };
+          } else if (dateValues.length > values.length * 0.5) {
+            types[col] = "date";
+            stats[col] = { count: dateValues.length };
+          } else {
+            types[col] = "text";
+            const uniqueValues = [...new Set(values)];
+            // Clean and truncate sample values for better display
+            const cleanedValues = uniqueValues.slice(0, 5).map((val) => {
+              const str = String(val);
+              return str.length > 30 ? str.substring(0, 30) + "..." : str;
+            });
+            stats[col] = {
+              unique: uniqueValues.length,
+              count: values.length,
+              top: cleanedValues,
+            };
+          }
+        } catch (colError) {
+          console.error(`Error analyzing column ${col}:`, colError);
+          types[col] = "text";
+          stats[col] = { count: 0 };
+        }
+      });
 
-    return { columns, types, stats };
+      return { columns, types, stats };
+    } catch (error) {
+      console.error('Error in analyzeDataStructure:', error);
+      return null;
+    }
   }, []);
 
   // Intelligent data context detection
@@ -396,33 +387,38 @@ export function InteractiveDataPlayground() {
       name: "🧹 Clean & Standardize Data",
       description: "Remove duplicates, fix formatting, handle missing values",
       apply: (data) => {
-        // Step 1: Clean individual values
-        const cleaned = data.map((row) => {
-          const cleanedRow = {};
-          columns.forEach((col) => {
-            const type = types[col];
-            cleanedRow[col] = cleanDataValue(row[col], type);
+        try {
+          // Step 1: Clean individual values
+          const cleaned = data.map((row) => {
+            const cleanedRow = {};
+            columns.forEach((col) => {
+              const type = types[col];
+              cleanedRow[col] = cleanDataValue(row[col], type);
+            });
+            return cleanedRow;
           });
-          return cleanedRow;
-        });
 
-        // Step 2: Remove exact duplicates
-        const uniqueRows = cleaned.filter(
-          (row, index, self) =>
-            index ===
-            self.findIndex((r) => JSON.stringify(r) === JSON.stringify(row))
-        );
+          // Step 2: Remove exact duplicates
+          const uniqueRows = cleaned.filter(
+            (row, index, self) =>
+              index ===
+              self.findIndex((r) => JSON.stringify(r) === JSON.stringify(row))
+          );
 
-        // Step 3: Add data quality indicators
-        return uniqueRows.map((row, index) => ({
-          ...row,
-          record_id: index + 1,
-          completeness_score: Math.round(
-            (Object.values(row).filter((v) => v !== null).length /
-              columns.length) *
-              100
-          ),
-        }));
+          // Step 3: Add data quality indicators
+          return uniqueRows.map((row, index) => ({
+            ...row,
+            record_id: index + 1,
+            completeness_score: Math.round(
+              (Object.values(row).filter((v) => v !== null).length /
+                columns.length) *
+                100
+            ),
+          }));
+        } catch (error) {
+          console.error('Error in clean_data transformation:', error);
+          return data; // Return original data if transformation fails
+        }
       },
     };
 
@@ -627,39 +623,65 @@ export function InteractiveDataPlayground() {
     return transformations;
   }, [isClient]);
 
-  // Update transformations when data changes (but not when AI analysis is available)
+  // Update data structure when data changes
   useEffect(() => {
     const structure = analyzeDataStructure(data);
     setDataStructure(structure);
+  }, [data, analyzeDataStructure]);
 
-    // Only use frontend detection if no AI context is already set
-    if (!dataContext || !dataContext.aiPowered) {
-      const context = detectDataContext(data, structure);
+  // Update data context when data or structure changes (only if no AI context exists)
+  useEffect(() => {
+    if (dataStructure && (!dataContext || !dataContext.aiPowered)) {
+      const context = detectDataContext(data, dataStructure);
       setDataContext(context);
     }
+  }, [data, dataStructure, detectDataContext, dataContext?.aiPowered]);
 
-    const transformations = generateTransformations(structure, dataContext || detectDataContext(data, structure));
-    setAvailableTransformations(transformations);
+  // Update available transformations when structure or context changes
+  useEffect(() => {
+    if (dataStructure) {
+      try {
+        const currentContext = dataContext || detectDataContext(data, dataStructure);
+        const transformations = generateTransformations(dataStructure, currentContext);
+        setAvailableTransformations(transformations);
 
-    // Set default transformation
-    if (
-      Object.keys(transformations).length > 0 &&
-      !transformations[selectedTransformation]
-    ) {
-      setSelectedTransformation(Object.keys(transformations)[0]);
+        // Set default transformation if current one is not available
+        if (
+          Object.keys(transformations).length > 0 &&
+          !transformations[selectedTransformation]
+        ) {
+          setSelectedTransformation(Object.keys(transformations)[0]);
+        }
+      } catch (error) {
+        console.error('Error updating transformations:', error);
+        // Set a basic transformation as fallback
+        setAvailableTransformations({
+          clean_data: {
+            name: "🧹 Basic Clean",
+            description: "Basic data cleaning",
+            apply: (data) => data
+          }
+        });
+      }
     }
-  }, [
-    data,
-    dataContext,
-    analyzeDataStructure,
-    detectDataContext,
-    generateTransformations,
-    selectedTransformation,
-  ]);
+  }, [dataStructure, dataContext, data, detectDataContext, generateTransformations, selectedTransformation]);
+
+  // Separate effect to handle selectedTransformation validation
+  useEffect(() => {
+    if (Object.keys(availableTransformations).length > 0 && !availableTransformations[selectedTransformation]) {
+      setSelectedTransformation(Object.keys(availableTransformations)[0]);
+    }
+  }, [availableTransformations, selectedTransformation]);
 
   const processFile = useCallback(async (file) => {
     if (file && (file.type === "text/csv" || file.name.endsWith(".csv"))) {
       setIsProcessing(true);
+      setIsAnalyzing(true);
+      setUploadedFile({
+        name: file.name,
+        size: file.size,
+        lastModified: file.lastModified
+      });
 
       try {
         const csvData = await file.text();
@@ -756,16 +778,20 @@ export function InteractiveDataPlayground() {
           "🔍 Analysis method:",
           result.analysis.aiPowered ? "Gemini AI" : "Rule-based"
         );
+        
+        // Show uploaded data after successful analysis
+        setShowUploadedData(true);
       } catch (error) {
         console.error("Error processing file:", error);
         alert("Error processing CSV file. Please try again.");
       } finally {
         setIsProcessing(false);
+        setIsAnalyzing(false);
       }
     } else {
       alert("Please upload a valid CSV file");
     }
-  }, [generateAITransformations]);
+  }, []);
 
   const handleFileUpload = useCallback(
     (event) => {
@@ -1233,7 +1259,7 @@ export function InteractiveDataPlayground() {
   };
 
   return (
-    <div className="bg-white dark:bg-gray-900 rounded-3xl p-8 shadow-2xl border border-gray-200 dark:border-gray-700">
+    <div className="data-playground-container bg-white dark:bg-gray-900 rounded-3xl p-8 shadow-2xl border border-gray-200 dark:border-gray-700">
       <div className="text-center mb-8">
         <motion.h3
           className="text-3xl font-bold mb-4 bg-gradient-to-r from-primary-light to-accent-light dark:from-primary-dark dark:to-accent-dark bg-clip-text text-transparent"
@@ -1261,82 +1287,173 @@ export function InteractiveDataPlayground() {
             Upload CSV File
           </h4>
 
-          {/* Drag & Drop Area */}
-          <div
-            className={`relative border-2 border-dashed rounded-xl p-8 text-center transition-all duration-300 ${
-              isDragOver
-                ? "border-primary-light bg-primary-light/10 dark:border-primary-dark dark:bg-primary-dark/10"
-                : "border-gray-300 dark:border-gray-600 hover:border-primary-light dark:hover:border-primary-dark"
-            }`}
-            onDragOver={handleDragOver}
-            onDragLeave={handleDragLeave}
-            onDrop={handleDrop}
-          >
-            <input
-              ref={fileInputRef}
-              type="file"
-              accept=".csv"
-              onChange={handleFileUpload}
-              className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
-            />
-
-            <div className="space-y-4">
-              <motion.div
-                animate={{ scale: isDragOver ? 1.1 : 1 }}
-                transition={{ duration: 0.2 }}
-              >
-                <Upload
-                  className={`w-12 h-12 mx-auto ${
-                    isDragOver
-                      ? "text-primary-light dark:text-primary-dark"
-                      : "text-gray-400 dark:text-gray-500"
-                  }`}
-                />
-              </motion.div>
-
-              <div>
-                <p
-                  className={`text-lg font-semibold transition-colors duration-200 ${
-                    isDragOver
-                      ? "text-primary-light dark:text-primary-dark"
-                      : "text-gray-700 dark:text-gray-300"
-                  }`}
-                >
-                  {isDragOver
-                    ? "🎯 Drop your CSV file here!"
-                    : "📊 Drag & drop your CSV file here"}
-                </p>
-                <p className={`text-sm mt-2 transition-colors duration-200 ${
-                  isDragOver 
-                    ? "text-primary-light/80 dark:text-primary-dark/80" 
-                    : "text-gray-500 dark:text-gray-400"
-                }`}>
-                  {isDragOver ? "Release to upload" : "or click to browse files"}
-                </p>
-                <div className="flex items-center justify-center gap-4 mt-3 text-xs text-gray-400 dark:text-gray-500">
-                  <span className="flex items-center gap-1">
-                    ✅ CSV files
-                  </span>
-                  <span className="flex items-center gap-1">
-                    📏 Max 10MB
-                  </span>
-                  <span className="flex items-center gap-1">
-                    🚀 AI Analysis
-                  </span>
+          {/* AI Analysis Loading State */}
+          {isAnalyzing && (
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              className="bg-gradient-to-r from-blue-50 to-purple-50 dark:from-blue-900/20 dark:to-purple-900/20 rounded-xl p-6 mb-4 border border-blue-200 dark:border-blue-800"
+            >
+              <div className="flex items-center justify-center space-x-3">
+                <div className="relative">
+                  <div className="w-8 h-8 border-2 border-blue-200 dark:border-blue-700 rounded-full"></div>
+                  <div className="absolute top-0 left-0 w-8 h-8 border-2 border-transparent border-t-blue-500 dark:border-t-blue-400 rounded-full animate-spin"></div>
+                </div>
+                <div className="text-center">
+                  <p className="text-blue-700 dark:text-blue-300 font-semibold">
+                    🤖 AI is analyzing your data...
+                  </p>
+                  <p className="text-blue-600 dark:text-blue-400 text-sm mt-1">
+                    Detecting data patterns, structure, and quality
+                  </p>
                 </div>
               </div>
+              
+              {/* Progress indicators */}
+              <div className="mt-4 space-y-2">
+                <div className="flex items-center justify-between text-xs text-blue-600 dark:text-blue-400">
+                  <span>📊 Reading CSV structure</span>
+                  <span>✓</span>
+                </div>
+                <div className="flex items-center justify-between text-xs text-blue-600 dark:text-blue-400">
+                  <span>🔍 Analyzing data types</span>
+                  <motion.span
+                    animate={{ opacity: [0.5, 1, 0.5] }}
+                    transition={{ duration: 1.5, repeat: Infinity }}
+                  >
+                    ⏳
+                  </motion.span>
+                </div>
+                <div className="flex items-center justify-between text-xs text-blue-500 dark:text-blue-500">
+                  <span>🎯 Detecting context & patterns</span>
+                  <span>⏳</span>
+                </div>
+              </div>
+            </motion.div>
+          )}
 
-              <Button
-                onClick={() => fileInputRef.current?.click()}
-                variant="outline"
-                size="sm"
-                className="mt-4"
-              >
-                <FileText className="w-4 h-4 mr-2" />
-                Browse Files
-              </Button>
+          {/* Uploaded File Display */}
+          {uploadedFile && !isAnalyzing && (
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              className="bg-green-50 dark:bg-green-900/20 rounded-xl p-4 mb-4 border border-green-200 dark:border-green-800"
+            >
+              <div className="flex items-center justify-between">
+                <div className="flex items-center space-x-3">
+                  <div className="w-10 h-10 bg-green-100 dark:bg-green-800 rounded-lg flex items-center justify-center">
+                    <FileText className="w-5 h-5 text-green-600 dark:text-green-400" />
+                  </div>
+                  <div>
+                    <p className="font-semibold text-green-800 dark:text-green-200">
+                      {uploadedFile.name}
+                    </p>
+                    <p className="text-sm text-green-600 dark:text-green-400">
+                      {(uploadedFile.size / 1024).toFixed(1)} KB • Uploaded {new Date(uploadedFile.lastModified).toLocaleTimeString()}
+                    </p>
+                  </div>
+                </div>
+                <div className="flex items-center space-x-2">
+                  <span className="text-green-600 dark:text-green-400 text-sm font-medium">✓ Analyzed</span>
+                  <Button
+                    onClick={() => {
+                      setUploadedFile(null);
+                      setShowUploadedData(false);
+                      setData(sampleData);
+                      setDataContext(null);
+                      setDataStructure(null);
+                    }}
+                    variant="ghost"
+                    size="sm"
+                    className="text-green-600 hover:text-green-700 dark:text-green-400 dark:hover:text-green-300"
+                  >
+                    ✕
+                  </Button>
+                </div>
+              </div>
+            </motion.div>
+          )}
+
+          {/* Drag & Drop Area */}
+          {!uploadedFile && (
+            <div
+              className={`relative border-2 border-dashed rounded-xl p-8 text-center transition-all duration-300 ${
+                isDragOver
+                  ? "border-primary-light bg-primary-light/10 dark:border-primary-dark dark:bg-primary-dark/10"
+                  : "border-gray-300 dark:border-gray-600 hover:border-primary-light dark:hover:border-primary-dark"
+              }`}
+              onDragOver={handleDragOver}
+              onDragLeave={handleDragLeave}
+              onDrop={handleDrop}
+            >
+              <input
+                ref={fileInputRef}
+                type="file"
+                accept=".csv"
+                onChange={handleFileUpload}
+                className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
+                disabled={isAnalyzing}
+              />
+
+              <div className="space-y-4">
+                <motion.div
+                  animate={{ scale: isDragOver ? 1.1 : 1 }}
+                  transition={{ duration: 0.2 }}
+                >
+                  <Upload
+                    className={`w-12 h-12 mx-auto ${
+                      isDragOver
+                        ? "text-primary-light dark:text-primary-dark"
+                        : "text-gray-400 dark:text-gray-500"
+                    }`}
+                  />
+                </motion.div>
+
+                <div>
+                  <p
+                    className={`text-lg font-semibold transition-colors duration-200 ${
+                      isDragOver
+                        ? "text-primary-light dark:text-primary-dark"
+                        : "text-gray-700 dark:text-gray-300"
+                    }`}
+                  >
+                    {isDragOver
+                      ? "🎯 Drop your CSV file here!"
+                      : "📊 Drag & drop your CSV file here"}
+                  </p>
+                  <p className={`text-sm mt-2 transition-colors duration-200 ${
+                    isDragOver 
+                      ? "text-primary-light/80 dark:text-primary-dark/80" 
+                      : "text-gray-500 dark:text-gray-400"
+                  }`}>
+                    {isDragOver ? "Release to upload" : "or click to browse files"}
+                  </p>
+                  <div className="flex items-center justify-center gap-4 mt-3 text-xs text-gray-400 dark:text-gray-500">
+                    <span className="flex items-center gap-1">
+                      ✅ CSV files
+                    </span>
+                    <span className="flex items-center gap-1">
+                      📏 Max 10MB
+                    </span>
+                    <span className="flex items-center gap-1">
+                      🚀 AI Analysis
+                    </span>
+                  </div>
+                </div>
+
+                <Button
+                  onClick={() => fileInputRef.current?.click()}
+                  variant="outline"
+                  size="sm"
+                  className="mt-4"
+                  disabled={isAnalyzing}
+                >
+                  <FileText className="w-4 h-4 mr-2" />
+                  Browse Files
+                </Button>
+              </div>
             </div>
-          </div>
+          )}
 
           <div className="text-sm text-gray-500 dark:text-gray-400 text-center mt-4">
             or use sample employee data ({data.length} records)

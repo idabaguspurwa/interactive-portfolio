@@ -7,7 +7,7 @@ import Link from 'next/link'
 import dynamic from 'next/dynamic'
 
 const InteractiveDataPlayground = dynamic(
-  () => import('@/components/InteractiveDataPlayground').then(mod => ({ default: mod.InteractiveDataPlayground })),
+  () => import('@/components/InteractiveDataPlayground'),
   { 
     ssr: false,
     loading: () => (
@@ -20,7 +20,7 @@ const InteractiveDataPlayground = dynamic(
 
 export default function PlaygroundPage() {
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-50 to-blue-50 dark:from-gray-900 dark:to-blue-900/20 py-20">
+    <div className="min-h-screen bg-gradient-to-br from-gray-50 to-blue-50 dark:from-gray-900 dark:to-blue-900/20 pt-20 pb-20">
       <div className="max-w-6xl mx-auto px-6">
         {/* Header */}
         <RevealOnScroll direction="up">
@@ -33,28 +33,18 @@ export default function PlaygroundPage() {
               Back to Portfolio
             </Link>
             
-            <motion.h1 
-              className="text-4xl md:text-6xl font-heading font-bold mb-6"
-              initial={{ opacity: 0, y: 30 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.8 }}
-            >
+            <h1 className="text-4xl md:text-6xl font-heading font-bold mb-6">
               <span className="bg-gradient-to-r from-primary-light via-purple-600 to-accent-light dark:from-primary-dark dark:via-purple-400 dark:to-accent-dark bg-clip-text text-transparent">
                 Data Engineering
               </span>
               <br />
               <span className="text-gray-900 dark:text-white">Playground</span>
-            </motion.h1>
+            </h1>
             
-            <motion.p 
-              className="text-xl text-gray-600 dark:text-gray-300 max-w-3xl mx-auto leading-relaxed"
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.8, delay: 0.2 }}
-            >
+            <p className="text-xl text-gray-600 dark:text-gray-300 max-w-3xl mx-auto leading-relaxed">
               Experience production-grade Data Lakehouse architecture! This interactive demo showcases the Bronze → Silver → Gold 
               pipeline used by Netflix, Uber, and Airbnb with Apache Spark, Delta Lake, and modern cloud-native data engineering patterns.
-            </motion.p>
+            </p>
           </div>
         </RevealOnScroll>
 
@@ -84,9 +74,6 @@ export default function PlaygroundPage() {
               <motion.div
                 key={feature.title}
                 className="bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm rounded-2xl p-6 shadow-lg border border-gray-200/50 dark:border-gray-700/50"
-                initial={{ opacity: 0, y: 30 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.6, delay: 0.4 + index * 0.1 }}
                 whileHover={{ scale: 1.02, y: -5 }}
               >
                 <div className={`w-12 h-12 rounded-xl bg-gradient-to-r ${feature.color} flex items-center justify-center mb-4`}>

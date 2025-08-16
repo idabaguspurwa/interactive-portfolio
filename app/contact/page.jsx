@@ -2,18 +2,15 @@
 
 import { useState } from "react";
 import { motion } from "framer-motion";
-import { Canvas } from "@react-three/fiber";
+import { SafeCanvas } from "@/components/WebGLManager";
 import { OrbitControls, Float, Sphere, Torus, Box } from "@react-three/drei";
 import {
   Mail,
-  Phone,
   MapPin,
   Send,
   Github,
   Linkedin,
-  Twitter,
   MessageCircle,
-  Calendar,
   Briefcase,
   Coffee,
 } from "lucide-react";
@@ -26,11 +23,9 @@ import {
 } from "@/components/ScrollAnimations";
 import { useRef } from "react";
 import { useFrame } from "@react-three/fiber";
-import { useTheme } from "@/components/ThemeProvider";
 
 function ContactVisualization() {
   const groupRef = useRef();
-  const { theme } = useTheme();
 
   useFrame((state) => {
     if (groupRef.current) {
@@ -123,7 +118,7 @@ Specific Requirements: [Any specific technologies or requirements?]
 
 I'd love to schedule a meeting to discuss this further. Please let me know your availability.
 
-Best regards,`
+Best regards,`,
     },
     technical: {
       subject: "Technical Discussion Request",
@@ -141,7 +136,7 @@ Background: [Brief description of your current setup or challenges]
 
 I'm looking forward to learning from your expertise and sharing insights.
 
-Best regards,`
+Best regards,`,
     },
     coffee: {
       subject: "Coffee Chat Request",
@@ -156,22 +151,22 @@ Availability: [Your preferred days/times]
 
 Looking forward to a great conversation!
 
-Best regards,`
-    }
+Best regards,`,
+    },
   };
 
   const handleTemplateSelect = (templateType) => {
     const template = contactTemplates[templateType];
-    setFormData(prev => ({
+    setFormData((prev) => ({
       ...prev,
       subject: template.subject,
-      message: template.message
+      message: template.message,
     }));
-    
+
     // Scroll to contact form
-    document.getElementById("contact-form")?.scrollIntoView({ 
+    document.getElementById("contact-form")?.scrollIntoView({
       behavior: "smooth",
-      block: "start"
+      block: "start",
     });
   };
 
@@ -188,13 +183,19 @@ Best regards,`
     setSubmitStatus(null);
 
     try {
-      const response = await fetch('/api/contact-go', {
-        method: 'POST',
+      const response = await fetch("/api/contact", {
+        method: "POST",
         headers: {
-          'Content-Type': 'application/json',
+          "Content-Type": "application/json",
         },
         body: JSON.stringify(formData),
       });
+
+      // Check if response is JSON
+      const contentType = response.headers.get("content-type");
+      if (!contentType || !contentType.includes("application/json")) {
+        throw new Error("Server returned non-JSON response");
+      }
 
       const data = await response.json();
 
@@ -204,11 +205,18 @@ Best regards,`
         setTimeout(() => setSubmitStatus(null), 5000);
       } else {
         setSubmitStatus("error");
-        console.error('Error:', data.error);
+        console.error("API Error:", data.error || "Unknown error");
       }
     } catch (error) {
-      console.error('Error sending message:', error);
+      console.error("Error sending message:", error);
       setSubmitStatus("error");
+
+      // More specific error handling
+      if (error.message.includes("JSON")) {
+        console.error(
+          "Server returned HTML instead of JSON - check API endpoint"
+        );
+      }
     } finally {
       setIsSubmitting(false);
     }
@@ -289,16 +297,11 @@ Best regards,`
             <div className="grid lg:grid-cols-12 gap-12 items-center">
               <div className="lg:col-span-7">
                 <RevealOnScroll direction="left">
-                  <motion.div
-                    initial={{ opacity: 0, y: 20 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ duration: 0.6 }}
-                    className="mb-6"
-                  >
+                  <div className="mb-6">
                     <span className="bg-gradient-to-r from-primary-light to-accent-light dark:from-primary-dark dark:to-accent-dark bg-clip-text text-transparent text-lg font-semibold">
                       Let&apos;s Connect
                     </span>
-                  </motion.div>
+                  </div>
 
                   <h1 className="text-4xl md:text-6xl lg:text-7xl font-heading font-bold mb-8 leading-tight">
                     <span className="block text-gray-900 dark:text-white">
@@ -311,8 +314,8 @@ Best regards,`
 
                   <p className="text-xl text-gray-600 dark:text-gray-300 mb-8 leading-relaxed">
                     Ready to collaborate on your next data engineering project?
-                    Let&apos;s discuss how we can transform your data infrastructure
-                    and drive business value together.
+                    Let&apos;s discuss how we can transform your data
+                    infrastructure and drive business value together.
                   </p>
 
                   <div className="space-y-4">
@@ -350,7 +353,7 @@ Best regards,`
               <div className="lg:col-span-5">
                 <RevealOnScroll direction="right" delay={0.2}>
                   <div className="h-96 relative rounded-2xl overflow-hidden bg-gradient-to-br from-blue-50 to-indigo-100 dark:from-gray-800 dark:to-gray-700">
-                    <Canvas camera={{ position: [0, 0, 6], fov: 60 }}>
+                    <SafeCanvas camera={{ position: [0, 0, 6], fov: 60 }}>
                       <ambientLight intensity={0.4} />
                       <directionalLight
                         position={[10, 10, 5]}
@@ -363,7 +366,7 @@ Best regards,`
                         autoRotate
                         autoRotateSpeed={0.3}
                       />
-                    </Canvas>
+                    </SafeCanvas>
                   </div>
                 </RevealOnScroll>
               </div>
@@ -380,8 +383,8 @@ Best regards,`
                   Contact Information
                 </h2>
                 <p className="text-lg text-gray-600 dark:text-gray-300 max-w-3xl mx-auto">
-                  Choose your preferred way to reach out. I&apos;m always excited to
-                  discuss new projects and opportunities.
+                  Choose your preferred way to reach out. I&apos;m always
+                  excited to discuss new projects and opportunities.
                 </p>
               </div>
             </RevealOnScroll>
@@ -444,8 +447,8 @@ Best regards,`
                   How Can I Help You?
                 </h2>
                 <p className="text-lg text-gray-600 dark:text-gray-300 max-w-3xl mx-auto">
-                  Select the type of collaboration you&apos;re interested in, and
-                  I&apos;ll get back to you with the best approach.
+                  Select the type of collaboration you&apos;re interested in,
+                  and I&apos;ll get back to you with the best approach.
                 </p>
               </div>
             </RevealOnScroll>
@@ -475,7 +478,9 @@ Best regards,`
                       <div className="mt-auto">
                         <Button
                           className={`w-full bg-gradient-to-r ${action.color} text-white border-none hover:opacity-90`}
-                          onClick={() => handleTemplateSelect(action.templateType)}
+                          onClick={() =>
+                            handleTemplateSelect(action.templateType)
+                          }
                         >
                           {action.action}
                         </Button>
@@ -500,18 +505,13 @@ Best regards,`
                   Send Me a Message
                 </h2>
                 <p className="text-lg text-gray-600 dark:text-gray-300">
-                  Fill out the form below and I&apos;ll get back to you as soon as
-                  possible.
+                  Fill out the form below and I&apos;ll get back to you as soon
+                  as possible.
                 </p>
               </div>
             </RevealOnScroll>
 
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.6 }}
-              className="bg-white dark:bg-gray-800 rounded-2xl shadow-xl p-8"
-            >
+            <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-xl p-8">
               {/* Template indicator */}
               {(formData.subject || formData.message) && (
                 <div className="mb-6 p-4 bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg">
@@ -524,7 +524,14 @@ Best regards,`
                     </div>
                     <button
                       type="button"
-                      onClick={() => setFormData({ name: "", email: "", subject: "", message: "" })}
+                      onClick={() =>
+                        setFormData({
+                          name: "",
+                          email: "",
+                          subject: "",
+                          message: "",
+                        })
+                      }
                       className="text-blue-600 dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-200 text-sm font-medium"
                     >
                       Clear Form
@@ -589,7 +596,7 @@ Best regards,`
                     onChange={handleChange}
                     required
                     className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-primary-light dark:focus:ring-primary-dark focus:border-transparent bg-white dark:bg-gray-700 text-gray-900 dark:text-white transition-all duration-200"
-                    placeholder="What&apos;s this about?"
+                    placeholder="What's this about?"
                   />
                 </div>
 
@@ -638,8 +645,8 @@ Best regards,`
                     animate={{ opacity: 1, y: 0 }}
                     className="p-4 bg-green-100 dark:bg-green-900/30 border border-green-200 dark:border-green-800 rounded-lg text-green-700 dark:text-green-300"
                   >
-                    ✅ Thank you! Your message has been sent successfully. I&apos;ll
-                    get back to you soon.
+                    ✅ Thank you! Your message has been sent successfully.
+                    I&apos;ll get back to you soon.
                   </motion.div>
                 )}
 
@@ -654,7 +661,7 @@ Best regards,`
                   </motion.div>
                 )}
               </form>
-            </motion.div>
+            </div>
           </div>
         </section>
       </div>
