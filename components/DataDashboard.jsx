@@ -536,15 +536,15 @@ export default function DataDashboard({ data, dataStructure, dataContext }) {
     }
 
     return () => observer.disconnect();
-  }, [dashboardData, renderIntelligentDashboard]);
+  }, [dashboardData]);
 
   // Get current theme
-  const getCurrentTheme = () => {
+  const getCurrentTheme = useCallback(() => {
     if (typeof document !== 'undefined') {
       return document.documentElement.classList.contains('dark') ? 'dark' : 'light';
     }
     return 'light';
-  };
+  }, []);
 
   // Render the intelligent unified dashboard
   const renderIntelligentDashboard = useCallback((dashboardData) => {
@@ -583,10 +583,10 @@ export default function DataDashboard({ data, dataStructure, dataContext }) {
     if (dashboardData.isAI) {
       renderAIBadge(dashboard);
     }
-  }, [renderDashboardHeader, renderKeyMetrics, renderChartsGrid, renderDashboardStory, renderAIBadge]);
+  }, []);
 
   // Render dashboard header
-  const renderDashboardHeader = (container, dashboardData) => {
+  const renderDashboardHeader = useCallback((container, dashboardData) => {
     const theme = getCurrentTheme();
     const isDark = theme === 'dark';
     
@@ -621,10 +621,10 @@ export default function DataDashboard({ data, dataStructure, dataContext }) {
         .style("margin", "0 auto")
         .text(`AI-powered analysis of ${dashboardData.rawData.length} records`);
     }
-  };
+  }, []);
 
   // Render key metrics
-  const renderKeyMetrics = (container, metrics) => {
+  const renderKeyMetrics = useCallback((container, metrics) => {
     const theme = getCurrentTheme();
     const isDark = theme === 'dark';
     
@@ -724,10 +724,10 @@ export default function DataDashboard({ data, dataStructure, dataContext }) {
           .text(metric.description);
       }
     });
-  };
+  }, []);
 
   // Render charts grid
-  const renderChartsGrid = (container, charts, data) => {
+  const renderChartsGrid = useCallback((container, charts, data) => {
     const theme = getCurrentTheme();
     const isDark = theme === 'dark';
     
@@ -803,10 +803,10 @@ export default function DataDashboard({ data, dataStructure, dataContext }) {
         renderBarChart(chartCard, chart, data);
       }
     });
-  };
+  }, []);
 
   // Render dashboard story
-  const renderDashboardStory = (container, story) => {
+  const renderDashboardStory = useCallback((container, story) => {
     const theme = getCurrentTheme();
     const isDark = theme === 'dark';
     
@@ -825,7 +825,7 @@ export default function DataDashboard({ data, dataStructure, dataContext }) {
 
     storyContainer
       .append("div")
-      .style("background", isDark ? "var(--insight-bg-dark)" : "var(--insight-bg-light)")
+      .style("background", isDark ? "var(--insight-bg-dark)" : "var(--insight-border-dark)")
       .style("border-radius", "12px")
       .style("padding", "24px")
       .style("border", `1px solid ${isDark ? "var(--insight-border-dark)" : "var(--insight-border-light)"}`)
@@ -833,10 +833,10 @@ export default function DataDashboard({ data, dataStructure, dataContext }) {
       .style("line-height", "1.6")
       .style("color", isDark ? "var(--insight-text-dark)" : "var(--insight-text-light)")
       .text(story);
-  };
+  }, []);
 
   // Render AI badge
-  const renderAIBadge = (container) => {
+  const renderAIBadge = useCallback((container) => {
     const badge = container
       .append("div")
       .attr("class", "ai-badge")
@@ -853,7 +853,7 @@ export default function DataDashboard({ data, dataStructure, dataContext }) {
       .style("z-index", "1000");
 
     badge.text("🤖 AI Generated");
-  };
+  }, []);
 
   // Chart rendering functions
   const renderBarChart = (container, chart, data) => {
