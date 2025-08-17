@@ -488,101 +488,12 @@ export default function DataDashboard({ data, dataStructure, dataContext }) {
     }
   }, []);
 
-  // Initialize dashboard when data changes
-  useEffect(() => {
-    if (data && dataStructure && dashboardRef.current) {
-      setIsLoading(true);
-      
-      processDataIntelligently(data, dataStructure).then(processed => {
-        if (processed) {
-          setDashboardData(processed);
-          
-          setTimeout(() => {
-            renderIntelligentDashboard(processed);
-            setIsLoading(false);
-          }, 100);
-        } else {
-          setIsLoading(false);
-        }
-      }).catch(error => {
-        console.error('Dashboard processing failed:', error);
-        setIsLoading(false);
-      });
-    }
-  }, [data, dataStructure, processDataIntelligently]);
-
-  // Listen for theme changes
-  useEffect(() => {
-    const handleThemeChange = () => {
-      if (dashboardData && dashboardRef.current) {
-        renderIntelligentDashboard(dashboardData);
-      }
-    };
-
-    // Create a mutation observer to watch for theme changes
-    const observer = new MutationObserver((mutations) => {
-      mutations.forEach((mutation) => {
-        if (mutation.type === 'attributes' && mutation.attributeName === 'class') {
-          handleThemeChange();
-        }
-      });
-    });
-
-    if (typeof document !== 'undefined') {
-      observer.observe(document.documentElement, {
-        attributes: true,
-        attributeFilter: ['class']
-      });
-    }
-
-    return () => observer.disconnect();
-  }, [dashboardData]);
-
   // Get current theme
   const getCurrentTheme = useCallback(() => {
     if (typeof document !== 'undefined') {
       return document.documentElement.classList.contains('dark') ? 'dark' : 'light';
     }
     return 'light';
-  }, []);
-
-  // Render the intelligent unified dashboard
-  const renderIntelligentDashboard = useCallback((dashboardData) => {
-    if (!dashboardData || !dashboardRef.current) return;
-
-    const container = d3.select(dashboardRef.current);
-    container.selectAll("*").remove();
-
-    const theme = getCurrentTheme();
-    const isDark = theme === 'dark';
-
-    const dashboard = container
-      .append("div")
-      .attr("class", "intelligent-dashboard")
-      .style("padding", "20px")
-      .style("background", isDark ? "var(--dashboard-bg-dark)" : "var(--dashboard-bg-light)")
-      .style("color", isDark ? "var(--dashboard-text-dark)" : "var(--dashboard-text-light)");
-
-    // Dashboard Header
-    renderDashboardHeader(dashboard, dashboardData);
-
-    // Key Metrics
-    renderKeyMetrics(dashboard, dashboardData.keyMetrics);
-
-    // Charts Grid
-    if (dashboardData.charts && dashboardData.charts.length > 0) {
-      renderChartsGrid(dashboard, dashboardData.charts, dashboardData.rawData);
-    }
-
-    // Dashboard Story
-    if (dashboardData.story) {
-      renderDashboardStory(dashboard, dashboardData.story);
-    }
-
-    // AI Badge if AI-generated
-    if (dashboardData.isAI) {
-      renderAIBadge(dashboard);
-    }
   }, []);
 
   // Render dashboard header
@@ -621,7 +532,7 @@ export default function DataDashboard({ data, dataStructure, dataContext }) {
         .style("margin", "0 auto")
         .text(`AI-powered analysis of ${dashboardData.rawData.length} records`);
     }
-  }, []);
+  }, [getCurrentTheme]);
 
   // Render key metrics
   const renderKeyMetrics = useCallback((container, metrics) => {
@@ -724,7 +635,7 @@ export default function DataDashboard({ data, dataStructure, dataContext }) {
           .text(metric.description);
       }
     });
-  }, []);
+  }, [getCurrentTheme]);
 
   // Render charts grid
   const renderChartsGrid = useCallback((container, charts, data) => {
@@ -803,7 +714,7 @@ export default function DataDashboard({ data, dataStructure, dataContext }) {
         renderBarChart(chartCard, chart, data);
       }
     });
-  }, []);
+  }, [getCurrentTheme]);
 
   // Render dashboard story
   const renderDashboardStory = useCallback((container, story) => {
@@ -833,7 +744,7 @@ export default function DataDashboard({ data, dataStructure, dataContext }) {
       .style("line-height", "1.6")
       .style("color", isDark ? "var(--insight-text-dark)" : "var(--insight-text-light)")
       .text(story);
-  }, []);
+  }, [getCurrentTheme]);
 
   // Render AI badge
   const renderAIBadge = useCallback((container) => {
@@ -854,6 +765,95 @@ export default function DataDashboard({ data, dataStructure, dataContext }) {
 
     badge.text("🤖 AI Generated");
   }, []);
+
+  // Render the intelligent unified dashboard
+  const renderIntelligentDashboard = useCallback((dashboardData) => {
+    if (!dashboardData || !dashboardRef.current) return;
+
+    const container = d3.select(dashboardRef.current);
+    container.selectAll("*").remove();
+
+    const theme = getCurrentTheme();
+    const isDark = theme === 'dark';
+
+    const dashboard = container
+      .append("div")
+      .attr("class", "intelligent-dashboard")
+      .style("padding", "20px")
+      .style("background", isDark ? "var(--dashboard-bg-dark)" : "var(--dashboard-bg-light)")
+      .style("color", isDark ? "var(--dashboard-text-dark)" : "var(--dashboard-text-light)");
+
+    // Dashboard Header
+    renderDashboardHeader(dashboard, dashboardData);
+
+    // Key Metrics
+    renderKeyMetrics(dashboard, dashboardData.keyMetrics);
+
+    // Charts Grid
+    if (dashboardData.charts && dashboardData.charts.length > 0) {
+      renderChartsGrid(dashboard, dashboardData.charts, dashboardData.rawData);
+    }
+
+    // Dashboard Story
+    if (dashboardData.story) {
+      renderDashboardStory(dashboard, dashboardData.story);
+    }
+
+    // AI Badge if AI-generated
+    if (dashboardData.isAI) {
+      renderAIBadge(dashboard);
+    }
+  }, [getCurrentTheme, renderDashboardHeader, renderKeyMetrics, renderChartsGrid, renderDashboardStory, renderAIBadge]);
+
+  // Initialize dashboard when data changes
+  useEffect(() => {
+    if (data && dataStructure && dashboardRef.current) {
+      setIsLoading(true);
+      
+      processDataIntelligently(data, dataStructure).then(processed => {
+        if (processed) {
+          setDashboardData(processed);
+          
+          setTimeout(() => {
+            renderIntelligentDashboard(processed);
+            setIsLoading(false);
+          }, 100);
+        } else {
+          setIsLoading(false);
+        }
+      }).catch(error => {
+        console.error('Dashboard processing failed:', error);
+        setIsLoading(false);
+      });
+    }
+  }, [data, dataStructure, processDataIntelligently, renderIntelligentDashboard]);
+
+  // Listen for theme changes
+  useEffect(() => {
+    const handleThemeChange = () => {
+      if (dashboardData && dashboardRef.current) {
+        renderIntelligentDashboard(dashboardData);
+      }
+    };
+
+    // Create a mutation observer to watch for theme changes
+    const observer = new MutationObserver((mutations) => {
+      mutations.forEach((mutation) => {
+        if (mutation.type === 'attributes' && mutation.attributeName === 'class') {
+          handleThemeChange();
+        }
+      });
+    });
+
+    if (typeof document !== 'undefined') {
+      observer.observe(document.documentElement, {
+        attributes: true,
+        attributeFilter: ['class']
+      });
+    }
+
+    return () => observer.disconnect();
+  }, [dashboardData, renderIntelligentDashboard]);
 
   // Chart rendering functions
   const renderBarChart = (container, chart, data) => {

@@ -676,6 +676,89 @@ export default function InteractiveDataPlayground() {
     }
   }, [availableTransformations, selectedTransformation]);
 
+  // Generate AI-enhanced transformations based on Gemini analysis
+  const generateAITransformations = useCallback((analysis) => {
+    const baseTransformations = {
+      ai_smart_clean: {
+        name: "🤖 AI Smart Cleaning",
+        description: analysis.aiPowered
+          ? `Gemini-powered cleaning for ${analysis.dataContext.type} data`
+          : `Smart cleaning based on ${analysis.dataContext.type} patterns`,
+        apply: (data) => data, // Processing happens in AI API
+      },
+      ai_complete_clean: {
+        name: "✨ Complete AI Pipeline",
+        description: analysis.technicalRecommendations?.bestTransformation
+          ? `${analysis.technicalRecommendations.bestTransformation} (AI recommended)`
+          : `Full AI-optimized transformation for ${analysis.dataContext.type}`,
+        apply: (data) => data,
+      },
+      remove_duplicates: {
+        name: "🗑️ Remove Duplicates",
+        description: "Eliminate exact duplicate records with AI validation",
+        apply: (data) => data,
+      },
+      handle_missing: {
+        name: "🔧 Smart Missing Value Handling",
+        description: "AI-guided imputation based on data patterns and context",
+        apply: (data) => data,
+      },
+      standardize_text: {
+        name: "📝 Intelligent Text Standardization",
+        description:
+          "Context-aware text cleaning (preserves URLs, emails, important patterns)",
+        apply: (data) => data,
+      },
+      remove_outliers: {
+        name: "📊 Statistical Outlier Detection",
+        description: "AI-enhanced outlier detection with business logic",
+        apply: (data) => data,
+      },
+    };
+
+    // Add industry-specific transformations based on AI analysis
+    const contextType = analysis.dataContext.type;
+
+    if (contextType === "ecommerce") {
+      baseTransformations.ecommerce_optimize = {
+        name: "🛒 E-commerce Data Optimization",
+        description:
+          "Clean product names, standardize prices, validate customer data",
+        apply: (data) => data,
+      };
+    } else if (contextType === "financial") {
+      baseTransformations.financial_clean = {
+        name: "💰 Financial Data Standardization",
+        description:
+          "Currency normalization, amount validation, account formatting",
+        apply: (data) => data,
+      };
+    } else if (contextType === "hr") {
+      baseTransformations.hr_standardize = {
+        name: "👥 HR Data Standardization",
+        description:
+          "Employee name formatting, salary standardization, department cleanup",
+        apply: (data) => data,
+      };
+    } else if (contextType === "marketing") {
+      baseTransformations.marketing_clean = {
+        name: "📊 Marketing Analytics Cleanup",
+        description:
+          "Campaign standardization, metric validation, traffic filtering",
+        apply: (data) => data,
+      };
+    } else if (contextType === "geographic") {
+      baseTransformations.geo_standardize = {
+        name: "🌍 Geographic Data Standardization",
+        description:
+          "Location normalization, coordinate validation, address formatting",
+        apply: (data) => data,
+      };
+    }
+
+    return baseTransformations;
+  }, []);
+
   const processFile = useCallback(async (file) => {
     if (file && (file.type === "text/csv" || file.name.endsWith(".csv"))) {
       setIsProcessing(true);
@@ -1005,88 +1088,6 @@ export default function InteractiveDataPlayground() {
     }
   };
 
-  // Generate AI-enhanced transformations based on Gemini analysis
-  const generateAITransformations = useCallback((analysis) => {
-    const baseTransformations = {
-      ai_smart_clean: {
-        name: "🤖 AI Smart Cleaning",
-        description: analysis.aiPowered
-          ? `Gemini-powered cleaning for ${analysis.dataContext.type} data`
-          : `Smart cleaning based on ${analysis.dataContext.type} patterns`,
-        apply: (data) => data, // Processing happens in AI API
-      },
-      ai_complete_clean: {
-        name: "✨ Complete AI Pipeline",
-        description: analysis.technicalRecommendations?.bestTransformation
-          ? `${analysis.technicalRecommendations.bestTransformation} (AI recommended)`
-          : `Full AI-optimized transformation for ${analysis.dataContext.type}`,
-        apply: (data) => data,
-      },
-      remove_duplicates: {
-        name: "🗑️ Remove Duplicates",
-        description: "Eliminate exact duplicate records with AI validation",
-        apply: (data) => data,
-      },
-      handle_missing: {
-        name: "🔧 Smart Missing Value Handling",
-        description: "AI-guided imputation based on data patterns and context",
-        apply: (data) => data,
-      },
-      standardize_text: {
-        name: "📝 Intelligent Text Standardization",
-        description:
-          "Context-aware text cleaning (preserves URLs, emails, important patterns)",
-        apply: (data) => data,
-      },
-      remove_outliers: {
-        name: "📊 Statistical Outlier Detection",
-        description: "AI-enhanced outlier detection with business logic",
-        apply: (data) => data,
-      },
-    };
-
-    // Add industry-specific transformations based on AI analysis
-    const contextType = analysis.dataContext.type;
-
-    if (contextType === "ecommerce") {
-      baseTransformations.ecommerce_optimize = {
-        name: "🛒 E-commerce Data Optimization",
-        description:
-          "Clean product names, standardize prices, validate customer data",
-        apply: (data) => data,
-      };
-    } else if (contextType === "financial") {
-      baseTransformations.financial_clean = {
-        name: "💰 Financial Data Standardization",
-        description:
-          "Currency normalization, amount validation, account formatting",
-        apply: (data) => data,
-      };
-    } else if (contextType === "hr") {
-      baseTransformations.hr_standardize = {
-        name: "👥 HR Data Standardization",
-        description:
-          "Employee name formatting, salary standardization, department cleanup",
-        apply: (data) => data,
-      };
-    } else if (contextType === "marketing") {
-      baseTransformations.marketing_clean = {
-        name: "📊 Marketing Analytics Cleanup",
-        description:
-          "Campaign standardization, metric validation, traffic filtering",
-        apply: (data) => data,
-      };
-    } else if (contextType === "geographic") {
-      baseTransformations.geo_standardize = {
-        name: "🌍 Geographic Data Standardization",
-        description:
-          "Location normalization, coordinate validation, address formatting",
-        apply: (data) => data,
-      };
-    }
-
-    return baseTransformations;
-  }, []);
   const generateEnhancedTransformations = useCallback((analysis) => {
     const transformations = {
       clean_data: {
