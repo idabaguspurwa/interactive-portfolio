@@ -638,7 +638,7 @@ export default function InteractiveDataPlayground() {
       const context = detectDataContext(data, dataStructure);
       setDataContext(context);
     }
-  }, [data, dataStructure, detectDataContext, dataContext?.aiPowered]);
+  }, [data, dataStructure, detectDataContext, dataContext]);
 
   // Update available transformations when structure or context changes
   useEffect(() => {
@@ -794,7 +794,7 @@ export default function InteractiveDataPlayground() {
     } else {
       alert("Please upload a valid CSV file");
     }
-  }, []);
+  }, [generateAITransformations]);
 
   const handleFileUpload = useCallback(
     (event) => {

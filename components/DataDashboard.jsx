@@ -536,7 +536,7 @@ export default function DataDashboard({ data, dataStructure, dataContext }) {
     }
 
     return () => observer.disconnect();
-  }, [dashboardData]);
+  }, [dashboardData, renderIntelligentDashboard]);
 
   // Get current theme
   const getCurrentTheme = () => {
@@ -583,7 +583,7 @@ export default function DataDashboard({ data, dataStructure, dataContext }) {
     if (dashboardData.isAI) {
       renderAIBadge(dashboard);
     }
-  }, []);
+  }, [renderDashboardHeader, renderKeyMetrics, renderChartsGrid, renderDashboardStory, renderAIBadge]);
 
   // Render dashboard header
   const renderDashboardHeader = (container, dashboardData) => {
@@ -2161,7 +2161,7 @@ export default function DataDashboard({ data, dataStructure, dataContext }) {
             🧠 Intelligent Data Dashboard
           </h2>
           <p className="text-gray-600 dark:text-gray-300">
-            AI-powered analysis that tells your data's story
+            AI-powered analysis that tells your data&apos;s story
           </p>
         </div>
         
@@ -2209,7 +2209,7 @@ export default function DataDashboard({ data, dataStructure, dataContext }) {
                     }}
                     className="w-full text-left px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 flex items-center gap-2"
                   >
-                    <Image className="w-4 h-4" />
+                    <Image className="w-4 h-4" alt="Export as PNG" />
                     Export as PNG
                   </button>
                 </div>

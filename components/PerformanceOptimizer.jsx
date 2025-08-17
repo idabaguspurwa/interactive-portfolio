@@ -123,6 +123,7 @@ export function OptimizedImage({
         {...imageProps}
         fill
         sizes={sizes || "(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"}
+        alt={imageProps.alt || "Image"}
       />
     )
   }
@@ -133,6 +134,7 @@ export function OptimizedImage({
       width={width}
       height={height}
       sizes={sizes}
+      alt={imageProps.alt || "Image"}
     />
   )
 }
