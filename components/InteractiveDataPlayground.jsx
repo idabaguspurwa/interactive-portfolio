@@ -17,6 +17,7 @@ import {
   Calendar,
 } from "lucide-react";
 import { Button } from "@/components/ui/Button";
+import DataDashboard from "./DataDashboard";
 
 const sampleData = [
   {
@@ -114,6 +115,8 @@ export default function InteractiveDataPlayground() {
   const [isAnalyzing, setIsAnalyzing] = useState(false);
   const [uploadedFile, setUploadedFile] = useState(null);
   const [showUploadedData, setShowUploadedData] = useState(false);
+  const [etlProgress, setEtlProgress] = useState(0);
+  const [etlStep, setEtlStep] = useState('');
   const fileInputRef = useRef(null);
 
   // Set client flag to prevent hydration errors with dynamic content
@@ -876,14 +879,24 @@ export default function InteractiveDataPlayground() {
     setIsProcessing(true);
     setCurrentStep(0);
     setTransformedData(null);
+    setEtlProgress(0);
+    setEtlStep('Initializing pipeline...');
 
     try {
       // Simulate Data Lakehouse pipeline: Bronze → Silver → Gold
       for (let step = 0; step < dataLakehouseLayers.length; step++) {
+        const stepName = dataLakehouseLayers[step];
+        setEtlStep(`Processing ${stepName} layer...`);
+        setEtlProgress((step / dataLakehouseLayers.length) * 100);
+        
         await new Promise((resolve) => setTimeout(resolve, 1500));
         setCurrentStep(step + 1);
+        setEtlProgress(((step + 1) / dataLakehouseLayers.length) * 100);
 
         if (step === dataLakehouseLayers.length - 1) {
+          setEtlStep('Finalizing data transformation...');
+          setEtlProgress(90);
+          
           // Use processing with AI-enhanced fallback
           if (window.fullCSVData) {
             let processingSuccess = false;
@@ -892,6 +905,7 @@ export default function InteractiveDataPlayground() {
             if (window.aiAnalysis && selectedTransformation.includes("ai_")) {
               try {
                 console.log("🤖 Attempting AI-powered cleaning...");
+                setEtlStep('Applying AI-powered cleaning...');
 
                 const response = await fetch("/api/ai-clean-csv", {
                   method: "POST",
@@ -910,6 +924,8 @@ export default function InteractiveDataPlayground() {
 
                 if (result.success) {
                   setTransformedData(result.data);
+                  setEtlStep('AI cleaning completed successfully!');
+                  setEtlProgress(100);
                   console.log("🎯 AI Cleaning Complete:");
                   console.log(
                     `📊 ${result.cleaningStats.originalRows} → ${result.cleaningStats.processedRows} rows`
@@ -920,18 +936,21 @@ export default function InteractiveDataPlayground() {
                   processingSuccess = true;
                 } else {
                   console.log("AI cleaning failed, using standard processing");
+                  setEtlStep('AI cleaning failed, using standard processing...');
                 }
               } catch (aiError) {
                 console.log(
                   "AI cleaning error, using standard processing:",
                   aiError.message
                 );
+                setEtlStep('AI cleaning error, using standard processing...');
               }
             }
 
             // Use standard processing if AI failed or not selected
             if (!processingSuccess) {
               console.log("🚀 Processing with standard API...");
+              setEtlStep('Processing with standard API...');
 
               const response = await fetch("/api/process-csv", {
                 method: "POST",
@@ -949,6 +968,8 @@ export default function InteractiveDataPlayground() {
 
               if (result.success) {
                 setTransformedData(result.data);
+                setEtlStep('Standard processing completed successfully!');
+                setEtlProgress(100);
                 console.log(
                   `✅ Processed ${result.originalRows} → ${result.processedRows} rows`
                 );
@@ -958,20 +979,29 @@ export default function InteractiveDataPlayground() {
             }
           } else {
             // Fallback to local processing for small files
+            setEtlStep('Processing locally...');
             const transformation =
               availableTransformations[selectedTransformation];
             if (transformation) {
               const result = transformation.apply(data);
               setTransformedData(result);
+              setEtlStep('Local processing completed successfully!');
+              setEtlProgress(100);
             }
           }
         }
       }
     } catch (error) {
       console.error("ETL Pipeline error:", error);
+      setEtlStep('Processing failed. Please try again.');
       alert("Processing failed. Please try again.");
     } finally {
-      setIsProcessing(false);
+      // Keep the final state visible for a moment before resetting
+      setTimeout(() => {
+        setIsProcessing(false);
+        setEtlProgress(0);
+        setEtlStep('');
+      }, 2000);
     }
   };
 
@@ -1293,41 +1323,130 @@ export default function InteractiveDataPlayground() {
               animate={{ opacity: 1, y: 0 }}
               className="bg-gradient-to-r from-blue-50 to-purple-50 dark:from-blue-900/20 dark:to-purple-900/20 rounded-xl p-4 md:p-6 mb-4 border border-blue-200 dark:border-blue-800"
             >
-              <div className="flex items-center justify-center space-x-3">
-                <div className="relative">
-                  <div className="w-8 h-8 border-2 border-blue-200 dark:border-blue-700 rounded-full"></div>
-                  <div className="absolute top-0 left-0 w-8 h-8 border-2 border-transparent border-t-blue-500 dark:border-t-blue-400 rounded-full animate-spin"></div>
-                </div>
+              <div className="flex items-center justify-center space-x-3 mb-4">
                 <div className="text-center">
-                  <p className="text-blue-700 dark:text-blue-300 font-semibold text-sm md:text-base">
+                  <motion.p
+                    className="text-blue-700 dark:text-blue-300 font-semibold text-sm md:text-base"
+                    animate={{ opacity: [0.7, 1, 0.7] }}
+                    transition={{ duration: 2, repeat: Infinity }}
+                  >
                     🤖 AI is analyzing your data...
-                  </p>
+                  </motion.p>
                   <p className="text-blue-600 dark:text-blue-400 text-xs md:text-sm mt-1">
                     Detecting data patterns, structure, and quality
                   </p>
                 </div>
               </div>
               
-              {/* Progress indicators */}
-              <div className="mt-4 space-y-2">
-                <div className="flex items-center justify-between text-xs text-blue-600 dark:text-blue-400">
-                  <span>📊 Reading CSV structure</span>
-                  <span>✓</span>
-                </div>
-                <div className="flex items-center justify-between text-xs text-blue-600 dark:text-blue-400">
-                  <span>🔍 Analyzing data types</span>
+              {/* Enhanced Progress indicators with proper state management */}
+              <div className="space-y-3">
+                <motion.div 
+                  className="flex items-center justify-between text-xs text-blue-600 dark:text-blue-400 p-2 bg-white/50 dark:bg-gray-800/50 rounded-lg"
+                  initial={{ opacity: 0, x: -20 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  transition={{ delay: 0.2 }}
+                >
+                  <span className="flex items-center gap-2">
+                    <motion.span
+                      animate={{ rotate: [0, 360] }}
+                      transition={{ duration: 2, repeat: Infinity, ease: "linear" }}
+                    >
+                      📊
+                    </motion.span>
+                    Reading CSV structure
+                  </span>
                   <motion.span
-                    animate={{ opacity: [0.5, 1, 0.5] }}
-                    transition={{ duration: 1.5, repeat: Infinity }}
+                    initial={{ scale: 0 }}
+                    animate={{ scale: 1 }}
+                    transition={{ delay: 1.5, type: "spring" }}
+                    className="text-green-500 font-bold"
                   >
-                    ⏳
+                    ✓
                   </motion.span>
-                </div>
-                <div className="flex items-center justify-between text-xs text-blue-500 dark:text-blue-500">
-                  <span>🎯 Detecting context & patterns</span>
-                  <span>⏳</span>
-                </div>
+                </motion.div>
+                
+                <motion.div 
+                  className="flex items-center justify-between text-xs text-blue-600 dark:text-blue-400 p-2 bg-white/50 dark:bg-gray-800/50 rounded-lg"
+                  initial={{ opacity: 0, x: -20 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  transition={{ delay: 0.4 }}
+                >
+                  <span className="flex items-center gap-2">
+                    <motion.span
+                      animate={{ opacity: [0.5, 1, 0.5] }}
+                      transition={{ duration: 1.5, repeat: Infinity }}
+                    >
+                      🔍
+                    </motion.span>
+                    Analyzing data types
+                  </span>
+                  <motion.span
+                    initial={{ scale: 0 }}
+                    animate={{ scale: 1 }}
+                    transition={{ delay: 3, type: "spring" }}
+                    className="text-green-500 font-bold"
+                  >
+                    ✓
+                  </motion.span>
+                </motion.div>
+                
+                <motion.div 
+                  className="flex items-center justify-between text-xs text-blue-600 dark:text-blue-400 p-2 bg-white/50 dark:bg-gray-800/50 rounded-lg"
+                  initial={{ opacity: 0, x: -20 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  transition={{ delay: 0.6 }}
+                >
+                  <span className="flex items-center gap-2">
+                    <motion.span
+                      animate={{ scale: [1, 1.1, 1] }}
+                      transition={{ duration: 1, repeat: Infinity }}
+                    >
+                      🎯
+                    </motion.span>
+                    Detecting context & patterns
+                  </span>
+                  <motion.span
+                    initial={{ scale: 0 }}
+                    animate={{ scale: 1 }}
+                    transition={{ delay: 4.5, type: "spring" }}
+                    className="text-green-500 font-bold"
+                  >
+                    ✓
+                  </motion.span>
+                </motion.div>
               </div>
+              
+              {/* Loading bar with proper completion */}
+              <motion.div 
+                className="mt-4 h-2 bg-blue-200 dark:bg-blue-800 rounded-full overflow-hidden"
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                transition={{ delay: 0.8 }}
+              >
+                <motion.div
+                  className="h-full bg-gradient-to-r from-blue-500 to-purple-500 rounded-full"
+                  initial={{ width: "0%" }}
+                  animate={{ width: "100%" }}
+                  transition={{ duration: 5, ease: "easeInOut" }}
+                />
+              </motion.div>
+              
+              {/* Completion message */}
+              <motion.div
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 5.5 }}
+                className="mt-3 text-center"
+              >
+                <motion.p
+                  className="text-green-600 dark:text-green-400 text-sm font-medium"
+                  initial={{ scale: 0.8 }}
+                  animate={{ scale: 1 }}
+                  transition={{ delay: 5.5, type: "spring" }}
+                >
+                  ✨ Analysis complete! Your data is ready.
+                </motion.p>
+              </motion.div>
             </motion.div>
           )}
 
@@ -2062,12 +2181,24 @@ export default function InteractiveDataPlayground() {
             {isProcessing ? (
               <>
                 <motion.div
-                  className="w-5 h-5 border-2 border-white border-t-transparent rounded-full mr-2"
+                  className="w-6 h-6 border-3 border-white border-t-transparent rounded-full mr-3"
                   animate={{ rotate: 360 }}
                   transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
                 />
-                <span className="hidden sm:inline">Processing Lakehouse Pipeline...</span>
-                <span className="sm:hidden">Processing...</span>
+                <motion.span 
+                  className="hidden sm:inline"
+                  animate={{ opacity: [0.7, 1, 0.7] }}
+                  transition={{ duration: 2, repeat: Infinity }}
+                >
+                  Processing Lakehouse Pipeline...
+                </motion.span>
+                <motion.span 
+                  className="sm:hidden"
+                  animate={{ opacity: [0.7, 1, 0.7] }}
+                  transition={{ duration: 2, repeat: Infinity }}
+                >
+                  Processing...
+                </motion.span>
               </>
             ) : (
               <>
@@ -2077,6 +2208,67 @@ export default function InteractiveDataPlayground() {
               </>
             )}
           </Button>
+          
+          {/* ETL Progress Bar and Step Indicator */}
+          {isProcessing && (
+            <motion.div
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              className="mt-4 max-w-md mx-auto"
+            >
+              {/* Progress Bar */}
+              <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-3 mb-3">
+                <motion.div
+                  className="bg-gradient-to-r from-blue-500 to-purple-500 h-3 rounded-full"
+                  initial={{ width: "0%" }}
+                  animate={{ width: `${etlProgress}%` }}
+                  transition={{ duration: 0.5, ease: "easeOut" }}
+                />
+              </div>
+              
+              {/* Step Indicator */}
+              <motion.div
+                className="text-center"
+                key={etlStep}
+                initial={{ opacity: 0, scale: 0.9 }}
+                animate={{ opacity: 1, scale: 1 }}
+                transition={{ duration: 0.3 }}
+              >
+                <p className="text-sm text-blue-600 dark:text-blue-400 font-medium">
+                  {etlStep}
+                </p>
+                <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
+                  {Math.round(etlProgress)}% complete
+                </p>
+              </motion.div>
+            </motion.div>
+          )}
+          
+          {/* ETL Completion Message */}
+          {!isProcessing && etlProgress === 100 && etlStep.includes('completed') && (
+            <motion.div
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              className="mt-4 max-w-md mx-auto"
+            >
+              <div className="bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-700 rounded-lg p-3 text-center">
+                <motion.div
+                  initial={{ scale: 0 }}
+                  animate={{ scale: 1 }}
+                  transition={{ delay: 0.2, type: "spring" }}
+                  className="text-green-600 dark:text-green-400 text-2xl mb-2"
+                >
+                  ✨
+                </motion.div>
+                <p className="text-sm text-green-700 dark:text-green-300 font-medium">
+                  Pipeline completed successfully!
+                </p>
+                <p className="text-xs text-green-600 dark:text-green-400 mt-1">
+                  Your data is ready for analysis
+                </p>
+              </div>
+            </motion.div>
+          )}
         </div>
       </div>
 
@@ -2262,6 +2454,17 @@ export default function InteractiveDataPlayground() {
           </div>
         </div>
       </div>
+
+      {/* Interactive Data Dashboard */}
+      {transformedData && transformedData.length > 0 && (
+        <div className="mt-8">
+          <DataDashboard 
+            data={transformedData}
+            dataStructure={dataStructure}
+            dataContext={dataContext}
+          />
+        </div>
+      )}
     </div>
   );
 }
