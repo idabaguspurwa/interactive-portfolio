@@ -220,13 +220,15 @@ export function SafeCanvas({ children, fallback, className = '', ...props }) {
           gl={{
             powerPreference: 'default',
             antialias: false,
-            alpha: false,
-            preserveDrawingBuffer: false
+            alpha: true,
+            preserveDrawingBuffer: false,
+            clearColor: [0, 0, 0, 0]
           }}
           dpr={[1, 1.5]} // Limit DPI scaling
           performance={{ min: 0.5 }} // Lower performance threshold
           onCreated={({ gl }) => {
-            // Basic WebGL validation - let Three.js handle precision issues
+            // Set clear color to transparent
+            gl.setClearColor(0x000000, 0)
             console.log('Three.js Canvas created successfully')
           }}
           onError={(error) => {

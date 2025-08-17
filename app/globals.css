@@ -3,30 +3,28 @@
 @tailwind components;
 @tailwind utilities;
 
-:root {
-  /* Light mode colors - Refined friendly professional scheme */
-  --background-light: #FFFFFF;         /* Pure white base */
-  --background-light-secondary: #F2F2F7; /* Subtle gradient end */
-  --surface-light: #FFFFFF;            /* Pure white for cards/surfaces */
-  --primary-light: #4B7BEC;            /* Cornflower Blue - approachable and friendly */
-  --secondary-light: #6C757D;          /* Slate Gray - maintained for neutrality */
-  --accent-light: #FF6F61;             /* Coral - lively and energetic */
-  --text-primary-light: #212529;       /* Dark Gray for readability */
-  --text-secondary-light: #6C757D;     /* Slate Gray for secondary text */
-  --text-muted-light: #868E96;         /* Muted gray for less important text */
-  --border-light: #E5E5EA;             /* Subtle border color */
-  
-  /* Dark mode colors - Refined modern scheme with warmth */
-  --background-dark: #2C2C2E;          /* Radial gradient start */
-  --background-dark-secondary: #1C1C1E; /* Radial gradient end */
-  --surface-dark: #343A40;             /* Elevated surface */
-  --primary-dark: #50A6FF;             /* Brighter blue for visibility */
-  --secondary-dark: #9AA5B1;           /* Lighter, cooler gray */
-  --accent-dark: #FF8A5C;              /* Subdued orange for warmth */
-  --text-primary-dark: #E0E0E0;        /* Soft off-white, less harsh */
-  --text-secondary-dark: #9AA5B1;      /* Lighter, cooler gray */
-  --text-muted-dark: #B0B8C1;          /* Slightly brighter for readability */
-  --border-dark: #48484A;              /* Medium border color */
+/* Immediate background color fix to prevent flash */
+html {
+  background-color: #ffffff !important;
+  color: #111827 !important;
+}
+
+html.dark {
+  background-color: #111827 !important;
+  color: #f9fafb !important;
+}
+
+body {
+  font-family: 'Inter', sans-serif;
+  line-height: 1.6;
+  transition: background-color 0.3s ease, color 0.3s ease;
+  background-color: #ffffff !important;
+  color: #111827 !important;
+}
+
+body.dark {
+  background-color: #111827 !important;
+  color: #f9fafb !important;
 }
 
 * {
@@ -41,9 +39,14 @@ html {
   scrollbar-gutter: stable;
   scrollbar-width: thin;
   scrollbar-color: #9CA3AF #F3F4F6;
+  background-color: #ffffff !important;
+  color: #111827 !important;
 }
 
-/* Simplified page transitions without problematic classes */
+html.dark {
+  background-color: #111827 !important;
+  color: #f9fafb !important;
+}
 
 /* Lightweight hardware acceleration */
 .gpu-accelerated {
@@ -66,7 +69,154 @@ html {
   isolation: isolate;
 }
 
-/* Removed problematic animation that was interfering with navbar */
+/* Mobile optimizations for DAG and playground */
+@media (max-width: 768px) {
+  .data-playground-container {
+    contain: layout style paint;
+    isolation: isolate;
+    /* Optimize for mobile performance */
+    will-change: auto;
+    transform: translateZ(0);
+  }
+  
+  /* Mobile DAG optimizations */
+  .data-playground-container .motion-div {
+    /* Reduce motion on mobile for better performance */
+    transition-duration: 0.3s;
+  }
+  
+  /* Mobile table optimizations */
+  .data-playground-container table {
+    font-size: 0.75rem;
+    line-height: 1.2;
+  }
+  
+  /* Mobile button optimizations */
+  .data-playground-container button {
+    min-height: 44px; /* Touch-friendly button size */
+    touch-action: manipulation;
+  }
+  
+  /* Mobile scroll optimizations */
+  .data-playground-container .overflow-x-auto {
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none; /* Hide scrollbar on mobile */
+  }
+  
+  .data-playground-container .overflow-x-auto::-webkit-scrollbar {
+    display: none; /* Hide scrollbar on mobile */
+  }
+}
+
+/* Touch-friendly interactions for mobile */
+@media (hover: none) and (pointer: coarse) {
+  .data-playground-container button:hover {
+    transform: none; /* Disable hover effects on touch devices */
+  }
+  
+  .data-playground-container .motion-div:hover {
+    transform: none; /* Disable hover effects on touch devices */
+  }
+}
+
+/* Homepage background optimizations */
+.homepage-background {
+  background-attachment: fixed;
+  background-size: cover;
+  background-position: center;
+}
+
+/* Smooth theme transitions */
+* {
+  transition: background-color 0.3s ease, border-color 0.3s ease, color 0.3s ease;
+}
+
+/* Ensure proper background coverage */
+html, body {
+  min-height: 100vh;
+  background-color: #ffffff !important;
+  color: #111827 !important;
+}
+
+.dark html, .dark body {
+  background-color: #111827 !important;
+  color: #f9fafb !important;
+}
+
+/* Force proper background colors for homepage */
+.homepage-container {
+  background-color: #ffffff !important;
+  color: #111827 !important;
+}
+
+.dark .homepage-container {
+  background-color: #111827 !important;
+  color: #f9fafb !important;
+}
+
+/* Additional background fixes to prevent black flash */
+#__next {
+  background-color: #ffffff !important;
+  color: #111827 !important;
+}
+
+.dark #__next {
+  background-color: #111827 !important;
+  color: #f9fafb !important;
+}
+
+/* Force background on all main containers */
+main, .main-container {
+  background-color: #ffffff !important;
+  color: #111827 !important;
+}
+
+.dark main, .dark .main-container {
+  background-color: #111827 !important;
+  color: #f9fafb !important;
+}
+
+/* Ensure 3D canvas doesn't interfere with background */
+canvas {
+  background: transparent !important;
+}
+
+/* Force background on canvas containers */
+[data-r3f] {
+  background: transparent !important;
+}
+
+/* Ensure proper layering for 3D background */
+.three-js-container {
+  background: transparent !important;
+  pointer-events: none;
+}
+
+/* Enhanced background patterns for light mode */
+.light-mode-pattern {
+  background-image: 
+    radial-gradient(circle at 25% 25%, rgba(75, 123, 236, 0.03) 0%, transparent 50%),
+    radial-gradient(circle at 75% 75%, rgba(255, 111, 97, 0.03) 0%, transparent 50%);
+}
+
+/* Enhanced background patterns for dark mode */
+.dark-mode-pattern {
+  background-image: 
+    radial-gradient(circle at 25% 25%, rgba(80, 166, 255, 0.05) 0%, transparent 50%),
+    radial-gradient(circle at 75% 75%, rgba(255, 138, 92, 0.05) 0%, transparent 50%);
+}
+
+/* Glass morphism effects */
+.glass-card {
+  background: rgba(255, 255, 255, 0.1);
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.dark .glass-card {
+  background: rgba(0, 0, 0, 0.2);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
 
 /* WebGL error state styling */
 .webgl-disabled {
@@ -81,55 +231,48 @@ html.dark {
   scrollbar-color: #4B5563 #1F2937;
 }
 
-body {
-  font-family: 'Inter', sans-serif;
-  line-height: 1.6;
-  transition: background-color 0.3s ease, color 0.3s ease;
-  @apply bg-background-light dark:bg-background-dark text-text-primary-light dark:text-text-primary-dark;
-}
-
 h1, h2, h3, h4, h5, h6 {
   font-family: 'Poppins', sans-serif;
-  @apply text-text-primary-light dark:text-text-primary-dark;
+  @apply text-gray-900 dark:text-gray-100;
 }
 
-/* Enhanced glass effect with your color scheme */
+/* Enhanced glass effect with working color scheme */
 .glass-effect {
-  @apply backdrop-blur-md bg-surface-light/40 dark:bg-surface-dark/40 border border-border-light dark:border-border-dark shadow-lg;
+  @apply backdrop-blur-md bg-white/40 dark:bg-gray-800/40 border border-gray-200 dark:border-gray-700 shadow-lg;
 }
 
 .glass-effect-strong {
-  @apply backdrop-blur-lg bg-surface-light/60 dark:bg-surface-dark/60 border border-border-light dark:border-border-dark shadow-xl;
+  @apply backdrop-blur-lg bg-white/60 dark:bg-gray-800/60 border border-gray-200 dark:border-gray-700 shadow-xl;
 }
 
-/* Enhanced button styles with refined color scheme */
+/* Enhanced button styles with working color scheme */
 .btn-primary {
-  @apply bg-primary-light hover:bg-primary-light/90 text-white font-semibold py-3 px-6 rounded-lg transition-all duration-300 shadow-lg hover:shadow-xl transform hover:scale-105;
+  @apply bg-blue-600 hover:bg-blue-700 text-white font-semibold py-3 px-6 rounded-lg transition-all duration-300 shadow-lg hover:shadow-xl transform hover:scale-105;
 }
 
 .dark .btn-primary {
-  @apply bg-primary-dark hover:bg-primary-dark/90 text-background-dark;
+  @apply bg-blue-500 hover:bg-blue-600 text-gray-900;
 }
 
 .btn-secondary {
-  @apply bg-transparent border-2 border-primary-light text-primary-light hover:bg-primary-light hover:text-white font-semibold py-3 px-6 rounded-lg transition-all duration-300 hover:border-accent-light;
+  @apply bg-transparent border-2 border-blue-600 text-blue-600 hover:bg-blue-600 hover:text-white font-semibold py-3 px-6 rounded-lg transition-all duration-300 hover:border-orange-500;
 }
 
 .dark .btn-secondary {
-  @apply border-primary-dark text-primary-dark hover:bg-primary-dark hover:text-background-dark hover:border-accent-dark;
+  @apply border-blue-500 text-blue-500 hover:bg-blue-500 hover:text-gray-900 hover:border-orange-400;
 }
 
-/* Enhanced card styles with your color scheme */
+/* Enhanced card styles with working color scheme */
 .card {
-  @apply bg-surface-light border border-border-light rounded-xl p-6 shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-105;
+  @apply bg-white border border-gray-200 rounded-xl p-6 shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-105;
 }
 
 .dark .card {
-  @apply bg-surface-dark border-border-dark shadow-2xl;
+  @apply bg-gray-800 border-gray-700 shadow-2xl;
 }
 
 .gradient-text {
-  @apply bg-gradient-to-r from-primary-light to-accent-light dark:from-primary-dark dark:to-accent-dark bg-clip-text text-transparent;
+  @apply bg-gradient-to-r from-blue-600 to-orange-500 dark:from-blue-400 dark:to-orange-400 bg-clip-text text-transparent;
 }
 
 .line-clamp-3 {
@@ -141,16 +284,16 @@ h1, h2, h3, h4, h5, h6 {
 }
 
 .project-card {
-  @apply transition-all duration-300 ease-in-out bg-surface-light dark:bg-surface-dark border border-border-light dark:border-border-dark rounded-xl overflow-hidden shadow-lg hover:shadow-2xl transform hover:scale-105 hover:-translate-y-2;
+  @apply transition-all duration-300 ease-in-out bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl overflow-hidden shadow-lg hover:shadow-2xl transform hover:scale-105 hover:-translate-y-2;
 }
 
 /* Navigation styles */
 .nav-link {
-  @apply text-text-secondary-light hover:text-primary-light dark:text-text-secondary-dark dark:hover:text-primary-dark transition-colors duration-300 font-medium;
+  @apply text-gray-600 hover:text-blue-600 dark:text-gray-300 dark:hover:text-blue-400 transition-colors duration-300 font-medium;
 }
 
 .nav-link.active {
-  @apply text-primary-light dark:text-primary-dark font-medium;
+  @apply text-blue-600 dark:text-blue-400 font-medium;
 }
 
 /* Custom scrollbar - Enhanced visibility */
@@ -197,12 +340,12 @@ h1, h2, h3, h4, h5, h6 {
 
 /* Improved focus styles */
 :focus-visible {
-  @apply outline-2 outline-offset-2 outline-primary-light dark:outline-primary-dark;
+  @apply outline-2 outline-offset-2 outline-blue-600 dark:outline-blue-400;
 }
 
 /* Selection colors */
 ::selection {
-  @apply bg-primary-light/20 dark:bg-primary-dark/20;
+  @apply bg-blue-600/20 dark:bg-blue-400/20;
 }
 
 /* Mobile-specific optimizations */

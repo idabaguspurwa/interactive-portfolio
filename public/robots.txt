@@ -1,0 +1,22 @@
+User-agent: *
+Allow: /
+
+# Sitemap
+Sitemap: https://idabaguspurwa.com/sitemap.xml
+
+# Disallow admin or private areas (if any)
+Disallow: /api/
+Disallow: /_next/
+
+# Allow important pages
+Allow: /
+Allow: /about
+Allow: /projects
+Allow: /skills
+Allow: /experience
+Allow: /publications
+Allow: /contact
+Allow: /playground
+
+# Crawl delay (optional)
+Crawl-delay: 1

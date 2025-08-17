@@ -1,7 +1,7 @@
 'use client'
 
 import { motion } from 'framer-motion'
-import { Calendar, MapPin, ExternalLink, Award, Users, TrendingUp } from 'lucide-react'
+import { MapPin, ExternalLink, Users, TrendingUp } from 'lucide-react'
 import { ScrollProgress, RevealOnScroll, StaggerContainer, StaggerItem } from '@/components/ScrollAnimations'
 
 export default function ExperiencePage() {
@@ -138,32 +138,41 @@ export default function ExperiencePage() {
             </RevealOnScroll>
             
             <StaggerContainer>
-              <div className="grid md:grid-cols-3 gap-6 mt-12">
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-4 md:gap-6 mt-12">
                 <StaggerItem>
                   <motion.div 
-                    className="text-center p-6 bg-primary/10 rounded-lg cursor-pointer"
+                    className="text-center p-4 md:p-6 bg-primary/10 rounded-lg cursor-pointer h-full flex flex-col justify-center"
                     whileHover={{ scale: 1.05, y: -5 }}
                   >
-                    <div className="text-3xl font-bold text-primary mb-2">1+</div>
-                    <div className="text-secondary">Years Experience</div>
+                    <div className="text-2xl md:text-3xl font-bold text-primary mb-2">1+</div>
+                    <div className="text-xs md:text-sm text-secondary leading-tight">Years Experience</div>
                   </motion.div>
                 </StaggerItem>
                 <StaggerItem>
                   <motion.div 
-                    className="text-center p-6 bg-accent/10 rounded-lg cursor-pointer"
+                    className="text-center p-4 md:p-6 bg-accent/10 rounded-lg cursor-pointer h-full flex flex-col justify-center"
                     whileHover={{ scale: 1.05, y: -5 }}
                   >
-                    <div className="text-3xl font-bold text-accent mb-2">12+</div>
-                    <div className="text-secondary">Projects Completed</div>
+                    <div className="text-2xl md:text-3xl font-bold text-accent mb-2">12+</div>
+                    <div className="text-xs md:text-sm text-secondary leading-tight">Projects Completed</div>
                   </motion.div>
                 </StaggerItem>
                 <StaggerItem>
                   <motion.div 
-                    className="text-center p-6 bg-orange-500/10 rounded-lg cursor-pointer"
+                    className="text-center p-4 md:p-6 bg-orange-500/10 rounded-lg cursor-pointer h-full flex flex-col justify-center"
                     whileHover={{ scale: 1.05, y: -5 }}
                   >
-                    <div className="text-3xl font-bold text-orange-500 mb-2">10+</div>
-                    <div className="text-secondary">Technologies Mastered</div>
+                    <div className="text-2xl md:text-3xl font-bold text-orange-500 mb-2">10+</div>
+                    <div className="text-xs md:text-sm text-secondary leading-tight">Technologies Mastered</div>
+                  </motion.div>
+                </StaggerItem>
+                <StaggerItem>
+                  <motion.div 
+                    className="text-center p-4 md:p-6 bg-green-500/10 rounded-lg cursor-pointer h-full flex flex-col justify-center"
+                    whileHover={{ scale: 1.05, y: -5 }}
+                  >
+                    <div className="text-2xl md:text-3xl font-bold text-green-500 mb-2">1+</div>
+                    <div className="text-xs md:text-sm text-secondary leading-tight">Certifications</div>
                   </motion.div>
                 </StaggerItem>
               </div>
@@ -203,7 +212,7 @@ export default function ExperiencePage() {
                     
                     <div className="space-y-2 mb-4">
                       <div className="flex items-center text-secondary">
-                        <Calendar className="h-4 w-4 mr-2" />
+                        <MapPin className="h-4 w-4 mr-2" />
                         {exp.period}
                       </div>
                       <div className="flex items-center text-secondary">
@@ -232,7 +241,7 @@ export default function ExperiencePage() {
                   <div className="lg:col-span-2">
                     <div className="mb-6">
                       <h5 className="font-semibold mb-3 flex items-center">
-                        <Award className="h-5 w-5 mr-2 text-accent" />
+                        <Users className="h-5 w-5 mr-2 text-accent" />
                         Key Achievements
                       </h5>
                       <ul className="space-y-2">

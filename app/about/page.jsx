@@ -106,7 +106,7 @@ export default function AboutPage() {
     },
     {
       year: '2022-2024',
-      title: 'HIMTI Organization Member',
+      title: 'HIMTI Relation Expansion Commission Activist',
       company: 'BINUS University',
       description: 'Enhanced leadership and communication skills through active participation in technology student community events.',
       icon: Users,
@@ -301,6 +301,130 @@ export default function AboutPage() {
                     </motion.div>
                   </StaggerItem>
                 ))}
+              </div>
+            </StaggerContainer>
+          </div>
+        </section>
+
+        {/* Certifications Section */}
+        <section className="py-20 px-6 bg-white dark:bg-gray-800">
+          <div className="max-w-7xl mx-auto">
+            <RevealOnScroll direction="up">
+              <div className="text-center mb-16">
+                <h2 className="text-3xl md:text-4xl font-heading font-bold mb-6">
+                  Professional Certifications
+                </h2>
+                <p className="text-lg text-gray-600 dark:text-gray-300 max-w-3xl mx-auto">
+                  Continuous learning and professional development through industry-recognized certifications.
+                </p>
+              </div>
+            </RevealOnScroll>
+
+            <StaggerContainer>
+              <div className="grid md:grid-cols-3 gap-8">
+                <StaggerItem>
+                  <motion.div
+                    className="bg-gradient-to-br from-blue-50 to-blue-100 dark:from-blue-900/20 dark:to-blue-800/20 p-8 rounded-2xl border border-blue-200 dark:border-blue-800 relative overflow-hidden"
+                    whileHover={{ scale: 1.05, y: -5 }}
+                  >
+                    {/* Certification Badge */}
+                    <div className="absolute top-4 right-4">
+                      <div className="bg-blue-500 text-white text-xs px-3 py-1 rounded-full font-medium">
+                        Completed
+                      </div>
+                    </div>
+                    
+                    <div className="w-16 h-16 bg-gradient-to-br from-blue-500 to-blue-600 rounded-2xl flex items-center justify-center mb-6">
+                      <Award className="w-8 h-8 text-white" />
+                    </div>
+                    <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-4">
+                      GitHub Foundations
+                    </h3>
+                    <p className="text-gray-600 dark:text-gray-300 mb-4">
+                      Comprehensive understanding of Git version control, GitHub workflows, and collaborative development practices.
+                    </p>
+                    <div className="space-y-2 mb-4">
+                      <div className="text-sm text-blue-600 dark:text-blue-400">• Git Fundamentals</div>
+                      <div className="text-sm text-blue-600 dark:text-blue-400">• GitHub Workflows</div>
+                      <div className="text-sm text-blue-600 dark:text-blue-400">• Collaborative Development</div>
+                    </div>
+                    <div className="text-xs text-gray-500 dark:text-gray-400 flex items-center gap-2">
+                      <span>Issued: 2025</span>
+                      <span>•</span>
+                      <a href="https://www.credly.com/go/Ezg1jF96" target="_blank" rel="noopener noreferrer" className="text-blue-600 dark:text-blue-400 hover:underline flex items-center gap-1">
+                        <svg className="w-3 h-3" fill="currentColor" viewBox="0 0 20 20">
+                          <path d="M11 3a1 1 0 100 2h2.586l-6.293 6.293a1 1 0 101.414 1.414L15 6.414V9a1 1 0 102 0V4a1 1 0 00-1-1h-5z" />
+                          <path d="M5 5a2 2 0 00-2 2v8a2 2 0 002 2h8a2 2 0 002-2v-3a1 1 0 10-2 0v3H5V7h3a1 1 0 000-2H5z" />
+                        </svg>
+                        View Credential
+                      </a>
+                    </div>
+                  </motion.div>
+                </StaggerItem>
+
+                <StaggerItem>
+                  <motion.div
+                    className="bg-gradient-to-br from-green-50 to-green-100 dark:from-green-900/20 dark:to-green-800/20 p-8 rounded-2xl border border-green-200 dark:border-green-800 relative overflow-hidden"
+                    whileHover={{ scale: 1.05, y: -5 }}
+                  >
+                    {/* Certification Badge */}
+                    <div className="absolute top-4 right-4">
+                      <div className="bg-green-500 text-white text-xs px-3 py-1 rounded-full font-medium">
+                        In Progress
+                      </div>
+                    </div>
+                    
+                    <div className="w-16 h-16 bg-gradient-to-br from-green-500 to-green-600 rounded-2xl flex items-center justify-center mb-6">
+                      <Cloud className="w-8 h-8 text-white" />
+                    </div>
+                    <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-4">
+                      Azure Data Engineer Associate
+                    </h3>
+                    <p className="text-gray-600 dark:text-gray-300 mb-4">
+                      Advanced certification in Azure data services, ETL pipelines, and data platform architecture.
+                    </p>
+                    <div className="space-y-2 mb-4">
+                      <div className="text-sm text-green-600 dark:text-green-400">• Azure Data Factory</div>
+                      <div className="text-sm text-green-600 dark:text-green-400">• Azure Databricks</div>
+                      <div className="text-sm text-green-600 dark:text-green-400">• Data Lake & Synapse</div>
+                    </div>
+                    <div className="text-xs text-gray-500 dark:text-gray-400">
+                      Expected: Q1 2026 • DP-203
+                    </div>
+                  </motion.div>
+                </StaggerItem>
+
+                <StaggerItem>
+                  <motion.div
+                    className="bg-gradient-to-br from-purple-50 to-purple-100 dark:from-purple-900/20 dark:to-purple-800/20 p-8 rounded-2xl border border-purple-200 dark:border-purple-800 relative overflow-hidden"
+                    whileHover={{ scale: 1.05, y: -5 }}
+                  >
+                    {/* Certification Badge */}
+                    <div className="absolute top-4 right-4">
+                      <div className="bg-purple-500 text-white text-xs px-3 py-1 rounded-full font-medium">
+                        Planned
+                      </div>
+                    </div>
+                    
+                    <div className="w-16 h-16 bg-gradient-to-br from-purple-500 to-purple-600 rounded-2xl flex items-center justify-center mb-6">
+                      <Database className="w-8 h-8 text-white" />
+                    </div>
+                    <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-4">
+                      GCP Professional Data Engineer
+                    </h3>
+                    <p className="text-gray-600 dark:text-gray-300 mb-4">
+                      Professional-level certification in Google Cloud data engineering and analytics services.
+                    </p>
+                    <div className="space-y-2 mb-4">
+                      <div className="text-sm text-purple-600 dark:text-purple-400">• BigQuery & Dataflow</div>
+                      <div className="text-sm text-purple-600 dark:text-purple-400">• Pub/Sub & Dataproc</div>
+                      <div className="text-sm text-purple-600 dark:text-purple-400">• Cloud Functions & APIs</div>
+                    </div>
+                    <div className="text-xs text-gray-500 dark:text-gray-400">
+                      Target: Q3 2024 • Professional Level
+                    </div>
+                  </motion.div>
+                </StaggerItem>
               </div>
             </StaggerContainer>
           </div>

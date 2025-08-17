@@ -166,21 +166,28 @@ export default function Home() {
   return (
     <>
       <ScrollProgress />
-      <div className="min-h-screen bg-gradient-to-br from-background-light to-background-light-secondary dark:bg-gradient-radial dark:from-background-dark dark:to-background-dark-secondary overflow-hidden">
+      <div className="homepage-container min-h-screen bg-gradient-to-br from-white via-blue-50 to-indigo-50 dark:from-gray-900 dark:via-blue-900/30 dark:to-indigo-900/20 overflow-hidden">
         {/* Hero Section */}
         <section className="relative min-h-screen flex items-center justify-center overflow-hidden">
           {/* Creative layered background */}
           <div className="absolute inset-0">
-            <div className="absolute inset-0 bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50 dark:from-gray-900 dark:via-blue-900/20 dark:to-purple-900/20"></div>
-            <div className="absolute inset-0 bg-[radial-gradient(circle_at_30%_80%,rgba(75,123,236,0.1),transparent_70%)] dark:bg-[radial-gradient(circle_at_30%_80%,rgba(80,166,255,0.1),transparent_70%)]"></div>
-            <div className="absolute inset-0 bg-[radial-gradient(circle_at_80%_20%,rgba(255,111,97,0.1),transparent_70%)] dark:bg-[radial-gradient(circle_at_80%_20%,rgba(255,138,92,0.1),transparent_70%)]"></div>
+            <div className="absolute inset-0 bg-gradient-to-br from-blue-50/80 via-indigo-50/60 to-purple-50/80 dark:from-gray-900/90 dark:via-blue-900/40 dark:to-purple-900/30"></div>
+            <div className="absolute inset-0 bg-[radial-gradient(circle_at_30%_80%,rgba(75,123,236,0.15),transparent_70%)] dark:bg-[radial-gradient(circle_at_30%_80%,rgba(80,166,255,0.2),transparent_70%)]"></div>
+            <div className="absolute inset-0 bg-[radial-gradient(circle_at_80%_20%,rgba(255,111,97,0.1),transparent_70%)] dark:bg-[radial-gradient(circle_at_80%_20%,rgba(255,138,92,0.15),transparent_70%)]"></div>
           </div>
 
           {/* 3D Background Elements */}
-          <div className="absolute inset-0 z-0">
+          <div className="absolute inset-0 z-0 pointer-events-none three-js-container">
             <SafeCanvas
               camera={{ position: [0, 0, 5], fov: 60 }}
-              style={{ background: "transparent" }}
+              style={{ 
+                background: "transparent",
+                position: "absolute",
+                top: 0,
+                left: 0,
+                width: "100%",
+                height: "100%"
+              }}
             >
               <Suspense fallback={null}>
                 <ambientLight intensity={0.4} />
@@ -205,8 +212,8 @@ export default function Home() {
                 <RevealOnScroll direction="left" delay={0.2}>
                   {/* Greeting Badge */}
                   <div className="inline-block">
-                    <div className="bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm rounded-full px-6 py-3 border border-primary-light/20 dark:border-primary-dark/20 shadow-lg">
-                      <span className="text-sm font-medium text-primary-light dark:text-primary-dark flex items-center gap-2">
+                    <div className="bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm rounded-full px-6 py-3 border border-blue-500/20 dark:border-blue-400/20 shadow-lg">
+                      <span className="text-sm font-medium text-blue-600 dark:text-blue-400 flex items-center gap-2">
                         <motion.span
                           animate={{ scale: [1, 1.2, 1] }}
                           transition={{ duration: 1.5, repeat: Infinity }}
@@ -227,7 +234,7 @@ export default function Home() {
                         Ida Bagus Gede
                       </span>
                       <span className="block">
-                        <span className="bg-gradient-to-r from-primary-light via-blue-600 to-accent-light dark:from-primary-dark dark:via-blue-400 dark:to-accent-dark bg-clip-text text-transparent">
+                        <span className="bg-gradient-to-r from-blue-600 via-blue-600 to-orange-500 dark:from-blue-400 dark:via-blue-400 dark:to-orange-400 bg-clip-text text-transparent">
                           Purwa Manik Adiputra
                         </span>
                       </span>
@@ -268,7 +275,7 @@ export default function Home() {
                           " scalable solutions",
                           " data-driven decisions",
                         ]}
-                        className="text-primary-light dark:text-primary-dark font-semibold"
+                        className="text-blue-600 dark:text-blue-400 font-semibold"
                       />
                     </p>
                     <p className="text-lg text-gray-500 dark:text-gray-400 leading-relaxed">
@@ -289,7 +296,7 @@ export default function Home() {
                       <Link href="/projects">
                         <Button
                           size="lg"
-                          className="bg-gradient-to-r from-primary-light to-blue-600 hover:from-primary-light/90 hover:to-blue-600/90 text-white px-8 py-4 rounded-xl shadow-xl hover:shadow-2xl transition-all duration-300 group"
+                          className="bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-600/90 hover:to-blue-700/90 text-white px-8 py-4 rounded-xl shadow-xl hover:shadow-2xl transition-all duration-300 group"
                         >
                           <span>Explore My Work</span>
                           <motion.div className="ml-2 group-hover:translate-x-1 transition-transform duration-200">
@@ -324,7 +331,7 @@ export default function Home() {
                         <Button
                           variant="outline"
                           size="lg"
-                          className="border-2 border-gray-300 dark:border-gray-600 hover:border-primary-light dark:hover:border-primary-dark text-gray-700 dark:text-gray-300 hover:text-primary-light dark:hover:text-primary-dark px-8 py-4 rounded-xl backdrop-blur-sm group"
+                          className="border-2 border-gray-300 dark:border-gray-600 hover:border-blue-500 dark:hover:border-blue-400 text-gray-700 dark:text-gray-300 hover:text-blue-600 dark:hover:text-blue-400 px-8 py-4 rounded-xl backdrop-blur-sm group"
                         >
                           <span>Let&apos;s Connect</span>
                           <motion.div className="ml-2 group-hover:rotate-12 transition-transform duration-200">
@@ -381,7 +388,7 @@ export default function Home() {
                       }}
                     >
                       <div className="flex items-center gap-2">
-                        <Database className="w-4 h-4 text-primary-light dark:text-primary-dark" />
+                        <Database className="w-4 h-4 text-blue-600 dark:text-blue-400" />
                         <span className="text-sm font-medium text-gray-700 dark:text-gray-300">
                           Data Engineering
                         </span>
@@ -394,7 +401,7 @@ export default function Home() {
                       whileHover={{ scale: 1.02 }}
                       transition={{ duration: 0.3 }}
                     >
-                      <div className="absolute inset-0 bg-gradient-to-br from-primary-light/20 to-accent-light/20 dark:from-primary-dark/20 dark:to-accent-dark/20"></div>
+                      <div className="absolute inset-0 bg-gradient-to-br from-blue-500/20 to-orange-500/20 dark:from-blue-400/20 dark:to-orange-400/20"></div>
                       <Image
                         src="/logo.jpg"
                         alt="Ida Bagus Gede Purwa Manik Adiputra"
@@ -414,7 +421,7 @@ export default function Home() {
         </section>
 
         {/* Enhanced Quick Stats Section */}
-        <section className="py-20 px-6 bg-gradient-to-b from-gray-50/50 to-white dark:from-gray-800/50 dark:to-gray-900">
+        <section className="py-20 px-6 bg-gradient-to-b from-white via-gray-50/80 to-white dark:from-gray-900 dark:via-gray-800/80 dark:to-gray-900">
           <div className="max-w-6xl mx-auto">
             <RevealOnScroll direction="up">
               <div className="text-center mb-16">
@@ -429,16 +436,16 @@ export default function Home() {
             </RevealOnScroll>
 
             <StaggerContainer>
-              <div className="grid grid-cols-2 md:grid-cols-4 gap-6 mb-16">
+              <div className="grid grid-cols-2 md:grid-cols-5 gap-4 md:gap-6 mb-16">
                 {[
                   {
-                    number: "15+",
+                    number: "10+",
                     label: "Data Projects",
                     icon: "📊",
                     color: "from-blue-500 to-cyan-500",
                   },
                   {
-                    number: "5+",
+                    number: "2+",
                     label: "Cloud Platforms",
                     icon: "☁️",
                     color: "from-purple-500 to-pink-500",
@@ -450,15 +457,21 @@ export default function Home() {
                     color: "from-green-500 to-emerald-500",
                   },
                   {
+                    number: "1+",
+                    label: "Certifications",
+                    icon: "🏆",
+                    color: "from-yellow-500 to-orange-500",
+                  },
+                  {
                     number: "100%",
                     label: "Data Quality",
                     icon: "🎯",
-                    color: "from-orange-500 to-red-500",
+                    color: "from-red-500 to-pink-500",
                   },
                 ].map((stat, index) => (
                   <StaggerItem key={stat.label}>
                     <motion.div
-                      className="relative group"
+                      className="relative group h-full"
                       whileHover={{ scale: 1.05, y: -5 }}
                       transition={{ duration: 0.3 }}
                     >
@@ -471,14 +484,14 @@ export default function Home() {
                         }}
                       />
 
-                      <div className="relative bg-white/90 dark:bg-gray-800/90 backdrop-blur-sm rounded-2xl p-6 shadow-lg border border-gray-200/50 dark:border-gray-700/50 group-hover:shadow-xl transition-all duration-300 text-center">
-                        <div className="text-4xl mb-3">{stat.icon}</div>
+                      <div className="relative bg-white/90 dark:bg-gray-800/90 backdrop-blur-sm rounded-2xl p-4 md:p-6 shadow-lg border border-gray-200/50 dark:border-gray-700/50 group-hover:shadow-xl transition-all duration-300 text-center h-full flex flex-col justify-center">
+                        <div className="text-3xl md:text-4xl mb-3">{stat.icon}</div>
                         <div
-                          className={`text-3xl md:text-4xl font-bold mb-2 bg-gradient-to-r ${stat.color} bg-clip-text text-transparent`}
+                          className={`text-2xl md:text-3xl lg:text-4xl font-bold mb-2 bg-gradient-to-r ${stat.color} bg-clip-text text-transparent`}
                         >
                           {stat.number}
                         </div>
-                        <div className="text-sm text-gray-600 dark:text-gray-400 font-medium">
+                        <div className="text-xs md:text-sm text-gray-600 dark:text-gray-400 font-medium leading-tight">
                           {stat.label}
                         </div>
                       </div>
@@ -514,7 +527,7 @@ export default function Home() {
                       initial={{ opacity: 0, scale: 0.8 }}
                       animate={{ opacity: 1, scale: 1 }}
                       transition={{ duration: 0.4, delay: index * 0.05 }}
-                      className="bg-gradient-to-r from-primary-light/10 to-accent-light/10 dark:from-primary-dark/10 dark:to-accent-dark/10 backdrop-blur-sm border border-primary-light/20 dark:border-primary-dark/20 px-4 py-2 rounded-full text-sm font-medium text-gray-700 dark:text-gray-300 hover:scale-105 transition-transform duration-200 cursor-default"
+                      className="bg-gradient-to-r from-blue-500/10 to-orange-500/10 dark:from-blue-400/10 dark:to-orange-400/10 backdrop-blur-sm border border-blue-500/20 dark:border-blue-400/20 px-4 py-2 rounded-full text-sm font-medium text-gray-700 dark:text-gray-300 hover:scale-105 transition-transform duration-200 cursor-default"
                     >
                       {tech}
                     </motion.span>
@@ -526,7 +539,7 @@ export default function Home() {
         </section>
 
         {/* Enhanced Features Section */}
-        <section className="py-20 px-6 bg-gradient-to-b from-white to-gray-50 dark:from-gray-900 dark:to-gray-800">
+        <section className="py-20 px-6 bg-gradient-to-b from-gray-50/80 via-white to-gray-50/80 dark:from-gray-800 dark:via-gray-900 dark:to-gray-800">
           <div className="max-w-6xl mx-auto">
             <RevealOnScroll direction="up">
               <div className="text-center mb-16">
@@ -567,7 +580,7 @@ export default function Home() {
                 ].map((item, index) => (
                   <StaggerItem key={index}>
                     <motion.div
-                      className="group relative overflow-hidden rounded-2xl bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm border border-gray-200/50 dark:border-gray-700/50 p-8 shadow-lg hover:shadow-2xl transition-all duration-300 h-80 flex flex-col"
+                      className="group relative overflow-hidden rounded-2xl bg-white/90 dark:bg-gray-800/90 backdrop-blur-sm border border-gray-200/50 dark:border-gray-700/50 p-8 shadow-lg hover:shadow-2xl transition-all duration-300 h-80 flex flex-col"
                       whileHover={{ y: -10, scale: 1.02 }}
                       transition={{ duration: 0.3 }}
                     >

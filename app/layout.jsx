@@ -1,7 +1,7 @@
 import "./globals.css";
 import { ThemeProvider } from "@/components/ThemeProvider";
 import { Navbar } from "@/components/Navbar";
-import { Footer } from "@/components/Footer";
+import { Footer, FloatingQuickNav } from "@/components/Footer";
 import { PageTransition } from "@/components/PageTransition";
 import { WebGLProvider } from "@/components/WebGLManager";
 
@@ -17,27 +17,29 @@ export const viewport = {
 };
 
 export const metadata = {
-  title: "Ida Bagus Gede Purwa Manik Adiputra - Data Engineer & ETL Specialist",
+  title: "Ida Bagus Gede Purwa Manik Adiputra - Data Engineer & ETL Specialist | Portfolio",
   description:
-    "Portfolio of Ida Bagus Gede Purwa Manik Adiputra, a Data Engineer specializing in cloud platforms, Apache Spark, Kafka, and modern data pipelines. Expertise in ETL, cloud architecture, and business intelligence.",
+    "Portfolio of Ida Bagus Gede Purwa Manik Adiputra, a Data Engineer specializing in cloud platforms, Apache Spark, Kafka, and modern data pipelines. Expertise in ETL, cloud architecture, and business intelligence. View projects, skills, and experience.",
   keywords:
-    "data engineer, ETL specialist, cloud platforms, Apache Spark, Kafka, data pipelines, business intelligence, GCP, Azure, AWS",
+    "Ida Bagus Gede Purwa Manik Adiputra, Ida Bagus Purwa, data engineer, ETL specialist, cloud platforms, Apache Spark, Apache Kafka, data pipelines, business intelligence, GCP, Azure, AWS, Python, SQL, Scala, PySpark, data engineering, portfolio, Indonesia, Bina Nusantara University, Bank Central Asia",
   authors: [{ name: "Ida Bagus Gede Purwa Manik Adiputra" }],
   creator: "Ida Bagus Gede Purwa Manik Adiputra",
-  metadataBase: new URL("https://idabaguspurwa.vercel.app"),
+  publisher: "Ida Bagus Gede Purwa Manik Adiputra",
+  metadataBase: new URL("https://idabaguspurwa.com"),
+  alternates: {
+    canonical: "https://idabaguspurwa.com",
+  },
   openGraph: {
-    title:
-      "Ida Bagus Gede Purwa Manik Adiputra - Data Engineer & ETL Specialist",
-    description:
-      "Transforming raw data into actionable insights through robust ETL pipelines, cloud-native architectures, and cutting-edge data engineering solutions.",
-    url: "https://idabaguspurwa.vercel.app",
-    siteName: "Ida Bagus Portfolio",
+    title: "Ida Bagus Gede Purwa Manik Adiputra - Data Engineer & ETL Specialist",
+    description: "Transforming raw data into actionable insights through robust ETL pipelines, cloud-native architectures, and cutting-edge data engineering solutions. View my portfolio, projects, and expertise.",
+    url: "https://idabaguspurwa.com",
+    siteName: "Ida Bagus Purwa Portfolio",
     images: [
       {
         url: "/logo.jpg",
         width: 1200,
         height: 630,
-        alt: "Ida Bagus Gede Purwa Manik Adiputra - Data Engineer",
+        alt: "Ida Bagus Gede Purwa Manik Adiputra - Data Engineer Portfolio",
       },
     ],
     locale: "en_US",
@@ -45,10 +47,10 @@ export const metadata = {
   },
   twitter: {
     card: "summary_large_image",
-    title: "Ida Bagus Gede Purwa Manik Adiputra - Data Engineer",
-    description:
-      "Data Engineer specializing in cloud platforms and modern ETL pipelines",
+    title: "Ida Bagus Gede Purwa Manik Adiputra - Data Engineer Portfolio",
+    description: "Data Engineer specializing in cloud platforms, Apache Spark, and modern ETL pipelines. View my portfolio and projects.",
     images: ["/logo.jpg"],
+    creator: "@idabaguspurwa",
   },
   robots: {
     index: true,
@@ -73,6 +75,15 @@ export const metadata = {
   formatDetection: {
     telephone: false,
   },
+  category: "technology",
+  classification: "portfolio",
+  subject: "Data Engineering Portfolio",
+  language: "en",
+  geo: {
+    region: "ID",
+    country: "Indonesia",
+    locality: "Tangerang",
+  },
 };
 
 export default function RootLayout({ children }) {
@@ -91,6 +102,50 @@ export default function RootLayout({ children }) {
           href="https://fonts.gstatic.com"
           crossOrigin="anonymous"
         />
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{
+            __html: JSON.stringify({
+              "@context": "https://schema.org",
+              "@type": "Person",
+              "name": "Ida Bagus Gede Purwa Manik Adiputra",
+              "alternateName": "Ida Bagus Purwa",
+              "jobTitle": "Data Engineer & ETL Specialist",
+              "description": "Data Engineer specializing in cloud platforms, Apache Spark, Kafka, and modern data pipelines",
+              "url": "https://idabaguspurwa.com",
+              "image": "https://idabaguspurwa.com/logo.jpg",
+              "sameAs": [
+                "https://github.com/idabaguspurwa",
+                "https://linkedin.com/in/idabaguspurwa"
+              ],
+              "worksFor": {
+                "@type": "Organization",
+                "name": "PT Bank Central Asia Tbk"
+              },
+              "alumniOf": {
+                "@type": "Organization",
+                "name": "Bina Nusantara University"
+              },
+              "knowsAbout": [
+                "Data Engineering",
+                "ETL Pipelines",
+                "Apache Spark",
+                "Apache Kafka",
+                "Cloud Platforms",
+                "Python",
+                "SQL",
+                "Scala",
+                "Business Intelligence"
+              ],
+              "address": {
+                "@type": "PostalAddress",
+                "addressLocality": "Tangerang",
+                "addressCountry": "ID"
+              },
+              "nationality": "Indonesian"
+            })
+          }}
+        />
       </head>
       <body className="min-h-screen bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-gray-100">
         <ThemeProvider>
@@ -101,6 +156,7 @@ export default function RootLayout({ children }) {
                 <PageTransition>{children}</PageTransition>
               </main>
               <Footer />
+              <FloatingQuickNav />
             </div>
           </WebGLProvider>
         </ThemeProvider>

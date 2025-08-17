@@ -20,20 +20,20 @@ const InteractiveDataPlayground = dynamic(
 
 export default function PlaygroundPage() {
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-50 to-blue-50 dark:from-gray-900 dark:to-blue-900/20 pt-20 pb-20">
-      <div className="max-w-6xl mx-auto px-6">
+    <div className="min-h-screen bg-gradient-to-br from-gray-50 to-blue-50 dark:from-gray-900 dark:to-blue-900/20 pt-16 md:pt-20 pb-16 md:pb-20">
+      <div className="max-w-6xl mx-auto px-4 md:px-6">
         {/* Header */}
         <RevealOnScroll direction="up">
-          <div className="text-center mb-12">
+          <div className="text-center mb-8 md:mb-12">
             <Link 
               href="/"
-              className="inline-flex items-center gap-2 text-primary-light dark:text-primary-dark hover:underline mb-6"
+              className="inline-flex items-center gap-2 text-primary-light dark:text-primary-dark hover:underline mb-4 md:mb-6"
             >
               <ArrowLeft className="w-4 h-4" />
               Back to Portfolio
             </Link>
             
-            <h1 className="text-4xl md:text-6xl font-heading font-bold mb-6">
+            <h1 className="text-3xl md:text-4xl lg:text-6xl font-heading font-bold mb-4 md:mb-6">
               <span className="bg-gradient-to-r from-primary-light via-purple-600 to-accent-light dark:from-primary-dark dark:via-purple-400 dark:to-accent-dark bg-clip-text text-transparent">
                 Data Engineering
               </span>
@@ -41,16 +41,16 @@ export default function PlaygroundPage() {
               <span className="text-gray-900 dark:text-white">Playground</span>
             </h1>
             
-            <p className="text-xl text-gray-600 dark:text-gray-300 max-w-3xl mx-auto leading-relaxed">
+            <p className="text-lg md:text-xl text-gray-600 dark:text-gray-300 max-w-3xl mx-auto leading-relaxed px-2">
               Experience production-grade Data Lakehouse architecture! This interactive demo showcases the Bronze → Silver → Gold 
-              pipeline used by Netflix, Uber, and Airbnb with Apache Spark, Delta Lake, and modern cloud-native data engineering patterns.
+              pipeline with Apache Spark, Delta Lake, and modern cloud-native data engineering patterns.
             </p>
           </div>
         </RevealOnScroll>
 
         {/* Features Overview */}
         <RevealOnScroll direction="up" delay={0.3}>
-          <div className="grid md:grid-cols-3 gap-6 mb-12">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 md:gap-6 mb-8 md:mb-12">
             {[
               {
                 icon: Database,
@@ -73,13 +73,13 @@ export default function PlaygroundPage() {
             ].map((feature, index) => (
               <motion.div
                 key={feature.title}
-                className="bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm rounded-2xl p-6 shadow-lg border border-gray-200/50 dark:border-gray-700/50"
+                className="bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm rounded-2xl p-4 md:p-6 shadow-lg border border-gray-200/50 dark:border-gray-700/50"
                 whileHover={{ scale: 1.02, y: -5 }}
               >
-                <div className={`w-12 h-12 rounded-xl bg-gradient-to-r ${feature.color} flex items-center justify-center mb-4`}>
-                  <feature.icon className="w-6 h-6 text-white" />
+                <div className={`w-10 h-10 md:w-12 md:h-12 rounded-xl bg-gradient-to-r ${feature.color} flex items-center justify-center mb-3 md:mb-4`}>
+                  <feature.icon className="w-5 h-5 md:w-6 md:h-6 text-white" />
                 </div>
-                <h3 className="text-lg font-semibold mb-2 text-gray-900 dark:text-white">
+                <h3 className="text-base md:text-lg font-semibold mb-2 text-gray-900 dark:text-white">
                   {feature.title}
                 </h3>
                 <p className="text-gray-600 dark:text-gray-300 text-sm leading-relaxed">
@@ -97,16 +97,16 @@ export default function PlaygroundPage() {
 
         {/* Technical Notes */}
         <RevealOnScroll direction="up" delay={0.7}>
-          <div className="mt-12 bg-white/60 dark:bg-gray-800/60 backdrop-blur-sm rounded-2xl p-8 border border-gray-200/50 dark:border-gray-700/50">
-            <h3 className="text-2xl font-bold mb-6 text-center text-gray-900 dark:text-white">
+          <div className="mt-8 md:mt-12 bg-white/60 dark:bg-gray-800/60 backdrop-blur-sm rounded-2xl p-6 md:p-8 border border-gray-200/50 dark:border-gray-700/50">
+            <h3 className="text-xl md:text-2xl font-bold mb-4 md:mb-6 text-center text-gray-900 dark:text-white">
               Technologies Demonstrated
             </h3>
-            <div className="grid md:grid-cols-2 gap-8">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6 md:gap-8">
               <div>
-                <h4 className="text-lg font-semibold mb-4 text-primary-light dark:text-primary-dark">
+                <h4 className="text-base md:text-lg font-semibold mb-3 md:mb-4 text-primary-light dark:text-primary-dark">
                   Data Processing Concepts
                 </h4>
-                <ul className="space-y-2 text-gray-600 dark:text-gray-300">
+                <ul className="space-y-2 text-sm text-gray-600 dark:text-gray-300">
                   <li>• ETL Pipeline Architecture</li>
                   <li>• Data Filtering & Aggregation</li>
                   <li>• Schema Transformation</li>
@@ -115,10 +115,10 @@ export default function PlaygroundPage() {
                 </ul>
               </div>
               <div>
-                <h4 className="text-lg font-semibold mb-4 text-primary-light dark:text-primary-dark">
+                <h4 className="text-base md:text-lg font-semibold mb-3 md:mb-4 text-primary-light dark:text-primary-dark">
                   Production Technologies
                 </h4>
-                <ul className="space-y-2 text-gray-600 dark:text-gray-300">
+                <ul className="space-y-2 text-sm text-gray-600 dark:text-gray-300">
                   <li>• Apache Spark (Simulated)</li>
                   <li>• CSV/JSON Data Formats</li>
                   <li>• Stream Processing Patterns</li>
