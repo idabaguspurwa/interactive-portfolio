@@ -1,4 +1,4 @@
-const CACHE_NAME = 'portfolio-v1'
+const CACHE_NAME = 'portfolio-v2'
 const urlsToCache = [
   '/',
   '/projects',
@@ -7,7 +7,12 @@ const urlsToCache = [
   '/skills',
   '/contact',
   '/publications',
+  '/playground',
   '/logo.jpg',
+  '/favicon.svg',
+  '/favicon.ico',
+  '/favicon-16x16.png',
+  '/favicon-32x32.png',
   '/_next/static/css/',
   '/_next/static/js/',
   '/manifest.json'

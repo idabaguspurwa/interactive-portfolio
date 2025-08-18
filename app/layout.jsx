@@ -67,6 +67,17 @@ export const metadata = {
     google: "your-google-verification-code", // Add your Google Search Console verification
   },
   manifest: "/manifest.json",
+  icons: {
+    icon: [
+      { url: "/favicon.svg?v=2", type: "image/svg+xml" },
+      { url: "/favicon.ico?v=2", type: "image/x-icon" },
+      { url: "/favicon-16x16.png?v=2", type: "image/png", sizes: "16x16" },
+      { url: "/favicon-32x32.png?v=2", type: "image/png", sizes: "32x32" },
+    ],
+    apple: [
+      { url: "/favicon.svg?v=2", type: "image/svg+xml", sizes: "180x180" },
+    ],
+  },
   appleWebApp: {
     capable: true,
     statusBarStyle: "default",
@@ -90,12 +101,21 @@ export default function RootLayout({ children }) {
   return (
     <html lang="en" suppressHydrationWarning>
       <head>
-        <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
-        <link rel="icon" type="image/x-icon" href="/favicon.ico" />
-        <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png" />
-        <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png" />
-        <link rel="apple-touch-icon" href="/favicon.svg" />
+        {/* Modern SVG favicon for all modern browsers */}
+        <link rel="icon" type="image/svg+xml" href="/favicon.svg?v=2" />
+        {/* Fallback ICO for older browsers */}
+        <link rel="icon" type="image/x-icon" href="/favicon.ico?v=2" />
+        {/* PNG fallbacks for different sizes */}
+        <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png?v=2" />
+        <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png?v=2" />
+        {/* Apple touch icon for iOS devices */}
+        <link rel="apple-touch-icon" sizes="180x180" href="/favicon.svg?v=2" />
+        {/* Android Chrome icons */}
+        <link rel="icon" type="image/svg+xml" sizes="192x192" href="/favicon.svg?v=2" />
+        <link rel="icon" type="image/svg+xml" sizes="512x512" href="/favicon.svg?v=2" />
+        {/* Web app manifest */}
         <link rel="manifest" href="/manifest.json" />
+        {/* Preconnect to external resources */}
         <link rel="preconnect" href="https://fonts.googleapis.com" />
         <link
           rel="preconnect"

@@ -638,7 +638,7 @@ export default function InteractiveDataPlayground() {
       const context = detectDataContext(data, dataStructure);
       setDataContext(context);
     }
-  }, [data, dataStructure, detectDataContext, dataContext]);
+  }, [data, dataStructure, detectDataContext]);
 
   // Update available transformations when structure or context changes
   useEffect(() => {
@@ -647,14 +647,6 @@ export default function InteractiveDataPlayground() {
         const currentContext = dataContext || detectDataContext(data, dataStructure);
         const transformations = generateTransformations(dataStructure, currentContext);
         setAvailableTransformations(transformations);
-
-        // Set default transformation if current one is not available
-        if (
-          Object.keys(transformations).length > 0 &&
-          !transformations[selectedTransformation]
-        ) {
-          setSelectedTransformation(Object.keys(transformations)[0]);
-        }
       } catch (error) {
         console.error('Error updating transformations:', error);
         // Set a basic transformation as fallback
@@ -667,14 +659,17 @@ export default function InteractiveDataPlayground() {
         });
       }
     }
-  }, [dataStructure, dataContext, data, detectDataContext, generateTransformations, selectedTransformation]);
+  }, [dataStructure, dataContext, data, detectDataContext, generateTransformations]);
 
   // Separate effect to handle selectedTransformation validation
   useEffect(() => {
     if (Object.keys(availableTransformations).length > 0 && !availableTransformations[selectedTransformation]) {
-      setSelectedTransformation(Object.keys(availableTransformations)[0]);
+      const firstTransformation = Object.keys(availableTransformations)[0];
+      if (firstTransformation) {
+        setSelectedTransformation(firstTransformation);
+      }
     }
-  }, [availableTransformations, selectedTransformation]);
+  }, [availableTransformations]);
 
   // Generate AI-enhanced transformations based on Gemini analysis
   const generateAITransformations = useCallback((analysis) => {

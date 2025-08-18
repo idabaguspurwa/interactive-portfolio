@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
-import { Menu, X, Sun, Moon } from 'lucide-react'
+import { Menu, X, Sun, Moon, FileText } from 'lucide-react'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import { useTheme } from './ThemeProvider'
@@ -74,6 +74,19 @@ export function Navbar() {
                   </Link>
                 </motion.div>
               ))}
+              
+              {/* CV Button */}
+              <motion.div whileHover={{ scale: 1.05 }}>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => window.open('/CV.pdf', '_blank')}
+                  className="ml-2 px-4 py-2 text-sm font-medium border-primary text-primary hover:bg-primary hover:text-white transition-all duration-200 flex items-center gap-2"
+                >
+                  <FileText className="w-4 h-4" />
+                  View CV
+                </Button>
+              </motion.div>
             </div>
           </div>
 
@@ -172,6 +185,25 @@ export function Navbar() {
                     </Link>
                   </motion.div>
                 ))}
+                
+                {/* Mobile CV Button */}
+                <motion.div
+                  initial={{ opacity: 0, x: -20 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  transition={{ delay: navItems.length * 0.1 }}
+                >
+                  <Button
+                    variant="outline"
+                    onClick={() => {
+                      window.open('/CV.pdf', '_blank');
+                      setIsOpen(false);
+                    }}
+                    className="w-full px-4 py-3 text-base font-medium border-primary text-primary hover:bg-primary hover:text-white transition-all duration-200 flex items-center justify-center gap-2"
+                  >
+                    <FileText className="w-5 h-5" />
+                    View CV
+                  </Button>
+                </motion.div>
                 
                 {/* Mobile Theme Toggle */}
                 <motion.div
