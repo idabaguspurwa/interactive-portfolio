@@ -77,6 +77,26 @@ export default function ProjectsPage() {
   const projects = [
     {
       id: 1,
+      title: "Real-Time GitHub Events Data Pipeline",
+      description: "Production ready pipeline capturing and analyzing GitHub events in real-time using Kafka, Airflow, and Kubernetes",
+      category: 'data-engineering',
+      tags: ["Apache Airflow", "Apache Kafka", "Kubernetes", "Snowflake", "dbt", "Prometheus", "Grafana", "Python", "Great Expectations"],
+      image: '/airflow-pipeline.png',
+      github: "https://github.com/idabaguspurwa/github-events-pipeline",
+      demo: null,
+      featured: true,
+      year: '2025',
+      team: 'Solo Project',
+      status: 'Completed',
+      highlights: [
+        'Real-time processing with sub-second latency',
+        'Kubernetes-native with horizontal scaling',
+        'Complete observability with custom dashboards',
+        'Production-ready monitoring and alerting'
+      ]
+    },
+    {
+      id: 2,
       title: "Enterprise-Grade Sales & Marketing Data Platform",
       description: "GCP based e-commerce analytics platform with automated ELT pipelines and real-time dashboards",
       category: 'data-engineering',
@@ -96,7 +116,7 @@ export default function ProjectsPage() {
       ]
     },
     {
-      id: 2,
+      id: 3,
       title: "Real-Time Football Match Data Streaming Pipeline",
       description: "Stream live match events using Kafka → Spark Streaming → BigQuery for instant analytics and insights",
       category: 'data-engineering',
@@ -116,7 +136,7 @@ export default function ProjectsPage() {
       ]
     },
     {
-      id: 3,
+      id: 4,
       title: "F1 Racing Analytics Project",
       description: "Comprehensive Formula 1 racing data analytics platform built on Azure Databricks with medallion architecture for end-to-end data engineering and BI reporting.",
       category: 'data-analytics',
@@ -136,7 +156,7 @@ export default function ProjectsPage() {
       ]
     },
     {
-      id: 4,
+      id: 5,
       title: "Stock Market Data Pipeline",
       description: "Comprehensive stock market data pipeline using Apache Airflow, Spark, and MinIO for real-time stock price extraction and processing.",
       category: 'data-engineering',
@@ -144,7 +164,7 @@ export default function ProjectsPage() {
       image: '/stockmarket.png',
       github: "https://github.com/idabaguspurwa/stock_market_data_pipeline",
       demo: null,
-      featured: false,
+      featured: true,
       year: '2025',
       team: 'Solo Project',
       status: 'Completed',
@@ -156,7 +176,7 @@ export default function ProjectsPage() {
       ]
     },
     {
-      id: 5,
+      id: 6,
       title: "NYC Taxi Analytics Project",
       description: "NYC taxi analytics on Azure Synapse with medallion architecture for multi-format data processing and BI.",
       category: 'data-analytics',
@@ -176,7 +196,7 @@ export default function ProjectsPage() {
       ]
     },
     {
-      id: 6,
+      id: 7,
       title: "Professional Portfolio Website",
       description: "Modern, responsive portfolio website built with Next.js, TypeScript, and Tailwind CSS showcasing data engineering and analytics expertise.",
       category: 'web-development',
@@ -196,7 +216,7 @@ export default function ProjectsPage() {
       ]
     },
     {
-      id: 7,
+      id: 8,
       title: "3D Portfolio Website",
       description: "A modern portfolio showcasing work through interactive 3D elements and animations. Built with React, Vite, and TailwindCSS to deliver a visually impressive experience across devices.",
       category: 'web-development',
@@ -216,7 +236,7 @@ export default function ProjectsPage() {
       ]
     },
     {
-      id: 8,
+      id: 9,
       title: "Fake News Detection Paper using Machine Learning Technique",
       description: "Research paper comparing BERT, TF-IDF, and GloVe embeddings with different ML models using advanced NLP techniques.",
       category: 'machine-learning',
@@ -236,7 +256,7 @@ export default function ProjectsPage() {
       ]
     },
     {
-      id: 9,
+      id: 10,
       title: "Basketball Player Face Detection & Recognition",
       description: "Basketball player recognition using OpenCV, LBPH, and advanced data augmentation",
       category: 'computer-vision',
@@ -256,7 +276,7 @@ export default function ProjectsPage() {
       ]
     },
     {
-      id: 10,
+      id: 11,
       title: "Beritau - Mobile News Application",
       description: "Beritau offers Indonesian users a streamlined news experience from diverse sources. The app functions like Line Today, Detik, and Kompas.",
       category: 'mobile-development',
@@ -276,7 +296,7 @@ export default function ProjectsPage() {
       ]
     },
     {
-      id: 11,
+      id: 12,
       title: "Email Cleanup Automation Tool",
       description: "Web automation tool that uses Selenium and TestNG to delete unread emails from a user's inbox.",
       category: 'automation',
@@ -296,7 +316,7 @@ export default function ProjectsPage() {
       ]
     },
     {
-      id: 12,
+      id: 13,
       title: "Contractor Website UI/UX",
       description: "A contractor platform developed as our SE project. This marketplace combines social and professional features.",
       category: 'ui-ux-design',
@@ -316,7 +336,7 @@ export default function ProjectsPage() {
       ]
     },
     {
-      id: 13,
+      id: 14,
       title: "MtGraphy Photography Website",
       description: "A photography platform built as a college HCI project, focusing on user-centered design and intuitive navigation to showcase professional photography site",
       category: 'web-development',
@@ -336,7 +356,7 @@ export default function ProjectsPage() {
       ]
     },
     {
-      id: 14,
+      id: 15,
       title: "Vanilla Portfolio Website",
       description: "A clean, minimalist portfolio website built with vanilla web technologies to showcase professional skills and projects in frontend development.",
       category: 'web-development',
@@ -454,8 +474,8 @@ export default function ProjectsPage() {
             </RevealOnScroll>
 
             <StaggerContainer>
-              <div className="grid lg:grid-cols-2 gap-8 mb-16">
-                {featuredProjects.slice(0, 2).map((project, index) => (
+              <div className="grid md:grid-cols-2 lg:grid-cols-2 gap-8 mb-16">
+                {featuredProjects.slice(0, 4).map((project, index) => (
                   <StaggerItem key={project.id}>
                     <motion.div
                       className="group bg-white dark:bg-gray-800 rounded-2xl shadow-lg hover:shadow-2xl transition-all duration-500 overflow-hidden h-full flex flex-col"
