@@ -5,13 +5,13 @@ import { motion, AnimatePresence } from 'framer-motion'
 import { RevealOnScroll, StaggerContainer, StaggerItem } from '@/components/ScrollAnimations'
 import { ArrowLeft, Database, Zap, BarChart3, Github, Activity, RefreshCw, Users, TrendingUp } from 'lucide-react'
 import Link from 'next/link'
-import dynamic from 'next/dynamic'
+import dynamicImport from 'next/dynamic'
 import { callPythonAPI } from '@/lib/python-api'
 
 // Force dynamic rendering to prevent Vercel build issues
 export const dynamic = 'force-dynamic'
 
-const InteractiveDataPlayground = dynamic(
+const InteractiveDataPlayground = dynamicImport(
   () => import('@/components/InteractiveDataPlayground'),
   { 
     ssr: false,
@@ -23,7 +23,7 @@ const InteractiveDataPlayground = dynamic(
   }
 )
 
-const GitHubEventsLiveDemo = dynamic(
+const GitHubEventsLiveDemo = dynamicImport(
   () => import('@/components/GitHubEventsLiveDemo'),
   { 
     ssr: false,
