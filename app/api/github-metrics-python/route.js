@@ -1,6 +1,9 @@
 import { NextResponse } from 'next/server'
 import { callPythonAPI, apiConfig } from '@/lib/python-api'
 
+// Force dynamic rendering to prevent Vercel build errors
+export const dynamic = 'force-dynamic'
+
 export async function GET() {
   try {
     console.log('📊 Fetching GitHub metrics via Python API...')
