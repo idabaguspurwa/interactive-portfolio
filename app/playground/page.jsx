@@ -33,6 +33,17 @@ const GitHubEventsLiveDemo = dynamicImport(
   }
 )
 
+const QueryPlayground = dynamicImport(
+  () => import('@/components/QueryPlayground'),
+  { 
+    loading: () => (
+      <div className="flex items-center justify-center min-h-[400px]">
+        <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-blue-500"></div>
+      </div>
+    )
+  }
+)
+
 // Error boundary component for dynamic imports
 function ErrorBoundary({ children, fallback }) {
   const [hasError, setHasError] = useState(false)
@@ -456,17 +467,49 @@ function GitHubEventsTab() {
         </div>
       </RevealOnScroll>
 
-      {/* GitHub Events Live Demo Component */}
-      <RevealOnScroll direction="up" delay={0.5}>
-        <div className="bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm rounded-2xl p-6 border border-gray-200/50 dark:border-gray-700/50">
-          <h3 className="text-xl font-bold mb-4 text-center text-gray-900 dark:text-white">
-            Live GitHub Events Data
-          </h3>
-          <p className="text-gray-600 dark:text-gray-300 text-center mb-6">
-            Real-time data from production Snowflake database
-          </p>
-          
-                     <div className="min-h-[400px]">
+             {/* Query Playground Component */}
+       <RevealOnScroll direction="up" delay={0.5}>
+         <div className="bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm rounded-2xl p-6 border border-gray-200/50 dark:border-gray-700/50">
+           <h3 className="text-xl font-bold mb-4 text-center text-gray-900 dark:text-white">
+             Interactive Query Playground
+           </h3>
+           <p className="text-gray-600 dark:text-gray-300 text-center mb-6">
+             Build custom queries to explore GitHub events data interactively
+           </p>
+           
+           <div className="min-h-[400px]">
+             <ErrorBoundary 
+               fallback={
+                 <div className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-700 rounded-xl p-6 text-center">
+                   <p className="text-red-700 dark:text-red-300 mb-4">
+                     Query Playground component failed to load. Please refresh the page.
+                   </p>
+                   <button 
+                     onClick={() => window.location.reload()} 
+                     className="bg-red-600 text-white px-4 py-2 rounded-lg hover:bg-red-700"
+                   >
+                     Refresh Page
+                   </button>
+                 </div>
+               }
+             >
+               <QueryPlayground />
+             </ErrorBoundary>
+           </div>
+         </div>
+       </RevealOnScroll>
+
+       {/* GitHub Events Live Demo Component */}
+       <RevealOnScroll direction="up" delay={0.7}>
+         <div className="bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm rounded-2xl p-6 border border-gray-200/50 dark:border-gray-700/50">
+           <h3 className="text-xl font-bold mb-4 text-center text-gray-900 dark:text-white">
+             Live GitHub Events Data
+           </h3>
+           <p className="text-gray-600 dark:text-gray-300 text-center mb-6">
+             Real-time data from production Snowflake database
+           </p>
+           
+           <div className="min-h-[400px]">
              <ErrorBoundary 
                fallback={
                  <div className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-700 rounded-xl p-6 text-center">
@@ -485,8 +528,8 @@ function GitHubEventsTab() {
                <GitHubEventsLiveDemo />
              </ErrorBoundary>
            </div>
-        </div>
-      </RevealOnScroll>
+         </div>
+       </RevealOnScroll>
 
       {/* Technical Achievement */}
       <RevealOnScroll direction="up" delay={0.7}>

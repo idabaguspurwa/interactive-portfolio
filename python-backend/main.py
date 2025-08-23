@@ -1,340 +1,417 @@
-from fastapi import FastAPI, HTTPException
+from fastapi import FastAPI, HTTPException, Query, Request
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 import snowflake.connector
 import os
-from datetime import datetime
-from typing import Optional
+from datetime import datetime, timedelta
 import json
+from typing import List, Optional
 import logging
-from dotenv import load_dotenv
-
-# Load environment variables from .env file
-load_dotenv()
 
 # Configure logging
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
-app = FastAPI(title="GitHub Events API", version="1.0.0")
+app = FastAPI(title="GitHub Events Analytics API", version="1.0.0")
 
-# CORS configuration for Vercel frontend
+# CORS middleware
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=[
-        "http://localhost:3000",  # Local development
-        "https://*.vercel.app",   # Vercel deployments
-        "https://idabaguspurwa.com",  # Replace with your actual domain
-    ],
+    allow_origins=["*"],
     allow_credentials=True,
-    allow_methods=["GET", "POST", "OPTIONS"],
+    allow_methods=["*"],
     allow_headers=["*"],
 )
 
-# Snowflake configuration
+# Snowflake connection configuration
 SNOWFLAKE_CONFIG = {
-    'account': os.getenv('SNOWFLAKE_ACCOUNT'),
-    'user': os.getenv('SNOWFLAKE_USERNAME'),
-    'password': os.getenv('SNOWFLAKE_PASSWORD'),
-    'database': os.getenv('SNOWFLAKE_DATABASE'),
-    'schema': os.getenv('SNOWFLAKE_SCHEMA'),
-    'warehouse': os.getenv('SNOWFLAKE_WAREHOUSE'),
-    'client_session_keep_alive': True,
-    'ocsp_response_cache_filename': None,
-    'insecure_mode': False,
-    'network_timeout': 60,
-    'login_timeout': 60,
+    'user': os.getenv('SNOWFLAKE_USER', 'your_username'),
+    'password': os.getenv('SNOWFLAKE_PASSWORD', 'your_password'),
+    'account': os.getenv('SNOWFLAKE_ACCOUNT', 'your_account'),
+    'warehouse': os.getenv('SNOWFLAKE_WAREHOUSE', 'your_warehouse'),
+    'database': os.getenv('SNOWFLAKE_DATABASE', 'your_database'),
+    'schema': os.getenv('SNOWFLAKE_SCHEMA', 'your_schema')
 }
 
-# Debug: Log configuration (without password)
-logger.info(f"🔧 Snowflake Config - Account: {SNOWFLAKE_CONFIG['account']}")
-logger.info(f"🔧 Snowflake Config - User: {SNOWFLAKE_CONFIG['user']}")
-logger.info(f"🔧 Snowflake Config - Database: {SNOWFLAKE_CONFIG['database']}")
-logger.info(f"🔧 Snowflake Config - Schema: {SNOWFLAKE_CONFIG['schema']}")
-logger.info(f"🔧 Snowflake Config - Warehouse: {SNOWFLAKE_CONFIG['warehouse']}")
-
 def get_snowflake_connection():
-    """Create a new Snowflake connection"""
+    """Get Snowflake connection with error handling"""
     try:
-        logger.info("🔄 Creating Snowflake connection...")
         conn = snowflake.connector.connect(**SNOWFLAKE_CONFIG)
-        logger.info("✅ Snowflake connection successful")
         return conn
     except Exception as e:
-        logger.error(f"❌ Failed to connect to Snowflake: {str(e)}")
-        raise HTTPException(status_code=500, detail=f"Database connection failed: {str(e)}")
+        logger.error(f"Failed to connect to Snowflake: {e}")
+        raise HTTPException(status_code=500, detail="Database connection failed")
 
-def execute_query(sql: str, params: list = None):
-    """Execute a SQL query and return results"""
-    conn = None
+@app.get("/")
+async def root():
+    return {"message": "GitHub Events Analytics API", "status": "running"}
+
+@app.get("/health")
+async def health_check():
+    return {"status": "healthy", "timestamp": datetime.now().isoformat()}
+
+@app.get("/api/github-metrics")
+async def get_github_metrics():
+    """Get overall GitHub events metrics"""
     try:
         conn = get_snowflake_connection()
         cursor = conn.cursor()
         
-        logger.info(f"🔍 Executing query: {sql[:100]}...")
-        start_time = datetime.now()
+        # Get total events count
+        cursor.execute("""
+            SELECT COUNT(*) as total_events
+            FROM github_events
+            WHERE created_at >= DATEADD(day, -30, CURRENT_DATE())
+        """)
+        total_events = cursor.fetchone()[0]
         
-        cursor.execute(sql, params or [])
+        # Get unique repositories count
+        cursor.execute("""
+            SELECT COUNT(DISTINCT repo_name) as unique_repos
+            FROM github_events
+            WHERE created_at >= DATEADD(day, -30, CURRENT_DATE())
+        """)
+        unique_repos = cursor.fetchone()[0]
+        
+        # Get unique users count
+        cursor.execute("""
+            SELECT COUNT(DISTINCT actor_login) as unique_users
+            FROM github_events
+            WHERE created_at >= DATEADD(day, -30, CURRENT_DATE())
+        """)
+        unique_users = cursor.fetchone()[0]
+        
+        # Get events in last 24 hours
+        cursor.execute("""
+            SELECT COUNT(*) as events_24h
+            FROM github_events
+            WHERE created_at >= DATEADD(hour, -24, CURRENT_TIMESTAMP())
+        """)
+        events_24h = cursor.fetchone()[0]
+        
+        cursor.close()
+        conn.close()
+        
+        return {
+            "success": True,
+            "data": {
+                "totalEvents": total_events,
+                "uniqueRepos": unique_repos,
+                "uniqueUsers": unique_users,
+                "events24h": events_24h,
+                "lastUpdated": datetime.now().isoformat()
+            }
+        }
+        
+    except Exception as e:
+        logger.error(f"Error fetching GitHub metrics: {e}")
+        return {
+            "success": False,
+            "message": "Failed to fetch metrics",
+            "error": str(e)
+        }
+
+@app.get("/api/github-timeline")
+async def get_github_timeline():
+    """Get GitHub events timeline data"""
+    try:
+        conn = get_snowflake_connection()
+        cursor = conn.cursor()
+        
+        cursor.execute("""
+            SELECT 
+                DATE(created_at) as date,
+                COUNT(*) as event_count,
+                COUNT(DISTINCT repo_name) as repo_count,
+                COUNT(DISTINCT actor_login) as user_count
+            FROM github_events
+            WHERE created_at >= DATEADD(day, -30, CURRENT_DATE())
+            GROUP BY DATE(created_at)
+            ORDER BY date DESC
+            LIMIT 30
+        """)
+        
+        results = cursor.fetchall()
+        timeline_data = [
+            {
+                "date": str(row[0]),
+                "eventCount": row[1],
+                "repoCount": row[2],
+                "userCount": row[3]
+            }
+            for row in results
+        ]
+        
+        cursor.close()
+        conn.close()
+        
+        return {
+            "success": True,
+            "data": timeline_data
+        }
+        
+    except Exception as e:
+        logger.error(f"Error fetching timeline data: {e}")
+        return {
+            "success": False,
+            "message": "Failed to fetch timeline data",
+            "error": str(e)
+        }
+
+@app.get("/api/github-repositories")
+async def get_github_repositories(limit: int = Query(10, ge=1, le=100)):
+    """Get top GitHub repositories by event count"""
+    try:
+        conn = get_snowflake_connection()
+        cursor = conn.cursor()
+        
+        cursor.execute("""
+            SELECT 
+                repo_name,
+                COUNT(*) as event_count,
+                COUNT(DISTINCT actor_login) as unique_users,
+                MAX(created_at) as last_activity
+            FROM github_events
+            WHERE created_at >= DATEADD(day, -30, CURRENT_DATE())
+            GROUP BY repo_name
+            ORDER BY event_count DESC
+            LIMIT %s
+        """, (limit,))
+        
+        results = cursor.fetchall()
+        repo_data = [
+            {
+                "repository": row[0],
+                "eventCount": row[1],
+                "uniqueUsers": row[2],
+                "lastActivity": str(row[3])
+            }
+            for row in results
+        ]
+        
+        cursor.close()
+        conn.close()
+        
+        return {
+            "success": True,
+            "data": repo_data
+        }
+        
+    except Exception as e:
+        logger.error(f"Error fetching repository data: {e}")
+        return {
+            "success": False,
+            "message": "Failed to fetch repository data",
+            "error": str(e)
+        }
+
+@app.get("/api/query-executor")
+async def execute_custom_query(
+    event_types: str = Query(..., description="Comma-separated list of event types"),
+    time_range: str = Query(..., description="Time range (1d, 7d, 30d, 90d, 1y)"),
+    group_by: str = Query(..., description="Group by field"),
+    limit: int = Query(50, ge=1, le=1000, description="Result limit"),
+    sort_by: str = Query("event_count", description="Sort by field")
+):
+    """Execute custom queries on GitHub events data"""
+    try:
+        conn = get_snowflake_connection()
+        cursor = conn.cursor()
+        
+        # Parse event types
+        event_type_list = [et.strip() for et in event_types.split(',')]
+        
+        # Build time filter
+        time_filters = {
+            '1d': 'DATEADD(day, -1, CURRENT_DATE())',
+            '7d': 'DATEADD(day, -7, CURRENT_DATE())',
+            '30d': 'DATEADD(day, -30, CURRENT_DATE())',
+            '90d': 'DATEADD(day, -90, CURRENT_DATE())',
+            '1y': 'DATEADD(year, -1, CURRENT_DATE())'
+        }
+        
+        if time_range not in time_filters:
+            raise HTTPException(status_code=400, detail="Invalid time range")
+        
+        time_filter = time_filters[time_range]
+        
+        # Build event type filter
+        if 'all' in event_type_list:
+            event_type_filter = ""
+        else:
+            event_type_list_quoted = [f"'{et}'" for et in event_type_list]
+            event_type_filter = f"AND event_type IN ({','.join(event_type_list_quoted)})"
+        
+        # Build group by clause
+        group_by_mapping = {
+            'repository': 'repo_name',
+            'user': 'actor_login',
+            'event_type': 'event_type',
+            'language': 'repo_language',
+            'hour': 'HOUR(created_at)',
+            'day': 'DAYOFWEEK(created_at)'
+        }
+        
+        if group_by not in group_by_mapping:
+            raise HTTPException(status_code=400, detail="Invalid group by field")
+        
+        group_by_field = group_by_mapping[group_by]
+        
+        # Build sort by clause
+        sort_by_mapping = {
+            'event_count': 'event_count DESC',
+            'timestamp': 'created_at DESC',
+            'repository': 'repo_name ASC',
+            'user': 'actor_login ASC'
+        }
+        
+        if sort_by not in sort_by_mapping:
+            sort_by = 'event_count'
+        
+        sort_clause = sort_by_mapping[sort_by]
+        
+        # Execute query
+        query = f"""
+            SELECT 
+                {group_by_field} as {group_by},
+                COUNT(*) as event_count,
+                COUNT(DISTINCT CASE WHEN {group_by_field} != {group_by_field} THEN NULL ELSE {group_by_field} END) as unique_count
+            FROM github_events
+            WHERE created_at >= {time_filter}
+            {event_type_filter}
+            GROUP BY {group_by_field}
+            ORDER BY {sort_clause}
+            LIMIT {limit}
+        """
+        
+        logger.info(f"Executing query: {query}")
+        cursor.execute(query)
+        
+        results = cursor.fetchall()
+        
+        # Format results based on group by field
+        formatted_results = []
+        for row in results:
+            if group_by == 'hour':
+                formatted_results.append({
+                    "hour": row[0],
+                    "event_count": row[1],
+                    "unique_count": row[2]
+                })
+            elif group_by == 'day':
+                day_names = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday']
+                formatted_results.append({
+                    "day": day_names[row[0] - 1] if row[0] else 'Unknown',
+                    "day_number": row[0],
+                    "event_count": row[1],
+                    "unique_count": row[2]
+                })
+            else:
+                formatted_results.append({
+                    group_by: row[0],
+                    "event_count": row[1],
+                    "unique_count": row[2]
+                })
+        
+        cursor.close()
+        conn.close()
+        
+        return {
+            "success": True,
+            "data": formatted_results,
+            "metadata": {
+                "query": {
+                    "eventTypes": event_type_list,
+                    "timeRange": time_range,
+                    "groupBy": group_by,
+                    "limit": limit,
+                    "sortBy": sort_by
+                },
+                "resultCount": len(formatted_results),
+                "executedAt": datetime.now().isoformat()
+            }
+        }
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Error executing custom query: {e}")
+        return {
+            "success": False,
+            "message": "Failed to execute query",
+            "error": str(e)
+        }
+
+@app.post("/api/manual-query")
+async def execute_manual_query(request: Request):
+    """Execute manual queries submitted by users"""
+    try:
+        body = await request.json()
+        query = body.get('query', '').strip()
+        
+        if not query:
+            raise HTTPException(status_code=400, detail="Query is required")
+        
+        # Basic SQL injection prevention
+        dangerous_keywords = ['DROP', 'DELETE', 'UPDATE', 'INSERT', 'ALTER', 'CREATE', 'TRUNCATE']
+        upper_query = query.upper()
+        
+        for keyword in dangerous_keywords:
+            if keyword in upper_query:
+                raise HTTPException(
+                    status_code=400, 
+                    detail=f"Query contains forbidden keyword: {keyword}. Only SELECT queries are allowed."
+                )
+        
+        # Ensure it's a SELECT query
+        if not upper_query.startswith('SELECT'):
+            raise HTTPException(
+                status_code=400, 
+                detail="Only SELECT queries are allowed for security reasons"
+            )
+        
+        # Execute the manual query
+        conn = get_snowflake_connection()
+        cursor = conn.cursor()
+        
+        logger.info(f"Executing manual query: {query}")
+        cursor.execute(query)
+        
         results = cursor.fetchall()
         columns = [desc[0] for desc in cursor.description]
         
-        duration = (datetime.now() - start_time).total_seconds() * 1000
-        logger.info(f"✅ Query completed in {duration:.0f}ms ({len(results)} rows)")
-        
-        # Convert to list of dictionaries
-        data = []
+        # Format results
+        formatted_results = []
         for row in results:
             row_dict = {}
             for i, value in enumerate(row):
                 row_dict[columns[i]] = value
-            data.append(row_dict)
+            formatted_results.append(row_dict)
         
-        return data
-        
-    except Exception as e:
-        logger.error(f"❌ Query execution failed: {str(e)}")
-        raise HTTPException(status_code=500, detail=f"Query execution failed: {str(e)}")
-    finally:
-        if conn:
-            conn.close()
-
-@app.get("/")
-async def root():
-    return {"message": "GitHub Events API", "status": "running"}
-
-@app.get("/health")
-async def health_check():
-    """Health check endpoint"""
-    try:
-        # Test connection
-        conn = get_snowflake_connection()
+        cursor.close()
         conn.close()
-        return {"status": "healthy", "timestamp": datetime.now().isoformat()}
-    except Exception as e:
-        return JSONResponse(
-            status_code=500,
-            content={"status": "unhealthy", "error": str(e), "timestamp": datetime.now().isoformat()}
-        )
-
-@app.get("/api/github-metrics")
-async def get_github_metrics():
-    """Get comprehensive GitHub metrics with complex aggregations"""
-    try:
-        logger.info("📊 Fetching GitHub metrics from Snowflake...")
-        start_time = datetime.now()
-        
-        # Execute complex parallel-style queries (Python handles this better than Promise.all)
-        queries = [
-            "SELECT COUNT(*) as total_events FROM RAW_EVENTS",
-            "SELECT COUNT(DISTINCT V:actor.id) as unique_users FROM RAW_EVENTS",
-            "SELECT COUNT(DISTINCT V:repo.id) as unique_repos FROM RAW_EVENTS",
-            """
-            SELECT MAX(daily_events) as peak_daily_events 
-            FROM (
-                SELECT DATE(V:created_at::timestamp) as event_date, COUNT(*) as daily_events 
-                FROM RAW_EVENTS 
-                GROUP BY DATE(V:created_at::timestamp)
-            )
-            """,
-            "SELECT COUNT(DISTINCT DATE(V:created_at::timestamp)) as operational_days FROM RAW_EVENTS"
-        ]
-        
-        results = []
-        for sql in queries:
-            result = execute_query(sql)
-            results.append(result)
-        
-        # Extract metrics (updated field names for frontend compatibility)
-        metrics = {
-            "totalEvents": results[0][0]['TOTAL_EVENTS'] if results[0] else 0,
-            "uniqueUsers": results[1][0]['UNIQUE_USERS'] if results[1] else 0,
-            "uniqueRepos": results[2][0]['UNIQUE_REPOS'] if results[2] else 0,  # Fixed field name
-            "peakDailyEvents": results[3][0]['PEAK_DAILY_EVENTS'] if results[3] else 0,
-            "daysOperational": results[4][0]['OPERATIONAL_DAYS'] if results[4] else 0,  # Fixed field name
-        }
-        
-        # Calculate additional metrics
-        if metrics["daysOperational"] > 0:
-            metrics["avgEventsPerDay"] = round(metrics["totalEvents"] / metrics["daysOperational"], 2)
-            # Calculate uptime (assuming high availability for demo)
-            metrics["uptime"] = min(99.9, round((metrics["daysOperational"] / (metrics["daysOperational"] + 0.1)) * 100, 1))
-        else:
-            metrics["avgEventsPerDay"] = 0
-            metrics["uptime"] = 0
-            
-        duration = (datetime.now() - start_time).total_seconds() * 1000
-        logger.info(f"✅ Metrics fetched successfully in {duration:.0f}ms")
         
         return {
             "success": True,
-            "data": metrics,
-            "timestamp": datetime.now().isoformat(),
-            "queryTime": f"{duration:.0f}ms"
+            "data": formatted_results,
+            "metadata": {
+                "query": query,
+                "resultCount": len(formatted_results),
+                "executedAt": datetime.now().isoformat()
+            }
         }
         
+    except HTTPException:
+        raise
     except Exception as e:
-        logger.error(f"❌ Error fetching GitHub metrics: {str(e)}")
-        raise HTTPException(status_code=500, detail=f"Failed to fetch metrics: {str(e)}")
-
-@app.get("/api/github-timeline")
-async def get_github_timeline():
-    """Get comprehensive timeline data with complex daily aggregations"""
-    try:
-        logger.info("📈 Fetching GitHub timeline from Snowflake...")
-        start_time = datetime.now()
-        
-        sql = """
-        SELECT 
-            DATE(V:created_at::timestamp) as activity_date,
-            COUNT(*) as total_events,
-            COUNT(DISTINCT V:actor.id) as unique_users,
-            COUNT(DISTINCT V:repo.id) as unique_repositories,
-            COUNT(CASE WHEN V:type::string = 'PushEvent' THEN 1 END) as push_events,
-            COUNT(CASE WHEN V:type::string = 'PullRequestEvent' THEN 1 END) as pull_request_events,
-            COUNT(CASE WHEN V:type::string = 'IssuesEvent' THEN 1 END) as issue_events,
-            COUNT(CASE WHEN V:type::string = 'CreateEvent' THEN 1 END) as create_events
-        FROM RAW_EVENTS 
-        GROUP BY DATE(V:created_at::timestamp)
-        ORDER BY activity_date ASC
-        """
-        
-        results = execute_query(sql)
-        
-        # Transform data
-        timeline = []
-        for row in results:
-            timeline.append({
-                "date": row['ACTIVITY_DATE'].isoformat() if row['ACTIVITY_DATE'] else None,
-                "totalEvents": row['TOTAL_EVENTS'] or 0,
-                "uniqueUsers": row['UNIQUE_USERS'] or 0,
-                "uniqueRepositories": row['UNIQUE_REPOSITORIES'] or 0,
-                "pushEvents": row['PUSH_EVENTS'] or 0,
-                "pullRequestEvents": row['PULL_REQUEST_EVENTS'] or 0,
-                "issueEvents": row['ISSUE_EVENTS'] or 0,
-                "createEvents": row['CREATE_EVENTS'] or 0
-            })
-        
-        # Calculate summary statistics
-        total_events = sum(day['totalEvents'] for day in timeline)
-        avg_events_per_day = round(total_events / len(timeline), 2) if timeline else 0
-        peak_day = max(timeline, key=lambda x: x['totalEvents']) if timeline else None
-        
-        duration = (datetime.now() - start_time).total_seconds() * 1000
-        logger.info(f"✅ Timeline fetched successfully ({len(timeline)} days) in {duration:.0f}ms")
-        
+        logger.error(f"Error executing manual query: {e}")
         return {
-            "success": True,
-            "data": {
-                "timeline": timeline,
-                "totalDays": len(timeline),
-                "dateRange": {
-                    "start": timeline[0]['date'] if timeline else None,
-                    "end": timeline[-1]['date'] if timeline else None
-                },
-                "summary": {
-                    "totalEvents": total_events,
-                    "avgEventsPerDay": avg_events_per_day,
-                    "peakDay": peak_day
-                }
-            },
-            "timestamp": datetime.now().isoformat(),
-            "queryTime": f"{duration:.0f}ms"
+            "success": False,
+            "message": "Failed to execute manual query",
+            "error": str(e)
         }
-        
-    except Exception as e:
-        logger.error(f"❌ Error fetching GitHub timeline: {str(e)}")
-        raise HTTPException(status_code=500, detail=f"Failed to fetch timeline: {str(e)}")
-
-@app.get("/api/github-repositories")
-async def get_github_repositories(limit: int = 10):
-    """Get comprehensive repository analytics with complex aggregations"""
-    try:
-        logger.info(f"🏆 Fetching top {limit} repositories from Snowflake...")
-        start_time = datetime.now()
-        
-        sql = f"""
-        SELECT 
-            V:repo.name::string as repo_name,
-            COUNT(*) as total_activity,
-            COUNT(DISTINCT V:actor.id) as unique_contributors,
-            COUNT(CASE WHEN V:type::string = 'PushEvent' THEN 1 END) as push_events,
-            COUNT(CASE WHEN V:type::string = 'PullRequestEvent' THEN 1 END) as pull_request_events,
-            COUNT(CASE WHEN V:type::string = 'IssuesEvent' THEN 1 END) as issue_events,
-            COUNT(CASE WHEN V:type::string = 'CreateEvent' THEN 1 END) as create_events,
-            COUNT(CASE WHEN V:type::string = 'WatchEvent' THEN 1 END) as watch_events,
-            ROUND(COUNT(*) / COUNT(DISTINCT V:actor.id), 2) as activity_per_contributor,
-            MIN(V:created_at::timestamp) as first_activity,
-            MAX(V:created_at::timestamp) as last_activity
-        FROM RAW_EVENTS 
-        WHERE V:repo.name IS NOT NULL
-        GROUP BY V:repo.name::string
-        ORDER BY total_activity DESC
-        LIMIT {limit}
-        """
-        
-        results = execute_query(sql)
-        
-        # Transform data
-        repositories = []
-        for row in results:
-            # Determine primary category based on activity
-            categories = []
-            if row['PUSH_EVENTS'] > 0:
-                categories.append('Development')
-            if row['PULL_REQUEST_EVENTS'] > 0:
-                categories.append('Collaboration')
-            if row['ISSUE_EVENTS'] > 0:
-                categories.append('Issue Management')
-            if row['WATCH_EVENTS'] > 0:
-                categories.append('Community')
-                
-            repositories.append({
-                "repoName": row['REPO_NAME'],
-                "totalActivity": row['TOTAL_ACTIVITY'] or 0,
-                "uniqueContributors": row['UNIQUE_CONTRIBUTORS'] or 0,
-                "pushEvents": row['PUSH_EVENTS'] or 0,
-                "pullRequestEvents": row['PULL_REQUEST_EVENTS'] or 0,
-                "issueEvents": row['ISSUE_EVENTS'] or 0,
-                "createEvents": row['CREATE_EVENTS'] or 0,
-                "watchEvents": row['WATCH_EVENTS'] or 0,
-                "activityPerContributor": float(row['ACTIVITY_PER_CONTRIBUTOR'] or 0),
-                "firstActivity": row['FIRST_ACTIVITY'].isoformat() if row['FIRST_ACTIVITY'] else None,
-                "lastActivity": row['LAST_ACTIVITY'].isoformat() if row['LAST_ACTIVITY'] else None,
-                "categories": categories,
-                "isActive": row['TOTAL_ACTIVITY'] > 10 if row['TOTAL_ACTIVITY'] else False
-            })
-        
-        # Calculate summary
-        total_repositories = len(repositories)
-        total_activity = sum(repo['totalActivity'] for repo in repositories)
-        avg_activity = round(total_activity / total_repositories, 2) if total_repositories > 0 else 0
-        
-        duration = (datetime.now() - start_time).total_seconds() * 1000
-        logger.info(f"✅ Repositories fetched successfully ({total_repositories} repos) in {duration:.0f}ms")
-        
-        return {
-            "success": True,
-            "data": {
-                "repositories": repositories,
-                "summary": {
-                    "totalRepositories": total_repositories,
-                    "totalActivity": total_activity,
-                    "avgActivityPerRepo": avg_activity,
-                    "activeRepositories": sum(1 for repo in repositories if repo['isActive'])
-                }
-            },
-            "timestamp": datetime.now().isoformat(),
-            "queryTime": f"{duration:.0f}ms"
-        }
-        
-    except Exception as e:
-        logger.error(f"❌ Error fetching GitHub repositories: {str(e)}")
-        raise HTTPException(status_code=500, detail=f"Failed to fetch repositories: {str(e)}")
 
 if __name__ == "__main__":
     import uvicorn
-    import os
-    
-    # Use PORT from environment (Fly.io provides this) or default to 8000
-    port = int(os.environ.get("PORT", 8000))
+    port = int(os.getenv("PORT", 8000))
     uvicorn.run(app, host="0.0.0.0", port=port)
