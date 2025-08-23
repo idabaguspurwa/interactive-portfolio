@@ -22,12 +22,16 @@ const GitHubEventsLiveDemo = dynamic(
 
 export default function GitHubEventsPlayground() {
   const [metrics, setMetrics] = useState(null)
-  const [loading, setLoading] = useState(true)
+  const [loading, setLoading] = useState(false) // Changed from true to false
   const [lastUpdated, setLastUpdated] = useState(null)
 
-  // Fetch real metrics from our Python backend API
+  // Load data after component mounts, don't block initial render
   useEffect(() => {
-    fetchMetrics()
+    // Small delay to ensure page renders first
+    const timer = setTimeout(() => {
+      fetchMetrics()
+    }, 100)
+    return () => clearTimeout(timer)
   }, [])
 
   const fetchMetrics = async () => {
@@ -41,7 +45,7 @@ export default function GitHubEventsPlayground() {
       }
     } catch (error) {
       console.error('Failed to fetch metrics:', error)
-      // Keep loading state to show placeholder until data is available
+      // Don't keep loading state on error, show placeholder
     } finally {
       setLoading(false)
     }
@@ -49,9 +53,38 @@ export default function GitHubEventsPlayground() {
 
   // Dynamic project stats using real data
   const getProjectStats = () => {
-    // Only return data when we have metrics - no placeholder cards
+    // Show placeholder cards while loading or if no data
     if (!metrics) {
-      return []
+      return [
+        {
+          icon: Database,
+          title: "Loading...",
+          description: "Fetching GitHub events data",
+          color: "from-gray-400 to-gray-500",
+          value: "—"
+        },
+        {
+          icon: Users,
+          title: "Loading...",
+          description: "Fetching developer data",
+          color: "from-gray-400 to-gray-500",
+          value: "—"
+        },
+        {
+          icon: Github,
+          title: "Loading...",
+          description: "Fetching repository data",
+          color: "from-gray-400 to-gray-500",
+          value: "—"
+        },
+        {
+          icon: TrendingUp,
+          title: "Loading...",
+          description: "Fetching performance data",
+          color: "from-gray-400 to-gray-500",
+          value: "—"
+        }
+      ]
     }
 
     return [
@@ -133,11 +166,16 @@ export default function GitHubEventsPlayground() {
             <div className="mt-6 flex flex-col items-center gap-2">
               <div className="inline-flex items-center gap-2 bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-300 px-4 py-2 rounded-full">
                 <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></div>
-                Production Pipeline Successfully Completed
+                {metrics ? 'Production Pipeline Successfully Completed' : 'Connecting to Production Pipeline...'}
               </div>
               {lastUpdated && (
                 <div className="text-xs text-gray-500 dark:text-gray-400">
                   Last updated: {lastUpdated.toLocaleTimeString()}
+                </div>
+              )}
+              {loading && !metrics && (
+                <div className="text-xs text-blue-500 dark:text-blue-400">
+                  Fetching live data from Snowflake...
                 </div>
               )}
             </div>
@@ -151,63 +189,41 @@ export default function GitHubEventsPlayground() {
               Pipeline Achievement Metrics
             </h2>
             <StaggerContainer>
-              {loading && !metrics ? (
-                // Loading skeleton for 4 cards
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-                  {[1, 2, 3, 4].map((i) => (
-                    <div key={i} className="bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm rounded-2xl p-6 shadow-lg border border-gray-200/50 dark:border-gray-700/50 text-center animate-pulse">
-                      <div className="w-12 h-12 bg-gray-200 dark:bg-gray-700 rounded-xl mb-4 mx-auto"></div>
-                      <div className="h-8 bg-gray-200 dark:bg-gray-700 rounded mb-2"></div>
-                      <div className="h-6 bg-gray-200 dark:bg-gray-700 rounded mb-4"></div>
-                      <div className="space-y-2">
-                        <div className="h-4 bg-gray-200 dark:bg-gray-700 rounded"></div>
-                        <div className="h-4 bg-gray-200 dark:bg-gray-700 rounded w-3/4 mx-auto"></div>
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+                {projectStats.map((stat, index) => (
+                  <StaggerItem key={stat.title}>
+                    <motion.div
+                      className="bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm rounded-2xl p-6 shadow-lg border border-gray-200/50 dark:border-gray-700/50 text-center"
+                      whileHover={{ scale: 1.05, y: -5 }}
+                    >
+                      <div className={`w-12 h-12 rounded-xl bg-gradient-to-r ${stat.color} flex items-center justify-center mb-4 mx-auto`}>
+                        <stat.icon className="w-6 h-6 text-white" />
                       </div>
-                    </div>
-                  ))}
-                </div>
-              ) : metrics ? (
-                // Real data cards
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-                  {projectStats.map((stat, index) => (
-                    <StaggerItem key={stat.title}>
-                      <motion.div
-                        className="bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm rounded-2xl p-6 shadow-lg border border-gray-200/50 dark:border-gray-700/50 text-center"
-                        whileHover={{ scale: 1.05, y: -5 }}
-                      >
-                        <div className={`w-12 h-12 rounded-xl bg-gradient-to-r ${stat.color} flex items-center justify-center mb-4 mx-auto`}>
-                          <stat.icon className="w-6 h-6 text-white" />
+                      <div className="text-2xl font-bold text-gray-900 dark:text-white mb-2">
+                        {loading && !metrics ? (
+                          <div className="animate-pulse bg-gray-200 dark:bg-gray-700 h-8 rounded w-16 mx-auto"></div>
+                        ) : (
+                          stat.value
+                        )}
+                      </div>
+                      <h3 className="text-lg font-semibold mb-2 text-gray-900 dark:text-white">
+                        {stat.title}
+                      </h3>
+                      <p className="text-gray-600 dark:text-gray-300 text-sm leading-relaxed">
+                        {stat.description}
+                      </p>
+                      {loading && !metrics && (
+                        <div className="mt-2">
+                          <div className="inline-flex items-center gap-2 text-xs text-gray-500">
+                            <div className="w-2 h-2 bg-blue-500 rounded-full animate-pulse"></div>
+                            Loading data...
+                          </div>
                         </div>
-                        <div className="text-2xl font-bold text-gray-900 dark:text-white mb-2">
-                          {stat.value}
-                        </div>
-                        <h3 className="text-lg font-semibold mb-2 text-gray-900 dark:text-white">
-                          {stat.title}
-                        </h3>
-                        <p className="text-gray-600 dark:text-gray-300 text-sm leading-relaxed">
-                          {stat.description}
-                        </p>
-                      </motion.div>
-                    </StaggerItem>
-                  ))}
-                </div>
-              ) : (
-                // Error state
-                <div className="text-center py-8">
-                  <div className="text-red-600 dark:text-red-400 text-lg font-semibold mb-2">
-                    ❌ Failed to Load Metrics
-                  </div>
-                  <p className="text-gray-600 dark:text-gray-400 mb-4">
-                    Unable to fetch real-time data from Snowflake.
-                  </p>
-                  <button
-                    onClick={fetchMetrics}
-                    className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors"
-                  >
-                    Try Again
-                  </button>
-                </div>
-              )}
+                      )}
+                    </motion.div>
+                  </StaggerItem>
+                ))}
+              </div>
             </StaggerContainer>
           </div>
         </RevealOnScroll>
@@ -326,7 +342,7 @@ export default function GitHubEventsPlayground() {
                 </Link>
                 <Link 
                   href="/projects"
-                  className="inline-flex items-center gap-2 border border-green-600 text-green-600 dark:text-green-400 hover:bg-green-50 dark:hover:bg-green-900/20 px-6 py-3 rounded-lg font-medium transition-all"
+                  className="inline-flex items-center gap-2 border border-green-600 text-green-600 dark:text-green-400 hover:bg-green-900/20 px-6 py-3 rounded-lg font-medium transition-all"
                 >
                   <Github className="w-4 h-4" />
                   View All Projects

@@ -23,7 +23,7 @@ export default function GitHubEventsLiveDemo() {
   const [metrics, setMetrics] = useState(null)
   const [timelineData, setTimelineData] = useState(null)
   const [repositories, setRepositories] = useState(null)
-  const [loading, setLoading] = useState(true)
+  const [loading, setLoading] = useState(false) // Changed from true to false
   const [connectionStatus, setConnectionStatus] = useState('disconnected')
   const [activeTab, setActiveTab] = useState('overview')
   const [lastUpdated, setLastUpdated] = useState(null)
@@ -35,12 +35,19 @@ export default function GitHubEventsLiveDemo() {
     { id: 'insights', label: 'Insights', icon: TrendingUp }
   ]
 
-  // Real API calls to our Python backend endpoints
+  // Load data after component mounts, don't block initial render
   useEffect(() => {
-    loadData()
-    // Auto-refresh every 10 minutes (increased from 5 minutes)
+    // Small delay to ensure component renders first
+    const timer = setTimeout(() => {
+      loadData()
+    }, 200)
+    
+    // Auto-refresh every 10 minutes
     const interval = setInterval(loadData, 10 * 60 * 1000)
-    return () => clearInterval(interval)
+    return () => {
+      clearTimeout(timer)
+      clearInterval(interval)
+    }
   }, [])
 
   const loadData = async () => {
@@ -82,10 +89,8 @@ export default function GitHubEventsLiveDemo() {
       console.error('❌ Failed to load real Snowflake data:', error)
       setConnectionStatus('error')
       
-      // NO FALLBACK DATA - only show real Snowflake data or error state
-      setMetrics(null)
-      setTimelineData(null)
-      setRepositories(null)
+      // Keep existing data if available, don't clear everything
+      // This prevents the UI from disappearing on API errors
     } finally {
       setLoading(false)
     }
