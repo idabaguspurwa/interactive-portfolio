@@ -9,7 +9,7 @@ import dynamic from 'next/dynamic'
 import { callPythonAPI } from '@/lib/python-api'
 
 // Force dynamic rendering to prevent Vercel build issues
-export const dynamicConfig = 'force-dynamic'
+export const dynamic = 'force-dynamic'
 
 const InteractiveDataPlayground = dynamic(
   () => import('@/components/InteractiveDataPlayground'),
