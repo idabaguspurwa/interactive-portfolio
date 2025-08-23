@@ -15,6 +15,7 @@ A modern, interactive portfolio website built with Next.js, featuring smooth ani
 - **AI-Powered Data Tools**: Interactive CSV analysis with Google Gemini AI
 - **Data Lakehouse Visualization**: Bronze/Silver/Gold pipeline demonstration
 - **GitHub Events Dashboard**: Real-time GitHub activity monitoring with Snowflake
+- **Integrated Playground**: Data Lakehouse and GitHub Events in unified interface
 - **Stunning Animations**: Framer Motion for fluid, physics-based animations
 - **3D Graphics**: React Three Fiber & Three.js for interactive 3D elements
 - **Responsive Design**: Mobile-first approach with Tailwind CSS
@@ -28,6 +29,30 @@ A modern, interactive portfolio website built with Next.js, featuring smooth ani
 - **WebGL Management**: Optimized 3D rendering with error handling
 - **Page Transitions**: Smooth, modern navigation animations
 - **Memory Optimization**: Efficient resource management for better performance
+
+## 🎮 Interactive Data Playground
+
+The playground provides a unified interface for exploring data engineering concepts with two main sections:
+
+### Data Lakehouse Tab
+- **Interactive ETL Pipeline**: Bronze → Silver → Gold data transformation workflow
+- **Real Data Processing**: Upload CSV files or use sample datasets
+- **Live ETL Pipeline**: Watch data flow through Extract, Transform, and Load stages
+- **Performance Metrics**: Monitor processing speed, success rates, and data quality
+- **Apache Spark Simulation**: Experience data processing concepts in action
+
+### GitHub Events Tab
+- **Live Production Data**: Real-time connection to Snowflake database
+- **Integrated Dashboard**: GitHub Events data displayed directly in the tab
+- **Production Pipeline**: Completed GitHub Events data pipeline with real repository activity
+- **Advanced Analytics**: Complex aggregations, timeline analysis, and repository insights
+- **No Navigation Required**: See live data immediately when switching tabs
+
+### Performance Optimizations
+- **Instant Loading**: Playground main page loads without backend dependencies
+- **Isolated Cold Starts**: Only GitHub Events tab waits for Python backend warmup
+- **Dynamic Rendering**: Optimized for Vercel deployment with proper build configuration
+- **Efficient Component Loading**: Lazy loading with proper loading states
 
 ## 🛠️ Tech Stack
 
@@ -326,30 +351,7 @@ The pipeline automatically runs on:
    ```bash
    vercel --prod
    ```
-
-### Deploy Python Backend to Render
-
-1. **Push to GitHub**: Ensure all files are committed and pushed
-2. **Create Render Service**:
-   - Go to https://render.com
-   - Connect your GitHub account
-   - Create a new "Web Service"
-   - Select your repository
-   - Configure:
-     - **Build Command**: `pip install -r requirements.txt`
-     - **Start Command**: `uvicorn main:app --host 0.0.0.0 --port $PORT`
-     - **Root Directory**: `python-backend`
-3. **Set Environment Variables** in Render dashboard:
-   - `SNOWFLAKE_ACCOUNT`
-   - `SNOWFLAKE_USERNAME`
-   - `SNOWFLAKE_PASSWORD`
-   - `SNOWFLAKE_DATABASE`
-   - `SNOWFLAKE_SCHEMA`
-   - `SNOWFLAKE_WAREHOUSE`
-4. **Update Frontend Configuration**:
-   Once deployed, update `lib/python-api.js` with your Render URL
-
-### Deploy Python Backend to Fly.io (Recommended - No Credit Card Required)
+### Deploy Python Backend to Fly.io
 
 1. **Install Fly CLI**:
 
@@ -365,7 +367,7 @@ The pipeline automatically runs on:
    cd python-backend
    fly auth login
    fly launch
-   # Follow prompts, choose free tier, app name: github-events-backend
+   # Follow prompts, choose free tier, app name: events-backend
    ```
 3. **Set Environment Variables**:
 
@@ -387,19 +389,9 @@ The pipeline automatically runs on:
 
    ```javascript
    const PYTHON_API_BASE_URL = process.env.NODE_ENV === 'production' 
-     ? 'https://github-events-backend.fly.dev'  // Your Fly.io URL
+     ? 'https://events-backend.fly.dev'  // Your Fly.io URL
      : 'http://localhost:8000'
    ```
-
-### Why Fly.io?
-
-- ✅ **No credit card required** for free tier
-- ✅ **Free tier includes**: 3 shared-cpu VMs, 3GB storage, 160GB bandwidth
-- ✅ **Global deployment** with automatic CDN
-- ✅ **Easy deployment** with Docker
-- ✅ **Auto-scaling** and health checks
-- ✅ **Perfect for Python FastAPI** applications
-
 ## 🎨 Customization
 
 ### Personal Information
@@ -444,7 +436,8 @@ interactive-portfolio/
 │   ├── projects/          # Portfolio projects
 │   ├── skills/            # Skills showcase
 │   ├── playground/        # Interactive data playground
-│   │   └── github-events/ # GitHub events dashboard
+│   │   ├── page.jsx       # Main playground with integrated tabs
+│   │   └── github-events/ # Dedicated GitHub events page
 │   ├── publications/      # Research publications
 │   ├── globals.css        # Global styles & dashboard CSS
 │   ├── layout.jsx         # Root layout component
@@ -598,12 +591,13 @@ Live Demo: [https://idabaguspurwa.com](https://idabaguspurwa.com)
 
 ### Performance & Stability
 
-- ✅ **Fixed WebGL Context Loss**: Implemented robust WebGL context management
-- ✅ **Optimized Page Transitions**: Smooth, memory-efficient navigation animations
-- ✅ **Memory Optimization**: Reduced will-change CSS usage for better performance
-- ✅ **Error Handling**: Added comprehensive error boundaries for 3D components
-- ✅ **Dashboard Layout Optimization**: Fixed desktop grid layouts with mobile responsiveness
-- ✅ **Memory Management**: Enhanced resource handling and cleanup for better performance
+### Playground Integration & Performance
+- **Unified Playground Interface**: Integrated Data Lakehouse and GitHub Events in single tabbed interface
+- **Direct Data Access**: GitHub Events data now displays immediately in playground tabs
+- **Eliminated Navigation**: No more button clicking to see live data
+- **Optimized Loading**: Playground main page loads instantly, isolated backend cold starts
+- **Vercel Build Fixes**: Added dynamic rendering configuration to prevent build errors
+- **Component Architecture**: Cleaner separation of concerns with proper dynamic imports
 
 ### User Experience
 
