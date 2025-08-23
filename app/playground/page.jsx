@@ -389,7 +389,7 @@ function GitHubEventsTab() {
         
         <p className="text-gray-600 dark:text-gray-300 max-w-3xl mx-auto">
           Explore real-time data from my production GitHub Events pipeline. This dashboard connects directly to 
-          Snowflake to display live insights from {metrics?.totalEvents?.toLocaleString() || '7,301+'}+ GitHub events processed across {metrics?.uniqueRepos?.toLocaleString() || '6,170+'}+ repositories.
+          Snowflake to display live insights from {metrics?.totalEvents ? metrics.totalEvents.toLocaleString() : '7,301+'}+ GitHub events processed across {metrics?.uniqueRepos ? metrics.uniqueRepos.toLocaleString() : '6,170+'}+ repositories.
         </p>
 
         {/* Success Badge with Last Updated */}
