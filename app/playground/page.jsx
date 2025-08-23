@@ -19,18 +19,6 @@ const InteractiveDataPlayground = dynamic(
   }
 )
 
-const GitHubEventsLiveDemo = dynamic(
-  () => import('@/components/GitHubEventsLiveDemo'),
-  { 
-    ssr: false,
-    loading: () => (
-      <div className="flex items-center justify-center min-h-[400px]">
-        <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-primary-light dark:border-primary-dark"></div>
-      </div>
-    )
-  }
-)
-
 export default function PlaygroundPage() {
   const [activeTab, setActiveTab] = useState('data-lakehouse')
 
@@ -283,13 +271,19 @@ function GitHubEventsTab() {
             Experience my completed GitHub Events pipeline with live Snowflake data. 
             See real production results from 7,301+ processed events across 6,170+ repositories.
           </p>
+          
+          {/* Call to Action Button */}
+          <Link 
+            href="/playground/github-events"
+            className="inline-flex items-center gap-2 bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700 text-white px-6 py-3 rounded-lg font-medium transition-all"
+          >
+            <Github className="w-4 h-4" />
+            View Live GitHub Events Dashboard
+          </Link>
         </div>
       </RevealOnScroll>
 
-      {/* GitHub Events Live Dashboard */}
-      <RevealOnScroll direction="up" delay={0.7}>
-        <GitHubEventsLiveDemo />
-      </RevealOnScroll>
+      {/* Remove GitHubEventsLiveDemo - it will only load on the dedicated page */}
 
       {/* Technical Notes */}
       <RevealOnScroll direction="up" delay={0.9}>

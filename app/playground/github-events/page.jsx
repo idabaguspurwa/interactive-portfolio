@@ -135,6 +135,20 @@ export default function GitHubEventsPlayground() {
               Back to Playground
             </Link>
             
+            {/* Backend Status Indicator */}
+            {loading && !metrics && (
+              <div className="mb-6 p-4 bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-700 rounded-xl">
+                <div className="flex items-center justify-center gap-3 text-blue-700 dark:text-blue-300">
+                  <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-blue-500"></div>
+                  <span className="font-medium">Warming up Python backend...</span>
+                  <span className="text-sm opacity-75">(This may take 15-30 seconds on first visit)</span>
+                </div>
+                <p className="text-sm text-blue-600 dark:text-blue-400 mt-2 text-center">
+                  Your Python backend is starting up. This is normal for free-tier hosting.
+                </p>
+              </div>
+            )}
+            
             <div className="mb-6 flex items-center justify-center gap-4">
               <span className="bg-gradient-to-r from-green-600 to-emerald-600 dark:from-green-400 dark:to-emerald-400 bg-clip-text text-transparent text-lg font-semibold">
                 Live Production Data
@@ -164,10 +178,17 @@ export default function GitHubEventsPlayground() {
 
             {/* Success Badge with Last Updated */}
             <div className="mt-6 flex flex-col items-center gap-2">
-              <div className="inline-flex items-center gap-2 bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-300 px-4 py-2 rounded-full">
-                <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></div>
-                {metrics ? 'Production Pipeline Successfully Completed' : 'Connecting to Production Pipeline...'}
-              </div>
+              {metrics ? (
+                <div className="inline-flex items-center gap-2 bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-300 px-4 py-2 rounded-full">
+                  <div className="w-2 h-2 bg-green-500 rounded-full"></div>
+                  Production Pipeline Successfully Completed
+                </div>
+              ) : (
+                <div className="inline-flex items-center gap-2 bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300 px-4 py-2 rounded-full">
+                  <div className="w-2 h-2 bg-blue-500 rounded-full animate-pulse"></div>
+                  Connecting to Production Pipeline...
+                </div>
+              )}
               {lastUpdated && (
                 <div className="text-xs text-gray-500 dark:text-gray-400">
                   Last updated: {lastUpdated.toLocaleTimeString()}
@@ -176,6 +197,11 @@ export default function GitHubEventsPlayground() {
               {loading && !metrics && (
                 <div className="text-xs text-blue-500 dark:text-blue-400">
                   Fetching live data from Snowflake...
+                </div>
+              )}
+              {metrics && (
+                <div className="text-xs text-green-500 dark:text-green-400">
+                  ✅ Backend ready and data loaded successfully
                 </div>
               )}
             </div>
