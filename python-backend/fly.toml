@@ -1,5 +1,5 @@
 # fly.toml
-app = "github-events-backend"
+app = "events-backend"
 primary_region = "sin"
 
 [build]
