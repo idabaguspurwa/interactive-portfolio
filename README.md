@@ -45,7 +45,7 @@ A modern, interactive portfolio website built with Next.js, featuring smooth ani
 
 - **Language**: Python (FastAPI) + Next.js API Routes
 - **Database**: Snowflake (Data Warehouse)
-- **Deployment**: Render (Python Backend), Vercel (Frontend + API Routes)
+- **Deployment**: Fly.io (Python Backend - Recommended), Render (Python Backend), Vercel (Frontend + API Routes)
 - **API**: RESTful API with automatic documentation + Next.js serverless functions
 
 ### AI & Data Processing
@@ -58,7 +58,7 @@ A modern, interactive portfolio website built with Next.js, featuring smooth ani
 
 ### DevOps & Deployment
 
-- **Platform**: Vercel (Frontend), Render (Python Backend)
+- **Platform**: Vercel (Frontend), Fly.io (Python Backend - Recommended), Render (Python Backend)
 - **CI/CD**: GitHub Actions with automated testing
 - **Security**: CodeQL analysis, dependency auditing
 - **Performance**: Lighthouse CI, build optimization
@@ -66,7 +66,7 @@ A modern, interactive portfolio website built with Next.js, featuring smooth ani
 
 ## 🆚 Features Comparison
 
-| Feature                        | Traditional Portfolio      | This Portfolio                |
+| Feature                        | Traditional Portfolio      | This Portfolio                   |
 | ------------------------------ | -------------------------- | -------------------------------- |
 | **Data Analysis**        | ❌ None                    | ✅ AI-powered CSV analysis       |
 | **Dashboard Generation** | ❌ Manual creation         | ✅ Automatic AI generation       |
@@ -349,6 +349,57 @@ The pipeline automatically runs on:
 4. **Update Frontend Configuration**:
    Once deployed, update `lib/python-api.js` with your Render URL
 
+### Deploy Python Backend to Fly.io (Recommended - No Credit Card Required)
+
+1. **Install Fly CLI**:
+
+   ```bash
+   # Windows (PowerShell)
+   iwr https://fly.io/install.ps1 -useb | iex
+
+   # Or download from: https://fly.io/docs/hands-on/install-flyctl/
+   ```
+2. **Login and Launch**:
+
+   ```bash
+   cd python-backend
+   fly auth login
+   fly launch
+   # Follow prompts, choose free tier, app name: github-events-backend
+   ```
+3. **Set Environment Variables**:
+
+   ```bash
+   fly secrets set SNOWFLAKE_ACCOUNT="your_snowflake_account"
+   fly secrets set SNOWFLAKE_USERNAME="your_snowflake_username"
+   fly secrets set SNOWFLAKE_PASSWORD="your_snowflake_password"
+   fly secrets set SNOWFLAKE_DATABASE="your_database_name"
+   fly secrets set SNOWFLAKE_SCHEMA="your_schema_name"
+   fly secrets set SNOWFLAKE_WAREHOUSE="your_warehouse_name"
+   ```
+4. **Deploy**:
+
+   ```bash
+   fly deploy
+   ```
+5. **Update Frontend Configuration**:
+   Once deployed, update `lib/python-api.js` with your Fly.io URL:
+
+   ```javascript
+   const PYTHON_API_BASE_URL = process.env.NODE_ENV === 'production' 
+     ? 'https://github-events-backend.fly.dev'  // Your Fly.io URL
+     : 'http://localhost:8000'
+   ```
+
+### Why Fly.io?
+
+- ✅ **No credit card required** for free tier
+- ✅ **Free tier includes**: 3 shared-cpu VMs, 3GB storage, 160GB bandwidth
+- ✅ **Global deployment** with automatic CDN
+- ✅ **Easy deployment** with Docker
+- ✅ **Auto-scaling** and health checks
+- ✅ **Perfect for Python FastAPI** applications
+
 ## 🎨 Customization
 
 ### Personal Information
@@ -410,7 +461,9 @@ interactive-portfolio/
 ├── python-backend/        # Python FastAPI backend
 │   ├── main.py            # FastAPI application
 │   ├── requirements.txt   # Python dependencies
-│   ├── render.yaml        # Render deployment config
+│   ├── fly.toml           # Fly.io deployment config
+│   ├── Dockerfile         # Docker container config
+│   ├── .dockerignore      # Docker ignore file
 │   ├── runtime.txt        # Python runtime version
 │   ├── venv/              # Python virtual environment
 │   └── README.md          # Backend documentation

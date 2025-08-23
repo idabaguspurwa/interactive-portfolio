@@ -314,7 +314,7 @@ export default function GitHubEventsPlayground() {
               </h3>
               <p className="text-gray-600 dark:text-gray-300 mb-6 max-w-2xl mx-auto">
                 This project demonstrates production-grade data engineering from ingestion to insights. 
-                Let's discuss how similar real-time analytics can drive your business forward.
+                Let&apos;s discuss how similar real-time analytics can drive your business forward.
               </p>
               <div className="flex flex-col sm:flex-row gap-4 justify-center">
                 <Link 
@@ -322,7 +322,7 @@ export default function GitHubEventsPlayground() {
                   className="inline-flex items-center gap-2 bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700 text-white px-6 py-3 rounded-lg font-medium transition-all"
                 >
                   <Database className="w-4 h-4" />
-                  Let's Talk Data Engineering
+                  Let&apos;s Talk Data Engineering
                 </Link>
                 <Link 
                   href="/projects"
