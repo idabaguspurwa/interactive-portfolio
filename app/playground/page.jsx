@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
-import { RevealOnScroll, StaggerContainer, StaggerItem } from '@/components/ScrollAnimations'
+import { RevealOnScroll } from '@/components/ScrollAnimations'
 import { ArrowLeft, Database, Zap, BarChart3, Github, Activity, RefreshCw, Users, TrendingUp } from 'lucide-react'
 import Link from 'next/link'
 import dynamicImport from 'next/dynamic'
@@ -14,7 +14,6 @@ export const dynamic = 'force-dynamic'
 const InteractiveDataPlayground = dynamicImport(
   () => import('@/components/InteractiveDataPlayground'),
   { 
-    ssr: false,
     loading: () => (
       <div className="flex items-center justify-center min-h-[400px]">
         <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-primary-light dark:border-primary-dark"></div>
@@ -26,7 +25,6 @@ const InteractiveDataPlayground = dynamicImport(
 const GitHubEventsLiveDemo = dynamicImport(
   () => import('@/components/GitHubEventsLiveDemo'),
   { 
-    ssr: false,
     loading: () => (
       <div className="flex items-center justify-center min-h-[400px]">
         <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-green-500"></div>
@@ -35,15 +33,38 @@ const GitHubEventsLiveDemo = dynamicImport(
   }
 )
 
+// Error boundary component for dynamic imports
+function ErrorBoundary({ children, fallback }) {
+  const [hasError, setHasError] = useState(false)
+  
+  useEffect(() => {
+    const handleError = (error) => {
+      console.error('Component error:', error)
+      setHasError(true)
+    }
+    
+    window.addEventListener('error', handleError)
+    return () => window.removeEventListener('error', handleError)
+  }, [])
+  
+  if (hasError) {
+    return fallback
+  }
+  
+  return children
+}
+
 export default function PlaygroundPage() {
   const [activeTab, setActiveTab] = useState('data-lakehouse')
   const [isLoading, setIsLoading] = useState(true)
+  const [isHydrated, setIsHydrated] = useState(false)
 
-  // Ensure component is fully loaded
+  // Ensure component is fully loaded and hydrated
   useEffect(() => {
+    setIsHydrated(true)
     const timer = setTimeout(() => {
       setIsLoading(false)
-    }, 100)
+    }, 50)
     return () => clearTimeout(timer)
   }, [])
 
@@ -64,13 +85,39 @@ export default function PlaygroundPage() {
     }
   ]
 
-  // Show loading state while component initializes
-  if (isLoading) {
+  // Show loading state while component initializes, but ensure content is visible
+  if (isLoading && !isHydrated) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-gray-50 to-blue-50 dark:from-gray-900 dark:to-blue-900/20 pt-16 md:pt-20 pb-16 md:pb-20">
         <div className="max-w-6xl mx-auto px-4 md:px-6">
-          <div className="flex items-center justify-center min-h-[400px]">
-            <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-primary-light dark:border-primary-dark"></div>
+          {/* Show header immediately to prevent blank page */}
+          <div className="text-center mb-8 md:mb-12">
+            <Link 
+              href="/"
+              className="inline-flex items-center gap-2 text-primary-light dark:text-primary-dark hover:underline mb-4 md:mb-6"
+            >
+              <ArrowLeft className="w-4 h-4" />
+              Back to Portfolio
+            </Link>
+            
+            <h1 className="text-3xl md:text-4xl lg:text-6xl font-heading font-bold mb-4 md:mb-6">
+              <span className="bg-gradient-to-r from-primary-light via-purple-600 to-accent-light dark:from-primary-dark dark:via-purple-400 dark:to-accent-dark bg-clip-text text-transparent">
+                Data Engineering
+              </span>
+              <br />
+              <span className="text-gray-900 dark:text-white">Playground</span>
+            </h1>
+            
+            <p className="text-lg md:text-xl text-gray-600 dark:text-gray-300 max-w-3xl mx-auto leading-relaxed px-2">
+              Explore production-grade data engineering projects with interactive demos. 
+              Experience real data processing pipelines, live analytics, and cloud-native architectures.
+            </p>
+          </div>
+
+          {/* Show loading indicator */}
+          <div className="text-center">
+            <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-primary-light dark:border-primary-dark mx-auto mb-8"></div>
+            <p className="text-gray-600 dark:text-gray-300">Loading playground components...</p>
           </div>
         </div>
       </div>
@@ -200,10 +247,26 @@ function DataLakehouseTab() {
         </div>
       </RevealOnScroll>
 
-      {/* Main Playground Component */}
-      <RevealOnScroll direction="up" delay={0.5}>
-        <InteractiveDataPlayground />
-      </RevealOnScroll>
+             {/* Main Playground Component */}
+       <RevealOnScroll direction="up" delay={0.5}>
+         <ErrorBoundary 
+           fallback={
+             <div className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-700 rounded-xl p-6 text-center">
+               <p className="text-red-700 dark:text-red-300 mb-4">
+                 Interactive component failed to load. Please refresh the page.
+               </p>
+               <button 
+                 onClick={() => window.location.reload()} 
+                 className="bg-red-600 text-white px-4 py-2 rounded-lg hover:bg-red-700"
+               >
+                 Refresh Page
+               </button>
+             </div>
+           }
+         >
+           <InteractiveDataPlayground />
+         </ErrorBoundary>
+       </RevealOnScroll>
 
       {/* Technical Notes */}
       <RevealOnScroll direction="up" delay={0.7}>
@@ -275,75 +338,7 @@ function GitHubEventsTab() {
     }
   }
 
-  // Dynamic project stats using real data
-  const getProjectStats = () => {
-    // Show placeholder cards while loading or if no data
-    if (loading || !metrics) {
-      return [
-        {
-          icon: Database,
-          title: "Loading...",
-          description: "Fetching GitHub events data",
-          color: "from-gray-400 to-gray-500",
-          value: "—"
-        },
-        {
-          icon: Users,
-          title: "Loading...",
-          description: "Fetching developer data",
-          color: "from-gray-400 to-gray-500",
-          value: "—"
-        },
-        {
-          icon: Github,
-          title: "Loading...",
-          description: "Fetching repository data",
-          color: "from-gray-400 to-gray-500",
-          value: "—"
-        },
-        {
-          icon: TrendingUp,
-          title: "Loading...",
-          description: "Fetching performance data",
-          color: "from-gray-400 to-gray-500",
-          value: "—"
-        }
-      ]
-    }
 
-    return [
-      {
-        icon: Database,
-        title: `${metrics.totalEvents?.toLocaleString()} Events`,
-        description: "GitHub events successfully processed in production",
-        color: "from-green-500 to-emerald-500",
-        value: metrics.totalEvents?.toLocaleString() || "0"
-      },
-      {
-        icon: Users,
-        title: `${metrics.uniqueUsers?.toLocaleString()} Developers`,
-        description: "Unique developers tracked across repositories",
-        color: "from-blue-500 to-cyan-500",
-        value: metrics.uniqueUsers?.toLocaleString() || "0"
-      },
-      {
-        icon: Github,
-        title: `${metrics.uniqueRepos?.toLocaleString()} Repositories`,
-        description: "Open source projects monitored in real-time",
-        color: "from-purple-500 to-pink-500",
-        value: metrics.uniqueRepos?.toLocaleString() || "0"
-      },
-      {
-        icon: TrendingUp,
-        title: `${metrics.uptime}% Uptime`,
-        description: `Production pipeline reliability over ${metrics.daysOperational} days`,
-        color: "from-orange-500 to-red-500",
-        value: `${metrics.uptime}%`
-      }
-    ]
-  }
-
-  const projectStats = getProjectStats()
 
   return (
     <div>
@@ -356,7 +351,7 @@ function GitHubEventsTab() {
             <span className="text-sm opacity-75">(This may take 15-30 seconds on first visit)</span>
           </div>
           <p className="text-sm text-blue-600 dark:text-blue-400 mt-2 text-center">
-            Your Python backend is starting up. This is normal for free-tier hosting.
+            The Python backend is starting up. This is normal for free-tier hosting.
           </p>
         </div>
       )}
@@ -417,51 +412,7 @@ function GitHubEventsTab() {
         </div>
       </div>
 
-      {/* Project Stats Overview */}
-      <RevealOnScroll direction="up" delay={0.2}>
-        <div className="mb-12 md:mb-16">
-          <h3 className="text-2xl md:text-3xl font-bold text-center mb-8 text-gray-900 dark:text-white">
-            Pipeline Achievement Metrics
-          </h3>
-          <StaggerContainer>
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-              {projectStats.map((stat, index) => (
-                <StaggerItem key={stat.title}>
-                  <motion.div
-                    className="bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm rounded-2xl p-6 shadow-lg border border-gray-200/50 dark:border-gray-700/50 text-center"
-                    whileHover={{ scale: 1.05, y: -5 }}
-                  >
-                    <div className={`w-12 h-12 rounded-xl bg-gradient-to-r ${stat.color} flex items-center justify-center mb-4 mx-auto`}>
-                      <stat.icon className="w-6 h-6 text-white" />
-                    </div>
-                                         <div className="text-2xl font-bold text-gray-900 dark:text-white mb-2">
-                       {loading || !metrics ? (
-                         <div className="animate-pulse bg-gray-200 dark:bg-gray-700 h-8 rounded w-16 mx-auto"></div>
-                       ) : (
-                         stat.value
-                       )}
-                     </div>
-                    <h4 className="text-lg font-semibold mb-2 text-gray-900 dark:text-white">
-                      {stat.title}
-                    </h4>
-                    <p className="text-gray-600 dark:text-gray-300 text-sm leading-relaxed">
-                      {stat.description}
-                    </p>
-                                         {loading || !metrics ? (
-                       <div className="mt-2">
-                         <div className="inline-flex items-center gap-2 text-xs text-gray-500">
-                           <div className="w-2 h-2 bg-blue-500 rounded-full animate-pulse"></div>
-                           Loading data...
-                         </div>
-                       </div>
-                     ) : null}
-                  </motion.div>
-                </StaggerItem>
-              ))}
-            </div>
-          </StaggerContainer>
-        </div>
-      </RevealOnScroll>
+      
 
       {/* Key Features */}
       <RevealOnScroll direction="up" delay={0.3}>
@@ -515,9 +466,25 @@ function GitHubEventsTab() {
             Real-time data from production Snowflake database
           </p>
           
-          <div className="min-h-[400px]">
-            <GitHubEventsLiveDemo />
-          </div>
+                     <div className="min-h-[400px]">
+             <ErrorBoundary 
+               fallback={
+                 <div className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-700 rounded-xl p-6 text-center">
+                   <p className="text-red-700 dark:text-red-300 mb-4">
+                     GitHub Events component failed to load. Please refresh the page.
+                   </p>
+                   <button 
+                     onClick={() => window.location.reload()} 
+                     className="bg-red-600 text-white px-4 py-2 rounded-lg hover:bg-red-700"
+                   >
+                     Refresh Page
+                   </button>
+                 </div>
+               }
+             >
+               <GitHubEventsLiveDemo />
+             </ErrorBoundary>
+           </div>
         </div>
       </RevealOnScroll>
 
@@ -542,7 +509,7 @@ function GitHubEventsTab() {
               },
               {
                 title: "Production Infrastructure", 
-                items: ["Kubernetes orchestration", "Snowflake data warehouse", "Prometheus monitoring", "99.7% uptime achieved"]
+                items: ["Kubernetes orchestration", "Snowflake data warehouse", "Prometheus monitoring", "97.6% uptime achieved"]
               },
               {
                 title: "Data Engineering Best Practices",
