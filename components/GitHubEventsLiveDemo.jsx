@@ -17,6 +17,7 @@ import {
   AlertCircle
 } from 'lucide-react'
 import { Button } from '@/components/ui/Button'
+import { callPythonAPI } from '@/lib/python-api'
 
 export default function GitHubEventsLiveDemo() {
   const [metrics, setMetrics] = useState(null)
@@ -34,7 +35,7 @@ export default function GitHubEventsLiveDemo() {
     { id: 'insights', label: 'Insights', icon: TrendingUp }
   ]
 
-  // Real API calls to our Snowflake endpoints
+  // Real API calls to our Python backend endpoints
   useEffect(() => {
     loadData()
     // Auto-refresh every 10 minutes (increased from 5 minutes)
@@ -49,20 +50,12 @@ export default function GitHubEventsLiveDemo() {
     try {
       const startTime = Date.now()
       
-      // Fetch all data in parallel for better performance
-      const [metricsResponse, timelineResponse, reposResponse] = await Promise.all([
-        fetch('/api/github-metrics-python'),
-        fetch('/api/github-timeline-python'),
-        fetch('/api/github-repositories-python?limit=5') // Reduced limit for faster queries
+      // Fetch all data in parallel for better performance using Python API
+      const [metricsData, timelineData, reposData] = await Promise.all([
+        callPythonAPI('/api/github-metrics'),
+        callPythonAPI('/api/github-timeline'),
+        callPythonAPI('/api/github-repositories?limit=5') // Reduced limit for faster queries
       ])
-
-      if (!metricsResponse.ok || !timelineResponse.ok || !reposResponse.ok) {
-        throw new Error('One or more API requests failed')
-      }
-
-      const metricsData = await metricsResponse.json()
-      const timelineData = await timelineResponse.json()
-      const reposData = await reposResponse.json()
 
       // Only proceed if ALL APIs return successful Snowflake data
       if (!metricsData.success || !timelineData.success || !reposData.success) {

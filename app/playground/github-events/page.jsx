@@ -6,6 +6,7 @@ import { RevealOnScroll, StaggerContainer, StaggerItem } from '@/components/Scro
 import { ArrowLeft, Database, Activity, BarChart3, Zap, Github, Calendar, Users, TrendingUp, RefreshCw } from 'lucide-react'
 import Link from 'next/link'
 import dynamic from 'next/dynamic'
+import { callPythonAPI } from '@/lib/python-api'
 
 const GitHubEventsLiveDemo = dynamic(
   () => import('@/components/GitHubEventsLiveDemo'),
@@ -24,7 +25,7 @@ export default function GitHubEventsPlayground() {
   const [loading, setLoading] = useState(true)
   const [lastUpdated, setLastUpdated] = useState(null)
 
-  // Fetch real metrics from our API
+  // Fetch real metrics from our Python backend API
   useEffect(() => {
     fetchMetrics()
   }, [])
@@ -32,8 +33,7 @@ export default function GitHubEventsPlayground() {
   const fetchMetrics = async () => {
     try {
       setLoading(true)
-      const response = await fetch('/api/github-metrics-python')
-      const data = await response.json()
+      const data = await callPythonAPI('/api/github-metrics')
       
       if (data.success) {
         setMetrics(data.data)
