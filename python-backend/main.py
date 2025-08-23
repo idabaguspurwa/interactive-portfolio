@@ -29,8 +29,8 @@ SNOWFLAKE_CONFIG = {
     'password': os.getenv('SNOWFLAKE_PASSWORD', 'your_password'),
     'account': os.getenv('SNOWFLAKE_ACCOUNT', 'your_account'),
     'warehouse': os.getenv('SNOWFLAKE_WAREHOUSE', 'your_warehouse'),
-    'database': os.getenv('SNOWFLAKE_DATABASE', 'your_database'),
-    'schema': os.getenv('SNOWFLAKE_SCHEMA', 'your_schema')
+    'database': os.getenv('SNOWFLAKE_DATABASE', 'GITHUB_EVENTS_DB'),
+    'schema': os.getenv('SNOWFLAKE_SCHEMA', 'RAW')
 }
 
 def get_snowflake_connection():
@@ -57,35 +57,35 @@ async def get_github_metrics():
         conn = get_snowflake_connection()
         cursor = conn.cursor()
         
-        # Get total events count
+        # Get total events count from raw events
         cursor.execute("""
             SELECT COUNT(*) as total_events
-            FROM github_events
-            WHERE created_at >= DATEADD(day, -30, CURRENT_DATE())
+            FROM RAW_EVENTS
+            WHERE V:created_at::TIMESTAMP >= DATEADD(day, -30, CURRENT_DATE())
         """)
         total_events = cursor.fetchone()[0]
         
-        # Get unique repositories count
+        # Get unique repositories count from raw events
         cursor.execute("""
-            SELECT COUNT(DISTINCT repo_name) as unique_repos
-            FROM github_events
-            WHERE created_at >= DATEADD(day, -30, CURRENT_DATE())
+            SELECT COUNT(DISTINCT V:repo.name::STRING) as unique_repos
+            FROM RAW_EVENTS
+            WHERE V:created_at::TIMESTAMP >= DATEADD(day, -30, CURRENT_DATE())
         """)
         unique_repos = cursor.fetchone()[0]
         
-        # Get unique users count
+        # Get unique users count from raw events
         cursor.execute("""
-            SELECT COUNT(DISTINCT actor_login) as unique_users
-            FROM github_events
-            WHERE created_at >= DATEADD(day, -30, CURRENT_DATE())
+            SELECT COUNT(DISTINCT V:actor.login::STRING) as unique_users
+            FROM RAW_EVENTS
+            WHERE V:created_at::TIMESTAMP >= DATEADD(day, -30, CURRENT_DATE())
         """)
         unique_users = cursor.fetchone()[0]
         
-        # Get events in last 24 hours
+        # Get events in last 24 hours from raw events
         cursor.execute("""
             SELECT COUNT(*) as events_24h
-            FROM github_events
-            WHERE created_at >= DATEADD(hour, -24, CURRENT_TIMESTAMP())
+            FROM RAW_EVENTS
+            WHERE V:created_at::TIMESTAMP >= DATEADD(hour, -24, CURRENT_TIMESTAMP())
         """)
         events_24h = cursor.fetchone()[0]
         
@@ -120,13 +120,13 @@ async def get_github_timeline():
         
         cursor.execute("""
             SELECT 
-                DATE(created_at) as date,
+                DATE(V:created_at::TIMESTAMP) as date,
                 COUNT(*) as event_count,
-                COUNT(DISTINCT repo_name) as repo_count,
-                COUNT(DISTINCT actor_login) as user_count
-            FROM github_events
-            WHERE created_at >= DATEADD(day, -30, CURRENT_DATE())
-            GROUP BY DATE(created_at)
+                COUNT(DISTINCT V:repo.name::STRING) as repo_count,
+                COUNT(DISTINCT V:actor.login::STRING) as user_count
+            FROM RAW_EVENTS
+            WHERE V:created_at::TIMESTAMP >= DATEADD(day, -30, CURRENT_DATE())
+            GROUP BY DATE(V:created_at::TIMESTAMP)
             ORDER BY date DESC
             LIMIT 30
         """)
@@ -167,13 +167,13 @@ async def get_github_repositories(limit: int = Query(10, ge=1, le=100)):
         
         cursor.execute("""
             SELECT 
-                repo_name,
+                V:repo.name::STRING as repo_name,
                 COUNT(*) as event_count,
-                COUNT(DISTINCT actor_login) as unique_users,
-                MAX(created_at) as last_activity
-            FROM github_events
-            WHERE created_at >= DATEADD(day, -30, CURRENT_DATE())
-            GROUP BY repo_name
+                COUNT(DISTINCT V:actor.login::STRING) as unique_users,
+                MAX(V:created_at::TIMESTAMP) as last_activity
+            FROM RAW_EVENTS
+            WHERE V:created_at::TIMESTAMP >= DATEADD(day, -30, CURRENT_DATE())
+            GROUP BY V:repo.name::STRING
             ORDER BY event_count DESC
             LIMIT %s
         """, (limit,))
@@ -244,12 +244,12 @@ async def execute_custom_query(
         
         # Build group by clause
         group_by_mapping = {
-            'repository': 'repo_name',
-            'user': 'actor_login',
-            'event_type': 'event_type',
-            'language': 'repo_language',
-            'hour': 'HOUR(created_at)',
-            'day': 'DAYOFWEEK(created_at)'
+            'repository': 'V:repo.name::STRING',
+            'user': 'V:actor.login::STRING',
+            'event_type': 'V:type::STRING',
+            'language': 'V:repo.language::STRING',
+            'hour': 'HOUR(V:created_at::TIMESTAMP)',
+            'day': 'DAYOFWEEK(V:created_at::TIMESTAMP)'
         }
         
         if group_by not in group_by_mapping:
@@ -260,9 +260,9 @@ async def execute_custom_query(
         # Build sort by clause
         sort_by_mapping = {
             'event_count': 'event_count DESC',
-            'timestamp': 'created_at DESC',
-            'repository': 'repo_name ASC',
-            'user': 'actor_login ASC'
+            'timestamp': 'V:created_at::TIMESTAMP DESC',
+            'repository': 'V:repo.name::STRING ASC',
+            'user': 'V:actor.login::STRING ASC'
         }
         
         if sort_by not in sort_by_mapping:
@@ -270,14 +270,14 @@ async def execute_custom_query(
         
         sort_clause = sort_by_mapping[sort_by]
         
-        # Execute query
+        # Execute query using RAW_EVENTS table with JSON extraction
         query = f"""
             SELECT 
                 {group_by_field} as {group_by},
                 COUNT(*) as event_count,
                 COUNT(DISTINCT CASE WHEN {group_by_field} != {group_by_field} THEN NULL ELSE {group_by_field} END) as unique_count
-            FROM github_events
-            WHERE created_at >= {time_filter}
+            FROM RAW_EVENTS
+            WHERE V:created_at::TIMESTAMP >= {time_filter}
             {event_type_filter}
             GROUP BY {group_by_field}
             ORDER BY {sort_clause}
