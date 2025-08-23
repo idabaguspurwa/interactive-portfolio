@@ -7,19 +7,20 @@
 [![TypeScript](https://img.shields.io/badge/TypeScript-5-blue?style=flat&logo=typescript)](https://www.typescriptlang.org/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
-A modern, interactive portfolio website built with Next.js, featuring smooth animations, 3D elements, AI-powered data analysis tools, and a robust Go backend API. This portfolio demonstrates advanced full-stack development skills and modern technologies.
+A modern, interactive portfolio website built with Next.js, featuring smooth animations, 3D elements, AI-powered data analysis tools, and a robust Python FastAPI backend with Snowflake integration. This portfolio demonstrates advanced full-stack development skills and modern technologies.
 
 ## 🚀 Features
 
 - **Modern Tech Stack**: Next.js 14 with App Router, React 18, TypeScript
 - **AI-Powered Data Tools**: Interactive CSV analysis with Google Gemini AI
 - **Data Lakehouse Visualization**: Bronze/Silver/Gold pipeline demonstration
+- **GitHub Events Dashboard**: Real-time GitHub activity monitoring with Snowflake
 - **Stunning Animations**: Framer Motion for fluid, physics-based animations
 - **3D Graphics**: React Three Fiber & Three.js for interactive 3D elements
 - **Responsive Design**: Mobile-first approach with Tailwind CSS
 - **Dark/Light Theme**: Smooth theme switching with system preference detection
 - **Performance Optimized**: SSR, SSG, and optimized images
-- **Contact Form**: Go backend API with email integration
+- **Contact Form**: Enhanced contact form with email integration
 - **CI/CD Pipeline**: Automated testing, linting, and deployment
 - **Security Scanning**: CodeQL analysis and dependency auditing
 - **SEO Friendly**: Optimized meta tags and structured data
@@ -42,10 +43,10 @@ A modern, interactive portfolio website built with Next.js, featuring smooth ani
 
 ### Backend
 
-- **Language**: Go (Golang)
-- **Email**: Resend integration with HTML templates
-- **Validation**: Go Playground Validator
-- **Deployment**: Vercel Serverless Functions
+- **Language**: Python (FastAPI) + Next.js API Routes
+- **Database**: Snowflake (Data Warehouse)
+- **Deployment**: Render (Python Backend), Vercel (Frontend + API Routes)
+- **API**: RESTful API with automatic documentation + Next.js serverless functions
 
 ### AI & Data Processing
 
@@ -53,20 +54,19 @@ A modern, interactive portfolio website built with Next.js, featuring smooth ani
 - **Data Analysis**: CSV processing and intelligent insights
 - **Visualization**: Interactive data lakehouse pipeline
 - **Error Handling**: Robust AI service with fallback mechanisms
+- **Data Integration**: Real-time GitHub events and metrics
 
 ### DevOps & Deployment
 
-- **Platform**: Vercel
+- **Platform**: Vercel (Frontend), Render (Python Backend)
 - **CI/CD**: GitHub Actions with automated testing
 - **Security**: CodeQL analysis, dependency auditing
 - **Performance**: Lighthouse CI, build optimization
-- **Environment**: Node.js 18+, Go 1.21+
+- **Environment**: Node.js 18+, Python 3.9+
 
 ## 🆚 Features Comparison
 
-See how your AI-powered portfolio stands out from traditional portfolios:
-
-| Feature                        | Traditional Portfolio      | Your AI Portfolio                |
+| Feature                        | Traditional Portfolio      | This Portfolio                |
 | ------------------------------ | -------------------------- | -------------------------------- |
 | **Data Analysis**        | ❌ None                    | ✅ AI-powered CSV analysis       |
 | **Dashboard Generation** | ❌ Manual creation         | ✅ Automatic AI generation       |
@@ -84,7 +84,7 @@ See how your AI-powered portfolio stands out from traditional portfolios:
 ### Prerequisites
 
 - Node.js 18+ and npm/yarn
-- Go 1.21+ (for backend development)
+- Python 3.9+ (for backend development)
 - Git
 
 ### Clone Repository
@@ -100,10 +100,10 @@ cd interactive-portfolio
 # Install Node.js dependencies
 npm install
 
-# Install Go dependencies (for backend)
-cd api/contact
-go mod tidy
-cd ../..
+# Install Python dependencies (for backend)
+cd python-backend
+pip install -r requirements.txt
+cd ..
 ```
 
 ### Environment Variables
@@ -123,13 +123,30 @@ GEMINI_API_KEY=your-gemini-api-key
 NEXT_PUBLIC_GA_ID=your-ga-id
 ```
 
+Create a `.env` file in the `python-backend` directory:
+
+```env
+# Snowflake Configuration
+SNOWFLAKE_ACCOUNT=your_snowflake_account
+SNOWFLAKE_USERNAME=your_snowflake_username
+SNOWFLAKE_PASSWORD=your_snowflake_password
+SNOWFLAKE_DATABASE=your_database_name
+SNOWFLAKE_SCHEMA=your_schema_name
+SNOWFLAKE_WAREHOUSE=your_warehouse_name
+```
+
 ### Development Server
 
 ```bash
 # Start Next.js development server
 npm run dev
 
+# Start Python FastAPI server (in another terminal)
+cd python-backend
+uvicorn main:app --host 0.0.0.0 --port 8000 --reload
+
 # The app will be available at http://localhost:3000
+# The API will be available at http://localhost:8000
 ```
 
 ## ⚡ Quick Start Guide
@@ -194,11 +211,11 @@ npm run dev
 ### Test Contact Form Locally
 
 ```bash
-# Run Go API server locally
-cd api/contact
-go run main.go
+# Run Python API server locally
+cd python-backend
+uvicorn main:app --host 0.0.0.0 --port 8000 --reload
 
-# API will be available at http://localhost:8080
+# API will be available at http://localhost:8000
 ```
 
 ## 🔧 Troubleshooting
@@ -232,7 +249,7 @@ go run main.go
 #### **API & Backend Issues**
 
 - **❌ Contact form fails**: Verify `RESEND_API_KEY` is set correctly
-- **❌ Go backend errors**: Check Go version (requires 1.21+)
+- **❌ Next.js API errors**: Check browser console for API route errors
 - **❌ Build failures**: Clear `node_modules` and reinstall dependencies
 
 ### Getting Help
@@ -278,7 +295,7 @@ npm run build         # Production build
 1. **Fork/Clone** the repository
 2. **Enable GitHub Actions** in your repository settings
 3. **Set Repository Secrets** in GitHub:
-   - `GOOGLE_GENERATIVE_AI_API_KEY`
+   - `GEMINI_API_KEY`
    - Other environment variables as needed
 
 The pipeline automatically runs on:
@@ -289,7 +306,7 @@ The pipeline automatically runs on:
 
 ## 🚀 Deployment
 
-### Deploy to Vercel (Recommended)
+### Deploy to Vercel (Frontend)
 
 1. **Connect to Vercel**:
 
@@ -310,26 +327,27 @@ The pipeline automatically runs on:
    vercel --prod
    ```
 
-### Alternative Deployment Options
+### Deploy Python Backend to Render
 
-#### Netlify
-
-```bash
-# Build the static site
-npm run build
-npm run export
-
-# Deploy the 'out' directory to Netlify
-```
-
-#### AWS Amplify
-
-```bash
-# Connect your repository to AWS Amplify
-# Configure build settings:
-# Build command: npm run build
-# Publish directory: .next
-```
+1. **Push to GitHub**: Ensure all files are committed and pushed
+2. **Create Render Service**:
+   - Go to https://render.com
+   - Connect your GitHub account
+   - Create a new "Web Service"
+   - Select your repository
+   - Configure:
+     - **Build Command**: `pip install -r requirements.txt`
+     - **Start Command**: `uvicorn main:app --host 0.0.0.0 --port $PORT`
+     - **Root Directory**: `python-backend`
+3. **Set Environment Variables** in Render dashboard:
+   - `SNOWFLAKE_ACCOUNT`
+   - `SNOWFLAKE_USERNAME`
+   - `SNOWFLAKE_PASSWORD`
+   - `SNOWFLAKE_DATABASE`
+   - `SNOWFLAKE_SCHEMA`
+   - `SNOWFLAKE_WAREHOUSE`
+4. **Update Frontend Configuration**:
+   Once deployed, update `lib/python-api.js` with your Render URL
 
 ## 🎨 Customization
 
@@ -375,6 +393,7 @@ interactive-portfolio/
 │   ├── projects/          # Portfolio projects
 │   ├── skills/            # Skills showcase
 │   ├── playground/        # Interactive data playground
+│   │   └── github-events/ # GitHub events dashboard
 │   ├── publications/      # Research publications
 │   ├── globals.css        # Global styles & dashboard CSS
 │   ├── layout.jsx         # Root layout component
@@ -384,18 +403,23 @@ interactive-portfolio/
 │   ├── ai-clean-csv/      # AI-powered CSV cleaning
 │   ├── analyze-csv/       # CSV analysis with Gemini AI
 │   ├── process-csv/       # CSV processing & ETL
-│   └── contact/           # Contact form handling
-├── api/                   # Go backend services
-│   ├── contact/           # Go contact API
-│   │   ├── main.go        # Main Go server
-│   │   ├── go.mod         # Go module file
-│   │   └── go.sum         # Go dependencies
-│   └── contact-go.go      # Go contact handler
+│   ├── contact/           # Contact form handling (Next.js API)
+│   ├── github-metrics-python/    # GitHub metrics via Python backend
+│   ├── github-timeline-python/   # GitHub timeline via Python backend
+│   └── github-repositories-python/ # GitHub repos via Python backend
+├── python-backend/        # Python FastAPI backend
+│   ├── main.py            # FastAPI application
+│   ├── requirements.txt   # Python dependencies
+│   ├── render.yaml        # Render deployment config
+│   ├── runtime.txt        # Python runtime version
+│   ├── venv/              # Python virtual environment
+│   └── README.md          # Backend documentation
 ├── components/            # React components
 │   ├── ui/                # UI component library
 │   │   └── Button.jsx     # Reusable button component
 │   ├── DataDashboard.jsx  # AI-powered dashboard component
 │   ├── InteractiveDataPlayground.jsx # CSV analysis interface
+│   ├── GitHubEventsLiveDemo.jsx # GitHub events dashboard
 │   ├── EnhancedContactForm.jsx # Enhanced contact form
 │   ├── InteractiveSkills.jsx # Interactive skills display
 │   ├── MobileOptimizations.jsx # Mobile-specific optimizations
@@ -409,28 +433,56 @@ interactive-portfolio/
 │   ├── Navbar.jsx         # Navigation component
 │   └── Footer.jsx         # Footer component
 ├── lib/                   # Utility functions
-│   └── utils.js           # Common utility functions
+│   ├── utils.js           # Common utility functions
+│   └── python-api.js      # Python backend API client
 ├── public/                # Static assets
 │   ├── favicon.svg        # Custom data engineering favicon
+│   ├── favicon.ico        # Browser favicon
+│   ├── favicon-16x16.png  # Small favicon
+│   ├── favicon-32x32.png  # Large favicon
 │   ├── manifest.json      # PWA manifest
+│   ├── sw.js              # Service worker
+│   ├── robots.txt         # SEO robots file
+│   ├── sitemap.xml        # SEO sitemap
 │   ├── logo.jpg           # Portfolio logo
 │   ├── portfolioimg.png   # Portfolio images
 │   ├── CV.pdf             # Resume/CV
-│   └── [other assets]     # Various portfolio images
-├── grafana/               # Grafana dashboards & provisioning
-│   ├── provisioning/      # Grafana configuration
-│   │   ├── dashboards/    # Dashboard definitions
-│   │   └── datasources/   # Data source configurations
+│   ├── fonts/             # Custom fonts directory
+│   ├── 3dportfolio.png    # 3D portfolio showcase
+│   ├── intelligent_dashboard.png # AI dashboard example
+│   ├── dataplatform.png   # Data platform project
+│   ├── airflow-pipeline.png # Airflow project
+│   ├── basketball-detection.png # ML project
+│   ├── beritau_mobile.png # Mobile app project
+│   ├── champions-league.png # Sports analytics project
+│   ├── f1analytics.png    # F1 analytics project
+│   ├── fakenewsDetection.png # AI detection project
+│   ├── football-streaming.png # Streaming project
+│   ├── mail_deletion.jpg  # Email automation project
+│   ├── mtgraphy.png       # Photography project
+│   ├── nyctaxi.png        # NYC taxi analysis
+│   ├── reactporto.png     # React portfolio
+│   ├── stockmarket.png    # Stock market analysis
+│   └── viewContractor.png # Contractor platform
 ├── __tests__/             # Test files
 │   └── example.test.js    # Example test
 ├── .github/               # GitHub configuration
 │   └── workflows/         # CI/CD workflows
+├── .vscode/               # VS Code configuration
+├── .git/                  # Git repository
+├── node_modules/          # Node.js dependencies
+├── .next/                 # Next.js build output
 ├── LICENSE                # MIT License
 ├── next.config.js         # Next.js configuration
+├── next-env.d.ts          # Next.js TypeScript types
 ├── tailwind.config.js     # Tailwind CSS configuration
 ├── tsconfig.json          # TypeScript configuration
 ├── jest.config.js         # Jest testing configuration
+├── jest.setup.js          # Jest setup configuration
+├── .eslintrc.json         # ESLint configuration
+├── postcss.config.js      # PostCSS configuration
 ├── package.json           # Node.js dependencies
+├── package-lock.json      # Locked dependencies
 └── README.md              # Project documentation
 ```
 
@@ -519,6 +571,16 @@ Live Demo: [https://idabaguspurwa.com](https://idabaguspurwa.com)
 - ✅ **Data Lakehouse Pipeline**: Interactive ETL workflow with real-time progress tracking
 - ✅ **CSV Analysis**: Enhanced AI analysis with step-by-step progress indicators
 
+### Backend Architecture
+
+- ✅ **Python FastAPI Backend**: Modern, fast Python backend for data processing
+- ✅ **Snowflake Integration**: Enterprise-grade data warehouse connectivity
+- ✅ **GitHub Events API**: Real-time GitHub activity monitoring
+- ✅ **Render Deployment**: Scalable cloud deployment for Python backend
+- ✅ **Next.js API Routes**: Serverless functions for contact form and AI features
+- ✅ **API Documentation**: Automatic OpenAPI/Swagger documentation
+- ✅ **Performance Monitoring**: Backend performance tracking and optimization
+
 ---
 
-Built with ❤️ using Next.js and Go
+Built with ❤️ using Next.js and Python FastAPI

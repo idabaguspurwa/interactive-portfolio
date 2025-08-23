@@ -7,6 +7,7 @@ import { OrbitControls, Float, Box, Sphere, Cylinder, Torus } from '@react-three
 import { ExternalLink, Github, Star, Calendar, Users, Zap, Database, Cloud, Code, Brain, Smartphone, Eye, Palette, BarChart3 } from 'lucide-react'
 import { Button } from '@/components/ui/Button'
 import Image from 'next/image'
+import Link from 'next/link'
 import { useRef } from 'react'
 import { useFrame } from '@react-three/fiber'
 import { ScrollProgress, RevealOnScroll, StaggerContainer, StaggerItem } from '@/components/ScrollAnimations'
@@ -83,7 +84,7 @@ export default function ProjectsPage() {
       tags: ["Apache Airflow", "Apache Kafka", "Kubernetes", "Snowflake", "dbt", "Prometheus", "Grafana", "Python", "Great Expectations"],
       image: '/airflow-pipeline.png',
       github: "https://github.com/idabaguspurwa/github-events-pipeline",
-      demo: null,
+      demo: "/playground/github-events",
       featured: true,
       year: '2025',
       team: 'Solo Project',
@@ -581,14 +582,28 @@ export default function ProjectsPage() {
                             </Button>
                           )}
                           {project.demo && project.demo !== 'Confidential' && (
-                            <Button 
-                              size="sm" 
-                              className="flex items-center gap-2"
-                              onClick={() => window.open(project.demo, '_blank')}
-                            >
-                              <ExternalLink className="w-4 h-4" />
-                              Demo
-                            </Button>
+                            <>
+                              {project.demo.startsWith('/') ? (
+                                <Link href={project.demo}>
+                                  <Button 
+                                    size="sm" 
+                                    className="flex items-center gap-2"
+                                  >
+                                    <BarChart3 className="w-4 h-4" />
+                                    View Analytics
+                                  </Button>
+                                </Link>
+                              ) : (
+                                <Button 
+                                  size="sm" 
+                                  className="flex items-center gap-2"
+                                  onClick={() => window.open(project.demo, '_blank')}
+                                >
+                                  <ExternalLink className="w-4 h-4" />
+                                  Demo
+                                </Button>
+                              )}
+                            </>
                           )}
                           {(project.github === 'Private' || project.demo === 'Confidential') && (
                             <span className="text-sm text-gray-500 italic flex items-center gap-1">
@@ -724,14 +739,28 @@ export default function ProjectsPage() {
                         </Button>
                       )}
                       {project.demo && project.demo !== 'Confidential' && (
-                        <Button 
-                          size="sm" 
-                          className="flex items-center gap-1 text-xs"
-                          onClick={() => window.open(project.demo, '_blank')}
-                        >
-                          <ExternalLink className="w-3 h-3" />
-                          Demo
-                        </Button>
+                        <>
+                          {project.demo.startsWith('/') ? (
+                            <Link href={project.demo}>
+                              <Button 
+                                size="sm" 
+                                className="flex items-center gap-1 text-xs"
+                              >
+                                <BarChart3 className="w-3 h-3" />
+                                Analytics
+                              </Button>
+                            </Link>
+                          ) : (
+                            <Button 
+                              size="sm" 
+                              className="flex items-center gap-1 text-xs"
+                              onClick={() => window.open(project.demo, '_blank')}
+                            >
+                              <ExternalLink className="w-3 h-3" />
+                              Demo
+                            </Button>
+                          )}
+                        </>
                       )}
                     </div>
                   </div>
