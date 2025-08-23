@@ -25,7 +25,7 @@ app.add_middleware(
 
 # Snowflake connection configuration
 SNOWFLAKE_CONFIG = {
-    'user': os.getenv('SNOWFLAKE_USER', 'your_username'),
+    'user': os.getenv('SNOWFLAKE_USERNAME', 'your_username'),
     'password': os.getenv('SNOWFLAKE_PASSWORD', 'your_password'),
     'account': os.getenv('SNOWFLAKE_ACCOUNT', 'your_account'),
     'warehouse': os.getenv('SNOWFLAKE_WAREHOUSE', 'your_warehouse'),
