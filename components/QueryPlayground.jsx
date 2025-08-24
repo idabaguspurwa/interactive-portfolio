@@ -244,15 +244,12 @@ export default function QueryPlayground() {
 
   return (
     <div className="space-y-6">
-      {/* Header */}
-      <div className="text-center">
-        <h2 className="text-2xl md:text-3xl font-bold mb-4 text-gray-900 dark:text-white">
-          Interactive Query Playground
-        </h2>
-        <p className="text-gray-600 dark:text-gray-300 max-w-3xl mx-auto">
-          Explore GitHub events data with custom queries. Build, execute, and analyze real-time data from our production Snowflake database.
-        </p>
-      </div>
+             {/* Header */}
+       <div className="text-center">
+         <p className="text-gray-600 dark:text-gray-300 max-w-3xl mx-auto mb-6">
+           Build custom queries to explore GitHub events data interactively. Execute and analyze real-time data from our production Snowflake database.
+         </p>
+       </div>
 
              <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
          {/* Left Panel - Query Builder */}
