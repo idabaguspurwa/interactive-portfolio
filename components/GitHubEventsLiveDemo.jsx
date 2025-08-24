@@ -228,28 +228,28 @@ function OverviewTab({ metrics, loading, connectionStatus }) {
   const metricCards = [
     {
       title: 'Total Events',
-      value: metrics.totalEvents?.toLocaleString() || '0',
+      value: metrics.totalEvents ? metrics.totalEvents.toLocaleString() : '0',
       icon: Activity,
       color: 'from-blue-500 to-cyan-500',
       description: 'GitHub events processed'
     },
     {
       title: 'Unique Users',
-      value: metrics.uniqueUsers?.toLocaleString() || '0',
+      value: metrics.uniqueUsers ? metrics.uniqueUsers.toLocaleString() : '0',
       icon: Users,
       color: 'from-green-500 to-emerald-500',
       description: 'Active contributors'
     },
     {
       title: 'Repositories',
-      value: metrics.uniqueRepos?.toLocaleString() || '0',
+      value: metrics.uniqueRepos ? metrics.uniqueRepos.toLocaleString() : '0',
       icon: Github,
       color: 'from-purple-500 to-violet-500',
       description: 'Tracked repositories'
     },
     {
       title: 'Peak Daily Events',
-      value: metrics.peakDailyEvents?.toLocaleString() || '0',
+      value: metrics.peakDailyEvents ? metrics.peakDailyEvents.toLocaleString() : '0',
       icon: TrendingUp,
       color: 'from-orange-500 to-red-500',
       description: 'Highest single day'
@@ -348,7 +348,7 @@ function TimelineTab({ data, loading, connectionStatus }) {
               </div>
               <div className="text-right">
                 <div className="text-2xl font-bold text-green-600 dark:text-green-400">
-                  {day.totalEvents.toLocaleString()}
+                  {day.totalEvents ? day.totalEvents.toLocaleString() : '0'}
                 </div>
                 <div className="text-sm text-gray-600 dark:text-gray-300">events</div>
               </div>
@@ -455,19 +455,19 @@ function InsightsTab({ metrics, timeline, repositories, loading, connectionStatu
   const insights = [
     {
       title: 'Pipeline Performance',
-      description: `Processed ${metrics.totalEvents?.toLocaleString()} events with ${metrics.uptime}% uptime over ${metrics.daysOperational} days of operation.`,
+      description: `Processed ${metrics.totalEvents ? metrics.totalEvents.toLocaleString() : '0'} events with ${metrics.uptime || 0}% uptime over ${metrics.daysOperational || 0} days of operation.`,
       icon: TrendingUp,
       color: 'from-green-500 to-emerald-500'
     },
     {
       title: 'Community Activity',
-      description: `Peak activity reached ${metrics.peakDailyEvents?.toLocaleString()} events in a single day with ${metrics.uniqueUsers?.toLocaleString()} unique contributors.`,
+      description: `Peak activity reached ${metrics.peakDailyEvents ? metrics.peakDailyEvents.toLocaleString() : '0'} events in a single day with ${metrics.uniqueUsers ? metrics.uniqueUsers.toLocaleString() : '0'} unique contributors.`,
       icon: Users,
       color: 'from-blue-500 to-cyan-500'
     },
     {
       title: 'Repository Engagement',
-      description: `Tracked activity across ${metrics.uniqueRepos?.toLocaleString()} repositories with top repository generating ${repositories[0]?.totalActivity} events.`,
+      description: `Tracked activity across ${metrics.uniqueRepos ? metrics.uniqueRepos.toLocaleString() : '0'} repositories with top repository generating ${repositories?.[0]?.totalActivity || 0} events.`,
       icon: Github,
       color: 'from-purple-500 to-violet-500'
     }

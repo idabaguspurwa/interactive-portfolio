@@ -89,6 +89,29 @@ async def get_github_metrics():
         """)
         events_24h = cursor.fetchone()[0]
         
+        # Get peak daily events (highest single day)
+        cursor.execute("""
+            SELECT MAX(daily_events) as peak_daily_events
+            FROM (
+                SELECT DATE(V:created_at::TIMESTAMP) as date, COUNT(*) as daily_events
+                FROM RAW_EVENTS
+                WHERE V:created_at::TIMESTAMP >= DATEADD(day, -30, CURRENT_DATE())
+                GROUP BY DATE(V:created_at::TIMESTAMP)
+            )
+        """)
+        peak_daily_events = cursor.fetchone()[0] or 0
+        
+        # Calculate days operational (days with data)
+        cursor.execute("""
+            SELECT COUNT(DISTINCT DATE(V:created_at::TIMESTAMP)) as days_operational
+            FROM RAW_EVENTS
+            WHERE V:created_at::TIMESTAMP >= DATEADD(day, -30, CURRENT_DATE())
+        """)
+        days_operational = cursor.fetchone()[0] or 0
+        
+        # Calculate uptime percentage (days with data / 30 days)
+        uptime = round((days_operational / 30) * 100, 1) if days_operational > 0 else 0
+        
         cursor.close()
         conn.close()
         
@@ -99,6 +122,9 @@ async def get_github_metrics():
                 "uniqueRepos": unique_repos,
                 "uniqueUsers": unique_users,
                 "events24h": events_24h,
+                "peakDailyEvents": peak_daily_events,
+                "daysOperational": days_operational,
+                "uptime": uptime,
                 "lastUpdated": datetime.now().isoformat()
             }
         }
