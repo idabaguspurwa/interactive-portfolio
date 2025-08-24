@@ -539,8 +539,8 @@ function GitHubEventsTab() {
               Production Architecture Highlights
             </h3>
             <p className="text-gray-600 dark:text-gray-300 max-w-3xl mx-auto">
-              This pipeline successfully processed real GitHub events in production for 11 days, 
-              demonstrating enterprise-grade data engineering capabilities.
+              This development pipeline successfully processed real GitHub events during active development sessions, 
+              demonstrating enterprise-grade data engineering capabilities with transparent performance metrics.
             </p>
           </div>
           
@@ -552,7 +552,7 @@ function GitHubEventsTab() {
               },
               {
                 title: "Production Infrastructure", 
-                items: ["Kubernetes orchestration", "Snowflake data warehouse", "Prometheus monitoring", "97.6% uptime achieved"]
+                items: ["Kubernetes orchestration", "Snowflake data warehouse", "Prometheus monitoring", "33% uptime (development pipeline)"]
               },
               {
                 title: "Data Engineering Best Practices",

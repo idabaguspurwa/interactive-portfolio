@@ -57,60 +57,60 @@ async def get_github_metrics():
         conn = get_snowflake_connection()
         cursor = conn.cursor()
         
-        # Get total events count from raw events
+        # Get total events count from ALL data (not restricted to 30 days)
         cursor.execute("""
             SELECT COUNT(*) as total_events
             FROM RAW_EVENTS
-            WHERE V:created_at::TIMESTAMP >= DATEADD(day, -30, CURRENT_DATE())
         """)
         total_events = cursor.fetchone()[0]
         
-        # Get unique repositories count from raw events
+        # Get unique repositories count from ALL data
         cursor.execute("""
             SELECT COUNT(DISTINCT V:repo.name::STRING) as unique_repos
             FROM RAW_EVENTS
-            WHERE V:created_at::TIMESTAMP >= DATEADD(day, -30, CURRENT_DATE())
         """)
         unique_repos = cursor.fetchone()[0]
         
-        # Get unique users count from raw events
+        # Get unique users count from ALL data
         cursor.execute("""
             SELECT COUNT(DISTINCT V:actor.login::STRING) as unique_users
             FROM RAW_EVENTS
-            WHERE V:created_at::TIMESTAMP >= DATEADD(day, -30, CURRENT_DATE())
         """)
         unique_users = cursor.fetchone()[0]
         
-        # Get events in last 24 hours from raw events
+        # Get events in last 24 hours (relative to latest data, not current time)
         cursor.execute("""
             SELECT COUNT(*) as events_24h
             FROM RAW_EVENTS
-            WHERE V:created_at::TIMESTAMP >= DATEADD(hour, -24, CURRENT_TIMESTAMP())
+            WHERE V:created_at::TIMESTAMP >= (
+                SELECT MAX(V:created_at::TIMESTAMP) - INTERVAL '24 HOUR'
+                FROM RAW_EVENTS
+            )
         """)
         events_24h = cursor.fetchone()[0]
         
-        # Get peak daily events (highest single day)
+        # Get peak daily events (highest single day from ALL data)
         cursor.execute("""
             SELECT MAX(daily_events) as peak_daily_events
             FROM (
                 SELECT DATE(V:created_at::TIMESTAMP) as date, COUNT(*) as daily_events
                 FROM RAW_EVENTS
-                WHERE V:created_at::TIMESTAMP >= DATEADD(day, -30, CURRENT_DATE())
                 GROUP BY DATE(V:created_at::TIMESTAMP)
             )
         """)
         peak_daily_events = cursor.fetchone()[0] or 0
         
-        # Calculate days operational (days with data)
+        # Calculate days operational (days with data from ALL data)
         cursor.execute("""
             SELECT COUNT(DISTINCT DATE(V:created_at::TIMESTAMP)) as days_operational
             FROM RAW_EVENTS
-            WHERE V:created_at::TIMESTAMP >= DATEADD(day, -30, CURRENT_DATE())
         """)
         days_operational = cursor.fetchone()[0] or 0
         
-        # Calculate uptime percentage (days with data / 30 days)
-        uptime = round((days_operational / 30) * 100, 1) if days_operational > 0 else 0
+        # Calculate uptime percentage based on actual operational period
+        # Your production run was from Aug 9-20 (12 days total)
+        total_operational_period = 12  # Aug 9-20, 2025
+        uptime = round((days_operational / total_operational_period) * 100, 1) if days_operational > 0 else 0
         
         cursor.close()
         conn.close()
@@ -151,19 +151,17 @@ async def get_github_timeline():
                 COUNT(DISTINCT V:repo.name::STRING) as repo_count,
                 COUNT(DISTINCT V:actor.login::STRING) as user_count
             FROM RAW_EVENTS
-            WHERE V:created_at::TIMESTAMP >= DATEADD(day, -30, CURRENT_DATE())
             GROUP BY DATE(V:created_at::TIMESTAMP)
             ORDER BY date DESC
-            LIMIT 30
         """)
         
         results = cursor.fetchall()
         timeline_data = [
             {
                 "date": str(row[0]),
-                "eventCount": row[1],
-                "repoCount": row[2],
-                "userCount": row[3]
+                "totalEvents": row[1],
+                "uniqueRepositories": row[2],
+                "uniqueUsers": row[3]
             }
             for row in results
         ]
@@ -198,7 +196,6 @@ async def get_github_repositories(limit: int = Query(10, ge=1, le=100)):
                 COUNT(DISTINCT V:actor.login::STRING) as unique_users,
                 MAX(V:created_at::TIMESTAMP) as last_activity
             FROM RAW_EVENTS
-            WHERE V:created_at::TIMESTAMP >= DATEADD(day, -30, CURRENT_DATE())
             GROUP BY V:repo.name::STRING
             ORDER BY event_count DESC
             LIMIT %s
@@ -207,10 +204,11 @@ async def get_github_repositories(limit: int = Query(10, ge=1, le=100)):
         results = cursor.fetchall()
         repo_data = [
             {
-                "repository": row[0],
-                "eventCount": row[1],
-                "uniqueUsers": row[2],
-                "lastActivity": str(row[3])
+                "repoName": row[0],
+                "totalActivity": row[1],
+                "uniqueContributors": row[2],
+                "lastActivity": str(row[3]),
+                "category": "Active"  # Default category
             }
             for row in results
         ]
@@ -247,13 +245,21 @@ async def execute_custom_query(
         # Parse event types
         event_type_list = [et.strip() for et in event_types.split(',')]
         
-        # Build time filter
+        # Build time filter - use actual data range instead of relative to current date
+        # First get the latest timestamp from the data
+        cursor.execute("SELECT MAX(V:created_at::TIMESTAMP) FROM RAW_EVENTS")
+        latest_timestamp = cursor.fetchone()[0]
+        
+        if not latest_timestamp:
+            raise HTTPException(status_code=400, detail="No data available")
+        
+        # Calculate time filters based on actual data range
         time_filters = {
-            '1d': 'DATEADD(day, -1, CURRENT_DATE())',
-            '7d': 'DATEADD(day, -7, CURRENT_DATE())',
-            '30d': 'DATEADD(day, -30, CURRENT_DATE())',
-            '90d': 'DATEADD(day, -90, CURRENT_DATE())',
-            '1y': 'DATEADD(year, -1, CURRENT_DATE())'
+            '1d': latest_timestamp - timedelta(days=1),
+            '7d': latest_timestamp - timedelta(days=7),
+            '30d': latest_timestamp - timedelta(days=30),
+            '90d': latest_timestamp - timedelta(days=90),
+            '1y': latest_timestamp - timedelta(days=365)
         }
         
         if time_range not in time_filters:
@@ -266,7 +272,7 @@ async def execute_custom_query(
             event_type_filter = ""
         else:
             event_type_list_quoted = [f"'{et}'" for et in event_type_list]
-            event_type_filter = f"AND event_type IN ({','.join(event_type_list_quoted)})"
+            event_type_filter = f"AND V:type::STRING IN ({','.join(event_type_list_quoted)})"
         
         # Build group by clause
         group_by_mapping = {
@@ -301,9 +307,9 @@ async def execute_custom_query(
             SELECT 
                 {group_by_field} as {group_by},
                 COUNT(*) as event_count,
-                COUNT(DISTINCT CASE WHEN {group_by_field} != {group_by_field} THEN NULL ELSE {group_by_field} END) as unique_count
+                COUNT(DISTINCT {group_by_field}) as unique_count
             FROM RAW_EVENTS
-            WHERE V:created_at::TIMESTAMP >= {time_filter}
+            WHERE V:created_at::TIMESTAMP >= %s
             {event_type_filter}
             GROUP BY {group_by_field}
             ORDER BY {sort_clause}
@@ -311,7 +317,7 @@ async def execute_custom_query(
         """
         
         logger.info(f"Executing query: {query}")
-        cursor.execute(query)
+        cursor.execute(query, (time_filter,))
         
         results = cursor.fetchall()
         
