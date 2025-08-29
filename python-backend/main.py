@@ -1,4 +1,4 @@
-from fastapi import FastAPI, HTTPException, Query, Request
+from fastapi import FastAPI, HTTPException, Query, Request, WebSocket, WebSocketDisconnect
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 import snowflake.connector
@@ -7,12 +7,55 @@ from datetime import datetime, timedelta
 import json
 from typing import List, Optional
 import logging
+import asyncio
+import websockets
 
 # Configure logging
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
 app = FastAPI(title="GitHub Events Analytics API", version="1.0.0")
+
+# WebSocket connection manager
+class ConnectionManager:
+    def __init__(self):
+        self.active_connections: List[WebSocket] = []
+    
+    async def connect(self, websocket: WebSocket):
+        await websocket.accept()
+        self.active_connections.append(websocket)
+        logger.info(f"WebSocket connected. Total connections: {len(self.active_connections)}")
+    
+    def disconnect(self, websocket: WebSocket):
+        if websocket in self.active_connections:
+            self.active_connections.remove(websocket)
+            logger.info(f"WebSocket disconnected. Total connections: {len(self.active_connections)}")
+    
+    async def send_personal_message(self, message: str, websocket: WebSocket):
+        try:
+            await websocket.send_text(message)
+        except Exception as e:
+            logger.error(f"Error sending personal message: {e}")
+    
+    async def broadcast(self, message: dict):
+        if not self.active_connections:
+            return
+            
+        message_str = json.dumps(message)
+        disconnected_connections = []
+        
+        for connection in self.active_connections:
+            try:
+                await connection.send_text(message_str)
+            except Exception as e:
+                logger.error(f"Error broadcasting to connection: {e}")
+                disconnected_connections.append(connection)
+        
+        # Remove disconnected connections
+        for connection in disconnected_connections:
+            self.disconnect(connection)
+
+manager = ConnectionManager()
 
 # CORS middleware
 app.add_middleware(
@@ -442,6 +485,118 @@ async def execute_manual_query(request: Request):
             "message": "Failed to execute manual query",
             "error": str(e)
         }
+
+@app.websocket("/ws/github-events")
+async def websocket_endpoint(websocket: WebSocket):
+    await manager.connect(websocket)
+    try:
+        # Send initial data immediately upon connection
+        initial_data = await fetch_latest_github_data()
+        await manager.send_personal_message(
+            json.dumps({
+                "type": "initial_data",
+                "data": initial_data,
+                "timestamp": datetime.now().isoformat()
+            }),
+            websocket
+        )
+        
+        # Keep connection alive and send periodic updates
+        while True:
+            await asyncio.sleep(30)  # Update every 30 seconds
+            
+            # Fetch latest data
+            latest_data = await fetch_latest_github_data()
+            
+            # Broadcast to all connected clients
+            await manager.broadcast({
+                "type": "data_update",
+                "data": latest_data,
+                "timestamp": datetime.now().isoformat()
+            })
+            
+    except WebSocketDisconnect:
+        manager.disconnect(websocket)
+        logger.info("WebSocket client disconnected")
+    except Exception as e:
+        logger.error(f"WebSocket error: {e}")
+        manager.disconnect(websocket)
+
+async def fetch_latest_github_data():
+    """Fetch latest GitHub events data for real-time updates"""
+    try:
+        conn = get_snowflake_connection()
+        cursor = conn.cursor()
+        
+        # Get recent timeline data
+        cursor.execute("""
+            SELECT 
+                DATE(V:created_at::TIMESTAMP) as date,
+                V:repo.name::STRING as repository,
+                V:type::STRING as event_type,
+                COUNT(*) as event_count,
+                HOUR(V:created_at::TIMESTAMP) as hour
+            FROM RAW_EVENTS
+            WHERE V:created_at::TIMESTAMP >= (
+                SELECT MAX(V:created_at::TIMESTAMP) - INTERVAL '7 DAY'
+                FROM RAW_EVENTS
+            )
+            GROUP BY 
+                DATE(V:created_at::TIMESTAMP),
+                V:repo.name::STRING,
+                V:type::STRING,
+                HOUR(V:created_at::TIMESTAMP)
+            ORDER BY date DESC, event_count DESC
+            LIMIT 100
+        """)
+        
+        results = cursor.fetchall()
+        timeline_data = []
+        
+        for row in results:
+            # Map event types to activity categories
+            event_type = row[2] or 'Unknown'
+            commits = event_count if event_type == 'PushEvent' else 0
+            pull_requests = event_count if event_type == 'PullRequestEvent' else 0
+            issues = event_count if event_type == 'IssuesEvent' else 0
+            event_count = row[3] or 0
+            
+            timeline_data.append({
+                "date": str(row[0]),
+                "repository": row[1] or 'Unknown',
+                "eventType": event_type,
+                "commits": commits,
+                "pullRequests": pull_requests,
+                "issues": issues,
+                "totalActivity": event_count,
+                "hour": row[4] or 0
+            })
+        
+        cursor.close()
+        conn.close()
+        
+        return {
+            "timeline": timeline_data,
+            "lastFetch": datetime.now().isoformat()
+        }
+        
+    except Exception as e:
+        logger.error(f"Error fetching latest data: {e}")
+        return {
+            "timeline": [],
+            "error": str(e),
+            "lastFetch": datetime.now().isoformat()
+        }
+
+@app.get("/ws/test")
+async def websocket_test():
+    """Test endpoint to verify WebSocket functionality"""
+    return {
+        "message": "WebSocket endpoint available",
+        "endpoint": "/ws/github-events",
+        "active_connections": len(manager.active_connections),
+        "status": "ready"
+    }
 
 if __name__ == "__main__":
     import uvicorn

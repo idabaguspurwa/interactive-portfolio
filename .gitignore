@@ -134,3 +134,6 @@ lhci_reports/
 
 # Bundle analyzer
 .next/analyze/
+
+# Claude Code documentation
+CLAUDE.md
