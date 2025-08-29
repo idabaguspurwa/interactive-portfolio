@@ -4,6 +4,7 @@ import { Navbar } from "@/components/Navbar";
 import { Footer, FloatingQuickNav } from "@/components/Footer";
 import { PageTransition } from "@/components/PageTransition";
 import { WebGLProvider } from "@/components/WebGLManager";
+import { QueryProvider } from "@/components/QueryProvider";
 
 export const viewport = {
   width: "device-width",
@@ -168,18 +169,20 @@ export default function RootLayout({ children }) {
         />
       </head>
       <body className="min-h-screen bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-gray-100">
-        <ThemeProvider>
-          <WebGLProvider>
-            <div className="flex flex-col min-h-screen">
-              <Navbar />
-              <main className="flex-1">
-                <PageTransition>{children}</PageTransition>
-              </main>
-              <Footer />
-              <FloatingQuickNav />
-            </div>
-          </WebGLProvider>
-        </ThemeProvider>
+        <QueryProvider>
+          <ThemeProvider>
+            <WebGLProvider>
+              <div className="flex flex-col min-h-screen">
+                <Navbar />
+                <main className="flex-1">
+                  <PageTransition>{children}</PageTransition>
+                </main>
+                <Footer />
+                <FloatingQuickNav />
+              </div>
+            </WebGLProvider>
+          </ThemeProvider>
+        </QueryProvider>
       </body>
     </html>
   );
