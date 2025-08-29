@@ -19,7 +19,7 @@ export const DataStreamProvider = ({
   maxReconnectAttempts = 10
 }) => {
   // Use client-side env var access to avoid server-client serialization issues
-  const actualWsUrl = wsUrl || (typeof window !== 'undefined' ? (process.env.NEXT_PUBLIC_PYTHON_WS_URL || 'ws://localhost:8000/ws') : 'ws://localhost:8000/ws')
+  const actualWsUrl = wsUrl || (typeof window !== 'undefined' ? (process.env.NEXT_PUBLIC_PYTHON_WS_URL || 'ws://localhost:8000/ws/github-events') : 'ws://localhost:8000/ws/github-events')
   const [data, setData] = useState([])
   const [isConnected, setIsConnected] = useState(false)
   const [error, setError] = useState(null)
@@ -36,6 +36,7 @@ export const DataStreamProvider = ({
       setConnectionStatus('connecting')
       setError(null)
       
+      console.log('🔗 Connecting to WebSocket URL:', actualWsUrl)
       wsRef.current = new WebSocket(actualWsUrl)
       
       wsRef.current.onopen = () => {
