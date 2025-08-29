@@ -84,7 +84,7 @@ export default function ProjectsPage() {
       tags: ["Apache Airflow", "Apache Kafka", "Kubernetes", "Snowflake", "dbt", "Prometheus", "Grafana", "Python", "Great Expectations"],
       image: '/airflow-pipeline.png',
       github: "https://github.com/idabaguspurwa/github-events-pipeline",
-      demo: "/playground/github-events",
+      demo: "/playground?tab=github-events",
       featured: true,
       year: '2025',
       team: 'Solo Project',

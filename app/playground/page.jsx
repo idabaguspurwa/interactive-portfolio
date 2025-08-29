@@ -70,6 +70,19 @@ export default function PlaygroundPage() {
   const [isLoading, setIsLoading] = useState(true)
   const [isHydrated, setIsHydrated] = useState(false)
 
+  // Handle URL parameters for direct tab navigation
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      const params = new URLSearchParams(window.location.search)
+      const tabParam = params.get('tab')
+      
+      // If tab parameter exists and is valid, set it as active
+      if (tabParam === 'github-events') {
+        setActiveTab('github-events')
+      }
+    }
+  }, [])
+
   // Ensure component is fully loaded and hydrated
   useEffect(() => {
     setIsHydrated(true)
