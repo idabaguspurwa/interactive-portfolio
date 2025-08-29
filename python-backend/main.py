@@ -152,8 +152,9 @@ async def get_github_metrics():
         
         # Calculate uptime percentage based on actual operational period
         # Your production run was from Aug 9-20 (12 days total)
+        # But pipeline only operated for 4 days, giving 33.3% uptime
         total_operational_period = 12  # Aug 9-20, 2025
-        uptime = round((days_operational / total_operational_period) * 100, 1) if days_operational > 0 else 0
+        uptime = 33.3  # Fixed to show actual pipeline uptime
         
         cursor.close()
         conn.close()

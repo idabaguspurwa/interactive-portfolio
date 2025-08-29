@@ -1,7 +1,6 @@
 "use client";
 
 import React, { createContext, useContext, useEffect, useState, useCallback } from 'react';
-import { io } from 'socket.io-client';
 
 const WebSocketContext = createContext({
   data: null,
@@ -22,94 +21,77 @@ export function WebSocketProvider({ children }) {
   const [reconnectAttempts, setReconnectAttempts] = useState(0);
   const [subscribers, setSubscribers] = useState(new Set());
 
-  const PYTHON_WS_URL = process.env.NEXT_PUBLIC_PYTHON_WS_URL || 
+  const PYTHON_WS_URL = (process.env.NEXT_PUBLIC_PYTHON_WS_URL || 
                        (process.env.NODE_ENV === 'production' 
                          ? 'wss://events-backend.fly.dev'
-                         : 'ws://localhost:8000');
+                         : 'ws://localhost:8000')) + '/ws/github-events';
 
   const connect = useCallback(() => {
-    if (socket?.connected) return;
+    if (socket?.readyState === WebSocket.OPEN) return;
 
     setConnectionStatus('connecting');
     
-    const newSocket = io(PYTHON_WS_URL, {
-      transports: ['websocket'],
-      timeout: 20000,
-      reconnection: true,
-      reconnectionAttempts: 5,
-      reconnectionDelay: 1000,
-      reconnectionDelayMax: 10000,
-      maxReconnectionAttempts: 5
-    });
+    try {
+      const newSocket = new WebSocket(PYTHON_WS_URL);
 
-    newSocket.on('connect', () => {
-      console.log('🔗 Connected to GitHub Events WebSocket');
-      setIsConnected(true);
-      setConnectionStatus('connected');
-      setReconnectAttempts(0);
-      
-      // Subscribe to GitHub events
-      newSocket.emit('subscribe', { channel: 'github-events' });
-    });
+      newSocket.onopen = () => {
+        console.log('🔗 Connected to GitHub Events WebSocket');
+        setIsConnected(true);
+        setConnectionStatus('connected');
+        setReconnectAttempts(0);
+      };
 
-    newSocket.on('disconnect', (reason) => {
-      console.log('❌ Disconnected from WebSocket:', reason);
-      setIsConnected(false);
-      setConnectionStatus('disconnected');
-    });
+      newSocket.onclose = (event) => {
+        console.log('❌ Disconnected from WebSocket:', event.code, event.reason);
+        setIsConnected(false);
+        setConnectionStatus('disconnected');
+      };
 
-    newSocket.on('connect_error', (error) => {
-      console.error('🚨 WebSocket connection error:', error);
+      newSocket.onerror = (error) => {
+        console.error('🚨 WebSocket connection error:', error);
+        setConnectionStatus('error');
+        setReconnectAttempts(prev => prev + 1);
+      };
+
+      newSocket.onmessage = (event) => {
+        try {
+          const message = JSON.parse(event.data);
+          console.log('📊 Received WebSocket message:', message);
+          
+          // Handle different message types from FastAPI backend
+          if (message.type === 'initial_data' || message.type === 'data_update') {
+            setData(message.data);
+            setLastUpdate(new Date());
+            
+            // Notify all subscribers
+            subscribers.forEach(callback => {
+              if (typeof callback === 'function') {
+                callback(message.data);
+              }
+            });
+          }
+        } catch (error) {
+          console.error('Error parsing WebSocket message:', error);
+        }
+      };
+
+      setSocket(newSocket);
+
+      return () => {
+        if (newSocket && newSocket.readyState === WebSocket.OPEN) {
+          newSocket.close();
+        }
+      };
+    } catch (error) {
+      console.error('Error creating WebSocket connection:', error);
       setConnectionStatus('error');
       setReconnectAttempts(prev => prev + 1);
-    });
-
-    // Listen for GitHub events data
-    newSocket.on('github-events', (eventData) => {
-      console.log('📊 Received GitHub events data:', eventData);
-      setData(eventData);
-      setLastUpdate(new Date());
-      
-      // Notify all subscribers
-      subscribers.forEach(callback => {
-        if (typeof callback === 'function') {
-          callback(eventData);
-        }
-      });
-    });
-
-    // Listen for metrics updates
-    newSocket.on('metrics-update', (metricsData) => {
-      console.log('📈 Received metrics update:', metricsData);
-      setData(prevData => ({
-        ...prevData,
-        metrics: metricsData
-      }));
-      setLastUpdate(new Date());
-    });
-
-    // Listen for repository updates
-    newSocket.on('repositories-update', (repoData) => {
-      console.log('🏢 Received repositories update:', repoData);
-      setData(prevData => ({
-        ...prevData,
-        repositories: repoData
-      }));
-      setLastUpdate(new Date());
-    });
-
-    setSocket(newSocket);
-
-    return () => {
-      if (newSocket) {
-        newSocket.disconnect();
-      }
-    };
+    }
   }, [PYTHON_WS_URL, subscribers]);
 
   const reconnect = useCallback(() => {
-    if (socket) {
-      socket.disconnect();
+    if (socket && socket.readyState === WebSocket.OPEN) {
+      socket.close();
     }
     setTimeout(connect, 1000);
   }, [socket, connect]);
@@ -144,8 +126,8 @@ export function WebSocketProvider({ children }) {
   // Cleanup on unmount
   useEffect(() => {
     return () => {
-      if (socket) {
-        socket.disconnect();
+      if (socket && socket.readyState === WebSocket.OPEN) {
+        socket.close();
       }
     };
   }, [socket]);

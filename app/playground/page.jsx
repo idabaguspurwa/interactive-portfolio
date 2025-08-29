@@ -458,7 +458,7 @@ function GitHubEventsTab() {
                   { label: 'Events Processed', value: metrics.totalEvents?.toLocaleString() || '7,301+', color: 'text-blue-600 dark:text-blue-400' },
                   { label: 'Repositories', value: metrics.uniqueRepos?.toLocaleString() || '6,170+', color: 'text-emerald-600 dark:text-emerald-400' },
                   { label: 'Data Points', value: metrics.dataPoints?.toLocaleString() || '25.2K+', color: 'text-purple-600 dark:text-purple-400' },
-                  { label: 'Uptime', value: '99.2%', color: 'text-amber-600 dark:text-amber-400' }
+                  { label: 'Uptime', value: '33.3%', color: 'text-amber-600 dark:text-amber-400' }
                 ].map((metric, index) => (
                   <div key={metric.label} className="text-center">
                     <div className={`text-2xl lg:text-3xl font-bold ${metric.color} mb-1`}>
