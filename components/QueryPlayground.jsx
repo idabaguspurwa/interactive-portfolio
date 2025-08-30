@@ -842,7 +842,7 @@ export default function QueryPlayground() {
                   <Database className="w-12 h-12 text-blue-500 dark:text-blue-400" />
                 </div>
                 <h4 className="text-xl font-semibold text-gray-700 dark:text-gray-300 mb-2">Ready to Query</h4>
-                <p className="text-lg">Configure your query parameters and click "Execute Query" to see results from our live Snowflake database.</p>
+                <p className="text-lg">Configure your query parameters and click &quot;Execute Query&quot; to see results from our live Snowflake database.</p>
                 <div className="mt-6 flex items-center justify-center gap-6 text-sm text-gray-400 dark:text-gray-500">
                   <div className="flex items-center gap-2">
                     <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></div>
