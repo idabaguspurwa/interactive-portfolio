@@ -60,21 +60,29 @@ const EnterpriseDashboard = dynamicImport(
 function ErrorBoundary({ children, fallback }) {
   const [hasError, setHasError] = useState(false)
   
+  // Remove global error listener that could interfere with navigation
+  // Use React's built-in error boundary pattern instead
   useEffect(() => {
-    const handleError = (error) => {
-      console.error('Component error:', error)
-      setHasError(true)
+    return () => {
+      // Clean up any potential interference
+      setHasError(false)
     }
-    
-    window.addEventListener('error', handleError)
-    return () => window.removeEventListener('error', handleError)
   }, [])
   
   if (hasError) {
     return fallback
   }
   
-  return children
+  return (
+    <div onError={(e) => {
+      // Only catch errors within this boundary, don't interfere with navigation
+      console.error('Component error:', e)
+      setHasError(true)
+      e.stopPropagation() // Prevent error from bubbling beyond this component
+    }}>
+      {children}
+    </div>
+  )
 }
 
 export default function PlaygroundPage() {
@@ -231,7 +239,8 @@ export default function PlaygroundPage() {
               // Ensure tab content doesn't interfere with navigation
               pointerEvents: 'auto',
               position: 'relative',
-              zIndex: 1
+              zIndex: 1,
+              isolation: 'isolate' // Create new stacking context to prevent z-index issues
             }}
           >
             {activeTab === 'data-lakehouse' && <DataLakehouseTab />}
@@ -368,9 +377,20 @@ function GitHubEventsTab() {
     // Restore body overflow and remove any potential scroll locks
     document.body.style.overflow = 'auto'
     
+    // Add event delegation to ensure navigation links work
+    const handleGlobalClick = (e) => {
+      // If clicking on navigation links, ensure they work
+      if (e.target.closest('nav a') || e.target.closest('a[href]')) {
+        e.stopPropagation = () => {}; // Disable stopPropagation to allow navigation
+      }
+    }
+    
+    document.addEventListener('click', handleGlobalClick, { capture: true })
+    
     return () => {
       // Clean up on unmount
       document.body.style.overflow = 'auto'
+      document.removeEventListener('click', handleGlobalClick, { capture: true })
     }
   }, [])
 

@@ -6,13 +6,20 @@ import os
 from datetime import datetime, timedelta
 import json
 from typing import List, Optional
+from pydantic import BaseModel
 import logging
 import asyncio
 import websockets
+import time
 
 # Configure logging
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
+
+# Pydantic models
+class SQLExecutionRequest(BaseModel):
+    query: str
+    limit: Optional[int] = 100
 
 app = FastAPI(title="GitHub Events Analytics API", version="1.0.0")
 
@@ -485,6 +492,101 @@ async def execute_manual_query(request: Request):
             "success": False,
             "message": "Failed to execute manual query",
             "error": str(e)
+        }
+
+@app.post("/api/execute-sql")
+async def execute_sql_query(request: SQLExecutionRequest):
+    """Execute SQL queries against Snowflake database with enhanced security and performance"""
+    try:
+        query = request.query.strip()
+        limit = request.limit or 100
+        
+        if not query:
+            raise HTTPException(status_code=400, detail="SQL query is required")
+        
+        # Enhanced security validation
+        dangerous_keywords = [
+            'DROP', 'DELETE', 'UPDATE', 'INSERT', 'ALTER', 'CREATE', 
+            'TRUNCATE', 'GRANT', 'REVOKE', 'EXEC', 'EXECUTE', 'CALL'
+        ]
+        
+        upper_query = query.upper()
+        
+        # Check for dangerous keywords
+        for keyword in dangerous_keywords:
+            if f' {keyword} ' in f' {upper_query} ' or upper_query.startswith(keyword):
+                raise HTTPException(
+                    status_code=403, 
+                    detail=f"Query contains forbidden operation: {keyword}. Only SELECT queries are allowed for security."
+                )
+        
+        # Ensure it's a SELECT query
+        if not upper_query.startswith('SELECT'):
+            raise HTTPException(
+                status_code=403, 
+                detail="Only SELECT queries are allowed for security reasons."
+            )
+        
+        # Add LIMIT if not present for safety
+        if 'LIMIT' not in upper_query:
+            query = f"{query.rstrip(';')} LIMIT {limit}"
+        
+        logger.info(f"🔍 Executing SQL query: {query[:200]}{'...' if len(query) > 200 else ''}")
+        
+        # Execute query with timing
+        start_time = time.time()
+        conn = get_snowflake_connection()
+        cursor = conn.cursor()
+        
+        try:
+            cursor.execute(query)
+            results = cursor.fetchall()
+            columns = [desc[0] for desc in cursor.description] if cursor.description else []
+            
+            execution_time = time.time() - start_time
+            
+            # Format results as list of dictionaries
+            formatted_results = []
+            for row in results:
+                row_dict = {}
+                for i, value in enumerate(row):
+                    column_name = columns[i] if i < len(columns) else f"column_{i+1}"
+                    # Handle different data types
+                    if isinstance(value, datetime):
+                        row_dict[column_name] = value.isoformat()
+                    elif value is None:
+                        row_dict[column_name] = None
+                    else:
+                        row_dict[column_name] = value
+                formatted_results.append(row_dict)
+            
+            logger.info(f"✅ Query executed successfully: {len(formatted_results)} rows in {execution_time:.2f}s")
+            
+            return {
+                "success": True,
+                "data": formatted_results,
+                "metadata": {
+                    "query": query,
+                    "columns": columns,
+                    "row_count": len(formatted_results),
+                    "execution_time": f"{execution_time:.3f}s",
+                    "executed_at": datetime.now().isoformat()
+                }
+            }
+            
+        finally:
+            cursor.close()
+            conn.close()
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"❌ Error executing SQL query: {e}")
+        return {
+            "success": False,
+            "error": str(e),
+            "message": "Failed to execute SQL query",
+            "details": "Check your SQL syntax and ensure you're querying the RAW_EVENTS table correctly."
         }
 
 @app.websocket("/ws/github-events")

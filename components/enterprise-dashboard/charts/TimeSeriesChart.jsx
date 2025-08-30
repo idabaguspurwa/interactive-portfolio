@@ -167,8 +167,16 @@ export function TimeSeriesChart({ data, filters, theme, realtimeData, expanded =
       ]
     });
 
-    // Add click handling for drill-down
+    // Add click handling for drill-down (scoped to chart only)
     plot.addEventListener('click', (event) => {
+      // Only handle clicks if they're specifically on chart elements, not navigation links
+      if (event.target.closest('a') || event.target.closest('nav') || event.target.closest('[data-navigation]')) {
+        return; // Let navigation links work normally
+      }
+      
+      // Prevent event from bubbling to avoid interfering with navigation
+      event.stopPropagation();
+      
       // Find closest data point
       const rect = containerRef.current.getBoundingClientRect();
       const x = event.clientX - rect.left;

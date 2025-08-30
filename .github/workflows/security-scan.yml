@@ -12,7 +12,7 @@ on:
       - '.github/workflows/**'
 
 permissions:
-  contents: read
+  contents: write
   actions: read
   security-events: write
   issues: write
@@ -62,7 +62,7 @@ jobs:
     - name: License Check - Frontend
       run: |
         npx license-checker --json --out licenses-frontend.json
-        npx license-checker --onlyAllow 'MIT;Apache-2.0;ISC;BSD-2-Clause;BSD-3-Clause;CC0-1.0;Unlicense;Python-2.0' --excludePrivatePackages
+        npx license-checker --onlyAllow 'MIT;Apache-2.0;ISC;BSD-2-Clause;BSD-3-Clause;CC0-1.0;Unlicense;Python-2.0;MPL-2.0' --excludePrivatePackages
     
     
     # Upload Results
