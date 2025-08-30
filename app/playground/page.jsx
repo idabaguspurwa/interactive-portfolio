@@ -227,6 +227,12 @@ export default function PlaygroundPage() {
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -20 }}
             transition={{ duration: 0.3 }}
+            style={{ 
+              // Ensure tab content doesn't interfere with navigation
+              pointerEvents: 'auto',
+              position: 'relative',
+              zIndex: 1
+            }}
           >
             {activeTab === 'data-lakehouse' && <DataLakehouseTab />}
             {activeTab === 'github-events' && <GitHubEventsTab />}
@@ -355,6 +361,17 @@ function GitHubEventsTab() {
       fetchMetrics()
     }, 100)
     return () => clearTimeout(timer)
+  }, [])
+  
+  // Ensure navigation works by preventing any event interference
+  useEffect(() => {
+    // Restore body overflow and remove any potential scroll locks
+    document.body.style.overflow = 'auto'
+    
+    return () => {
+      // Clean up on unmount
+      document.body.style.overflow = 'auto'
+    }
   }, [])
 
   const fetchMetrics = async () => {
