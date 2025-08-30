@@ -659,10 +659,10 @@ async def fetch_latest_github_data():
         for row in results:
             # Map event types to activity categories
             event_type = row[2] or 'Unknown'
+            event_count = row[3] or 0
             commits = event_count if event_type == 'PushEvent' else 0
             pull_requests = event_count if event_type == 'PullRequestEvent' else 0
             issues = event_count if event_type == 'IssuesEvent' else 0
-            event_count = row[3] or 0
             
             timeline_data.append({
                 "date": str(row[0]),
