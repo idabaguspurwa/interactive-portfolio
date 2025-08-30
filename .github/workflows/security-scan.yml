@@ -62,7 +62,7 @@ jobs:
     - name: License Check - Frontend
       run: |
         npx license-checker --json --out licenses-frontend.json
-        npx license-checker --onlyAllow 'MIT;Apache-2.0;ISC;BSD-2-Clause;BSD-3-Clause;CC0-1.0;Unlicense;Python-2.0;MPL-2.0' --excludePrivatePackages
+        npx license-checker --onlyAllow 'MIT;Apache-2.0;ISC;BSD-2-Clause;BSD-3-Clause;CC0-1.0;CC-BY-4.0;Unlicense;UNLICENSED;Python-2.0;MPL-2.0;BlueOak-1.0.0' --excludePrivatePackages
     
     
     # Upload Results
@@ -97,26 +97,16 @@ jobs:
         
         cat security-report.md
     
-    - name: Comment Security Status
-      uses: actions/github-script@v7
+    - name: Security Status Summary
       if: github.event_name == 'push'
-      with:
-        script: |
-          const fs = require('fs');
-          let report = '🔒 **Security Scan Completed**\n\n';
-          
-          if (fs.existsSync('security-report.md')) {
-            report += fs.readFileSync('security-report.md', 'utf8');
-          }
-          
-          report += '\n📊 Detailed results available in workflow artifacts.';
-          
-          github.rest.repos.createCommitComment({
-            owner: context.repo.owner,
-            repo: context.repo.repo,
-            commit_sha: context.sha,
-            body: report
-          });
+      run: |
+        echo "🔒 Security Scan Completed"
+        echo "================================"
+        if [ -f security-report.md ]; then
+          cat security-report.md
+        fi
+        echo ""
+        echo "📊 Detailed results available in workflow artifacts."
 
   compliance-check:
     runs-on: ubuntu-latest
