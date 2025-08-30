@@ -109,22 +109,17 @@ jobs:
         curl -f https://events-backend.fly.dev/ || exit 1
         echo "All services are healthy!"
     
-    - name: Notify stakeholders
-      uses: actions/github-script@v7
-      with:
-        script: |
-          const { owner, repo } = context.repo;
-          const tagName = context.ref.replace('refs/tags/', '');
-          
-          await github.rest.issues.createComment({
-            owner,
-            repo,
-            issue_number: 1, // Adjust to your tracking issue
-            body: `🎉 **Release ${tagName} deployed successfully!**
-            
-            - 🌐 Frontend: https://idabaguspurwa.com/
-            - 🔧 Backend: https://events-backend.fly.dev/
-            - 📊 Performance: Check Lighthouse reports in artifacts
-            
-            All health checks passed ✅`
-          });
+    - name: Log Release Success
+      run: |
+        echo "🎉 Release deployed successfully!"
+        echo "================================"
+        echo "Tag: ${{ github.ref_name }}"
+        echo "Repository: ${{ github.repository }}"
+        echo "SHA: ${{ github.sha }}"
+        echo ""
+        echo "Deployment URLs:"
+        echo "- 🌐 Frontend: https://idabaguspurwa.com/"
+        echo "- 🔧 Backend: https://events-backend.fly.dev/"
+        echo "- 📊 Performance: Check Lighthouse reports in artifacts"
+        echo ""
+        echo "All health checks passed ✅"
