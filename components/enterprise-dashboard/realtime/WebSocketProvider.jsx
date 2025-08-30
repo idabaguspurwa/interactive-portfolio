@@ -21,10 +21,10 @@ export function WebSocketProvider({ children }) {
   const [reconnectAttempts, setReconnectAttempts] = useState(0);
   const [subscribers, setSubscribers] = useState(new Set());
 
-  const PYTHON_WS_URL = (process.env.NEXT_PUBLIC_PYTHON_WS_URL || 
+  const PYTHON_WS_URL = process.env.NEXT_PUBLIC_PYTHON_WS_URL || 
                        (process.env.NODE_ENV === 'production' 
-                         ? 'wss://events-backend.fly.dev'
-                         : 'ws://localhost:8000')) + '/ws/github-events';
+                         ? 'wss://events-backend.fly.dev/ws/github-events'
+                         : 'ws://localhost:8000/ws/github-events');
 
   const connect = useCallback(() => {
     if (socket?.readyState === WebSocket.OPEN) return;

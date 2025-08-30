@@ -19,7 +19,9 @@ export const DataStreamProvider = ({
   maxReconnectAttempts = 10
 }) => {
   // Use client-side env var access to avoid server-client serialization issues
-  const actualWsUrl = wsUrl || (typeof window !== 'undefined' ? (process.env.NEXT_PUBLIC_PYTHON_WS_URL || 'ws://localhost:8000/ws/github-events') : 'ws://localhost:8000/ws/github-events')
+  const actualWsUrl = wsUrl || (typeof window !== 'undefined' ? 
+    (process.env.NEXT_PUBLIC_PYTHON_WS_URL || 'ws://localhost:8000/ws/github-events') : 
+    'ws://localhost:8000/ws/github-events')
   const [data, setData] = useState([])
   const [isConnected, setIsConnected] = useState(false)
   const [error, setError] = useState(null)
@@ -45,6 +47,11 @@ export const DataStreamProvider = ({
         setConnectionStatus('connected')
         setError(null)
         reconnectAttemptsRef.current = 0
+        
+        // Ensure WebSocket doesn't interfere with page navigation
+        if (wsRef.current) {
+          wsRef.current.binaryType = 'arraybuffer'
+        }
       }
       
       wsRef.current.onmessage = (event) => {
@@ -115,9 +122,24 @@ export const DataStreamProvider = ({
   }
 
   useEffect(() => {
-    connect()
+    // Only connect if tab is visible and component is mounted
+    const handleVisibilityChange = () => {
+      if (document.hidden) {
+        disconnect()
+      } else if (!isConnected && connectionStatus !== 'connecting') {
+        connect()
+      }
+    }
+
+    // Add visibility listener to prevent connection when tab is not active
+    document.addEventListener('visibilitychange', handleVisibilityChange)
+    
+    // Connect after a small delay to allow page to fully render
+    const timer = setTimeout(connect, 100)
     
     return () => {
+      clearTimeout(timer)
+      document.removeEventListener('visibilitychange', handleVisibilityChange)
       disconnect()
     }
   }, [actualWsUrl])
