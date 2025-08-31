@@ -39,12 +39,22 @@ export function WebSocketProvider({ children }) {
         setIsConnected(true);
         setConnectionStatus('connected');
         setReconnectAttempts(0);
+        
+        // Notify performance monitor
+        if (window.playgroundPerformance) {
+          window.playgroundPerformance.updateWebSocketStatus('connected');
+        }
       };
 
       newSocket.onclose = (event) => {
         console.log('❌ Disconnected from WebSocket:', event.code, event.reason);
         setIsConnected(false);
         setConnectionStatus('disconnected');
+        
+        // Notify performance monitor
+        if (window.playgroundPerformance) {
+          window.playgroundPerformance.updateWebSocketStatus('disconnected');
+        }
       };
 
       newSocket.onerror = (error) => {
@@ -54,6 +64,8 @@ export function WebSocketProvider({ children }) {
       };
 
       newSocket.onmessage = (event) => {
+        const messageStartTime = performance.now();
+        
         try {
           const message = JSON.parse(event.data);
           console.log('📊 Received WebSocket message:', message);
@@ -69,9 +81,21 @@ export function WebSocketProvider({ children }) {
                 callback(message.data);
               }
             });
+            
+            // Track WebSocket message processing performance
+            const processingTime = performance.now() - messageStartTime;
+            if (window.playgroundPerformance) {
+              window.playgroundPerformance.addOperation('WebSocket Message', processingTime);
+            }
           }
         } catch (error) {
           console.error('Error parsing WebSocket message:', error);
+          
+          // Track error processing time
+          const processingTime = performance.now() - messageStartTime;
+          if (window.playgroundPerformance) {
+            window.playgroundPerformance.addOperation('WebSocket Error', processingTime);
+          }
         }
       };
 

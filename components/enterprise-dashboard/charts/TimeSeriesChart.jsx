@@ -69,6 +69,8 @@ export function TimeSeriesChart({ data, filters, theme, realtimeData, expanded =
   // Create Observable Plot chart
   useEffect(() => {
     if (!containerRef.current || chartData.length === 0) return;
+    
+    const chartStartTime = performance.now();
 
     // Clear previous chart
     d3.select(containerRef.current).selectAll("*").remove();
@@ -193,6 +195,14 @@ export function TimeSeriesChart({ data, filters, theme, realtimeData, expanded =
     });
 
     containerRef.current.appendChild(plot);
+    
+    // Track chart rendering performance
+    const chartEndTime = performance.now();
+    const renderTime = chartEndTime - chartStartTime;
+    
+    if (window.playgroundPerformance) {
+      window.playgroundPerformance.addOperation(`TimeSeriesChart Render`, renderTime);
+    }
 
     return () => {
       if (containerRef.current && plot.parentNode) {

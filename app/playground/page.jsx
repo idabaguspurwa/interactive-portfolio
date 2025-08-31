@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { RevealOnScroll } from '@/components/ScrollAnimations'
+import { PerformancePanel } from '@/components/PerformancePanel'
 import { ArrowLeft, Database, Zap, BarChart3, Github, Activity, RefreshCw, Users, TrendingUp, Download, AlertCircle, Code } from 'lucide-react'
 import Link from 'next/link'
 import dynamicImport from 'next/dynamic'
@@ -248,6 +249,9 @@ export default function PlaygroundPage() {
           </motion.div>
         </AnimatePresence>
       </div>
+      
+      {/* Performance Panel - only show for developers */}
+      <PerformancePanel />
     </div>
   )
 }
