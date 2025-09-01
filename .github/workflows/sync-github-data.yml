@@ -224,17 +224,28 @@ jobs:
         # Use Turso HTTP API directly instead of CLI
         echo "Syncing data to Turso database via HTTP API..."
         
-        # Execute SQL statements via Turso HTTP API
-        while IFS= read -r line; do
-          if [[ -n "$line" && "$line" != "/*"* && "$line" != "--"* ]]; then
-            echo "Executing: ${line:0:50}..."
-            curl -s -X POST "$TURSO_DATABASE_URL/v2/pipeline" \
+        # Split SQL file by semicolons and execute complete statements
+        cat github_data.sql | tr -d '\n' | sed 's/;/;\n/g' | while read -r statement; do
+          if [[ -n "$statement" && "$statement" != "/*"* && "$statement" =~ [A-Za-z] ]]; then
+            statement=$(echo "$statement" | xargs)  # trim whitespace
+            echo "Executing: ${statement:0:60}..."
+            
+            # Escape quotes for JSON
+            escaped_sql=$(echo "$statement" | sed 's/"/\\"/g')
+            
+            response=$(curl -s -X POST "$TURSO_DATABASE_URL/v2/pipeline" \
               -H "Authorization: Bearer $TURSO_AUTH_TOKEN" \
               -H "Content-Type: application/json" \
-              -d "{\"requests\": [{\"type\": \"execute\", \"stmt\": {\"sql\": \"$line\"}}]}" \
-              | jq -r '.results[0].response.type // "error"'
+              -d "{\"requests\": [{\"type\": \"execute\", \"stmt\": {\"sql\": \"$escaped_sql\"}}]}")
+            
+            # Check for errors
+            if echo "$response" | jq -e '.results[0].response.type == "error"' > /dev/null 2>&1; then
+              echo "Error: $(echo "$response" | jq -r '.results[0].response.error.message')"
+            else
+              echo "Success: $(echo "$response" | jq -r '.results[0].response.type // "ok"')"
+            fi
           fi
-        done < github_data.sql
+        done
         
         echo "✅ Data sync completed successfully"
         
