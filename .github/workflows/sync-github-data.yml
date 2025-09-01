@@ -23,8 +23,11 @@ jobs:
     - name: Install Turso CLI
       run: |
         curl -sSfL https://get.tur.so/install.sh | bash
-        echo "$HOME/.turso/bin" >> $GITHUB_PATH
-        export PATH="$HOME/.turso/bin:$PATH"
+        source /home/runner/.bashrc
+        echo "Turso CLI installed, checking location:"
+        ls -la $HOME/.turso/
+        find $HOME/.turso -name "turso" -type f
+        echo "$HOME/.turso" >> $GITHUB_PATH
     
     - name: Fetch GitHub data and sync to Turso
       env:
@@ -218,8 +221,10 @@ jobs:
         # Run the script
         node fetch_github_data.js
 
-        # Use full path to Turso CLI and upload to Turso
-        TURSO_CLI="$HOME/.turso/bin/turso"
+        # Find and use Turso CLI binary
+        source /home/runner/.bashrc
+        TURSO_CLI=$(find $HOME/.turso -name "turso" -type f | head -1)
+        echo "Using Turso CLI at: $TURSO_CLI"
         
         # Authenticate with Turso using auth token
         $TURSO_CLI auth api-tokens add temp-token $TURSO_AUTH_TOKEN
