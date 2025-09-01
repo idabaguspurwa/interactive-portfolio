@@ -331,8 +331,8 @@ jobs:
             
             print(f'Executing {stmt_type}: {stmt[:60]}...')
             
-            # Escape for JSON
-            escaped_sql = stmt.replace('\\\\', '\\\\\\\\').replace('\"', '\\\"').replace('\t', '\\t').replace('\n', '\\n').replace('\r', '\\r')
+            # Escape for JSON - handle all control characters properly
+            escaped_sql = stmt.replace('\\', '\\\\').replace('\"', '\\\"').replace('\n', '\\n').replace('\r', '\\r').replace('\t', '\\t').replace('\b', '\\b').replace('\f', '\\f')
             
             # Create JSON payload
             payload = f'{{\"requests\":[{{\"type\":\"execute\",\"stmt\":{{\"sql\":\"{escaped_sql}\"}}}}]}}'
@@ -386,8 +386,43 @@ jobs:
         with open('github_data.sql', 'r') as f:
             content = f.read()
 
-        # Split by semicolon followed by newline
-        statements = re.split(r';\s*\n', content)
+        # Split by semicolon at end of line, but preserve multi-line statements
+        # Use a more robust approach to find statement boundaries
+        statements = []
+        current_stmt = ''
+        in_multiline_comment = False
+        
+        for line in content.split('\n'):
+            line = line.strip()
+            
+            # Skip empty lines and comments
+            if not line or line.startswith('--'):
+                continue
+                
+            # Handle multi-line comments
+            if line.startswith('/*'):
+                in_multiline_comment = True
+            if '*/' in line:
+                in_multiline_comment = False
+                continue
+            if in_multiline_comment:
+                continue
+            
+            # Add line to current statement
+            if current_stmt:
+                current_stmt += ' ' + line
+            else:
+                current_stmt = line
+            
+            # Check if statement ends with semicolon
+            if line.endswith(';'):
+                if current_stmt.strip():
+                    statements.append(current_stmt)
+                current_stmt = ''
+        
+        # Add any remaining statement
+        if current_stmt.strip():
+            statements.append(current_stmt)
         
         # Debug: count statement types
         create_count = sum(1 for s in statements if s.strip().upper().startswith('CREATE'))
