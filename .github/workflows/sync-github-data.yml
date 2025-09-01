@@ -229,9 +229,23 @@ jobs:
         # Use Turso HTTP API directly instead of CLI
         echo "Syncing data to Turso database via HTTP API..."
         
-        # Test the connection first
+        # Debug URL and connectivity
+        echo "Debug information:"
+        echo "Database URL format: ${TURSO_DATABASE_URL:0:30}..."
+        echo "Auth token present: $(if [[ -n "$TURSO_AUTH_TOKEN" ]]; then echo "Yes"; else echo "No"; fi)"
+        
+        # Test basic connectivity to the host
+        host_url=$(echo "$TURSO_DATABASE_URL" | sed 's|/v2/pipeline||' | sed 's|https://||' | cut -d'/' -f1)
+        echo "Testing basic connectivity to: $host_url"
+        if curl -s --connect-timeout 10 --max-time 15 -o /dev/null -w "HTTP_CODE:%{http_code}" "https://$host_url" | grep -q "HTTP_CODE:[23]"; then
+          echo "✅ Basic connectivity successful"
+        else
+          echo "❌ Basic connectivity failed - check URL format"
+        fi
+        
+        # Test the database connection
         echo "Testing Turso database connection..."
-        test_response=$(curl -s -w "\nHTTP_CODE:%{http_code}" -X POST "$TURSO_DATABASE_URL/v2/pipeline" \
+        test_response=$(curl -s -w "\nHTTP_CODE:%{http_code}" --connect-timeout 10 --max-time 30 -X POST "$TURSO_DATABASE_URL/v2/pipeline" \
           -H "Authorization: Bearer $TURSO_AUTH_TOKEN" \
           -H "Content-Type: application/json" \
           -d '{"requests":[{"type":"execute","stmt":{"sql":"SELECT 1"}}]}' || echo -e '\n{"error": "connection_test_failed"}\nHTTP_CODE:000')
@@ -243,8 +257,28 @@ jobs:
           echo "❌ Connection test failed with HTTP $test_http_code"
           echo "Database URL: $TURSO_DATABASE_URL"
           echo "Response: $test_body"
-          echo "Skipping data sync due to connection issues."
-          exit 1
+          
+          # Try alternative URL formats if the primary fails
+          if [[ "$TURSO_DATABASE_URL" != *"/v2/pipeline" ]]; then
+            echo "Trying with /v2/pipeline endpoint..."
+            alt_url="$TURSO_DATABASE_URL/v2/pipeline"
+            alt_response=$(curl -s -w "\nHTTP_CODE:%{http_code}" --connect-timeout 5 --max-time 15 -X POST "$alt_url" \
+              -H "Authorization: Bearer $TURSO_AUTH_TOKEN" \
+              -H "Content-Type: application/json" \
+              -d '{"requests":[{"type":"execute","stmt":{"sql":"SELECT 1"}}]}' || echo -e '\n{"error": "alt_test_failed"}\nHTTP_CODE:000')
+            alt_http_code=$(echo "$alt_response" | grep "HTTP_CODE:" | cut -d: -f2)
+            if [[ "$alt_http_code" == "200" ]]; then
+              echo "✅ Alternative URL successful"
+              TURSO_DATABASE_URL="$alt_url"
+            else
+              echo "❌ Alternative URL also failed with HTTP $alt_http_code"
+            fi
+          fi
+          
+          if [[ "$test_http_code" != "200" && "${alt_http_code:-000}" != "200" ]]; then
+            echo "Skipping data sync due to connection issues."
+            exit 1
+          fi
         else
           echo "✅ Database connection successful"
         fi
