@@ -50,6 +50,15 @@ jobs:
           auth: process.env.GITHUB_TOKEN
         })
 
+        // Helper function to safely quote SQL string values
+        function sqlString(value) {
+          if (value === null || value === undefined) {
+            return 'NULL'
+          }
+          // Escape single quotes by doubling them
+          return "'" + String(value).replace(/'/g, "''") + "'"
+        }
+
         async function fetchGitHubData() {
           const username = process.env.GITHUB_USERNAME
           console.log(`Fetching data for user: ${username}`)
@@ -117,14 +126,11 @@ jobs:
 
             `
 
-            // Helper function to safely quote SQL string values
-            function sqlString(value) {
-              if (value === null || value === undefined) {
-                return 'NULL'
-              }
-              // Escape single quotes by doubling them
-              return "'" + String(value).replace(/'/g, "''") + "'"
-            }
+            // Test the sqlString function
+            console.log('Testing sqlString function:')
+            console.log('sqlString("test"): ' + sqlString("test"))
+            console.log('sqlString("test\'s"): ' + sqlString("test's"))
+            console.log('sqlString(null): ' + sqlString(null))
 
             // Process repositories (limit data to stay under 5GB storage)
             for (const repo of repos.slice(0, 50)) { // Limit to top 50 repos
@@ -214,6 +220,11 @@ jobs:
             // Write SQL to file
             fs.writeFileSync('github_data.sql', sql)
             console.log('SQL file generated successfully')
+            
+            // Show a sample of the generated SQL for debugging
+            const sampleLines = sql.split('\n').slice(0, 20).join('\n')
+            console.log('Sample SQL generated:')
+            console.log(sampleLines)
             
             // Log estimated operations for monitoring
             const lines = sql.split('\n').filter(line => line.trim().indexOf('INSERT') === 0).length
