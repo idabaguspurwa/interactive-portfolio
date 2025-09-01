@@ -108,7 +108,7 @@ export function QueryProcessingView({ query, isLoading }) {
             Processing your question
           </h3>
           <p className="text-gray-600 dark:text-gray-400 mb-4">
-            "{query}"
+            &ldquo;{query}&rdquo;
           </p>
           <div className="text-sm text-gray-500 dark:text-gray-400">
             Processing time: {getElapsedTime()}s
