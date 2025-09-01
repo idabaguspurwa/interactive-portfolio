@@ -332,7 +332,7 @@ jobs:
             print(f'Executing {stmt_type}: {stmt[:60]}...')
             
             # Escape for JSON - handle all control characters properly
-            escaped_sql = stmt.replace('\\', '\\\\').replace('\"', '\\\"').replace('\n', '\\n').replace('\r', '\\r').replace('\t', '\\t').replace('\b', '\\b').replace('\f', '\\f')
+            escaped_sql = json.dumps(stmt)[1:-1]  # Use json.dumps and remove outer quotes
             
             # Create JSON payload
             payload = f'{{\"requests\":[{{\"type\":\"execute\",\"stmt\":{{\"sql\":\"{escaped_sql}\"}}}}]}}'
