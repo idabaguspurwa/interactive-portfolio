@@ -57,62 +57,63 @@ jobs:
 
             // Create SQL statements with minimal data to save storage
             let sql = \`
-/* Create tables if they don't exist */
-CREATE TABLE IF NOT EXISTS repositories (
-  id INTEGER PRIMARY KEY,
-  name TEXT NOT NULL,
-  full_name TEXT NOT NULL,
-  description TEXT,
-  language TEXT,
-  stars INTEGER DEFAULT 0,
-  forks INTEGER DEFAULT 0,
-  open_issues INTEGER DEFAULT 0,
-  size_kb INTEGER DEFAULT 0,
-  created_at TEXT,
-  updated_at TEXT,
-  pushed_at TEXT,
-  is_fork BOOLEAN DEFAULT 0,
-  is_private BOOLEAN DEFAULT 0,
-  homepage TEXT,
-  topics TEXT,
-  sync_date TEXT DEFAULT CURRENT_TIMESTAMP
-);
+            /* Create tables if they don't exist */
+            CREATE TABLE IF NOT EXISTS repositories (
+              id INTEGER PRIMARY KEY,
+              name TEXT NOT NULL,
+              full_name TEXT NOT NULL,
+              description TEXT,
+              language TEXT,
+              stars INTEGER DEFAULT 0,
+              forks INTEGER DEFAULT 0,
+              open_issues INTEGER DEFAULT 0,
+              size_kb INTEGER DEFAULT 0,
+              created_at TEXT,
+              updated_at TEXT,
+              pushed_at TEXT,
+              is_fork BOOLEAN DEFAULT 0,
+              is_private BOOLEAN DEFAULT 0,
+              homepage TEXT,
+              topics TEXT,
+              sync_date TEXT DEFAULT CURRENT_TIMESTAMP
+            );
 
-CREATE TABLE IF NOT EXISTS commits (
-  sha TEXT PRIMARY KEY,
-  repo_name TEXT NOT NULL,
-  author_name TEXT,
-  author_email TEXT,
-  message TEXT,
-  date TEXT,
-  additions INTEGER DEFAULT 0,
-  deletions INTEGER DEFAULT 0,
-  files_changed INTEGER DEFAULT 0,
-  sync_date TEXT DEFAULT CURRENT_TIMESTAMP
-);
+            CREATE TABLE IF NOT EXISTS commits (
+              sha TEXT PRIMARY KEY,
+              repo_name TEXT NOT NULL,
+              author_name TEXT,
+              author_email TEXT,
+              message TEXT,
+              date TEXT,
+              additions INTEGER DEFAULT 0,
+              deletions INTEGER DEFAULT 0,
+              files_changed INTEGER DEFAULT 0,
+              sync_date TEXT DEFAULT CURRENT_TIMESTAMP
+            );
 
-CREATE TABLE IF NOT EXISTS languages (
-  id INTEGER PRIMARY KEY AUTOINCREMENT,
-  repo_name TEXT NOT NULL,
-  language TEXT NOT NULL,
-  bytes INTEGER DEFAULT 0,
-  percentage REAL DEFAULT 0,
-  sync_date TEXT DEFAULT CURRENT_TIMESTAMP,
-  UNIQUE(repo_name, language)
-);
+            CREATE TABLE IF NOT EXISTS languages (
+              id INTEGER PRIMARY KEY AUTOINCREMENT,
+              repo_name TEXT NOT NULL,
+              language TEXT NOT NULL,
+              bytes INTEGER DEFAULT 0,
+              percentage REAL DEFAULT 0,
+              sync_date TEXT DEFAULT CURRENT_TIMESTAMP,
+              UNIQUE(repo_name, language)
+            );
 
-/* Clear existing data to prevent duplicates (efficient for small datasets) */
-DELETE FROM repositories;
-DELETE FROM commits; 
-DELETE FROM languages;
+            /* Clear existing data to prevent duplicates (efficient for small datasets) */
+            DELETE FROM repositories;
+            DELETE FROM commits; 
+            DELETE FROM languages;
 
-\`
+            \`
 
             // Process repositories (limit data to stay under 5GB storage)
             for (const repo of repos.slice(0, 50)) { // Limit to top 50 repos
               const topics = repo.topics ? repo.topics.join(',') : ''
               
-              sql += \`INSERT INTO repositories VALUES (
+              sql += \`
+              INSERT INTO repositories VALUES (
                 \${repo.id},
                 \${JSON.stringify(repo.name)},
                 \${JSON.stringify(repo.full_name)},
@@ -131,7 +132,7 @@ DELETE FROM languages;
                 \${JSON.stringify(topics)},
                 CURRENT_TIMESTAMP
               );
-\`
+              \`
 
               // Fetch recent commits (last 10 per repo to minimize API calls)
               try {
@@ -144,7 +145,8 @@ DELETE FROM languages;
 
                 for (const commit of commits) {
                   if (commit.author) {
-                    sql += \`INSERT OR IGNORE INTO commits VALUES (
+                    sql += \`
+                    INSERT OR IGNORE INTO commits VALUES (
                       \${JSON.stringify(commit.sha)},
                       \${JSON.stringify(repo.name)},
                       \${JSON.stringify(commit.commit.author.name)},
@@ -154,7 +156,7 @@ DELETE FROM languages;
                       0, 0, 0,
                       CURRENT_TIMESTAMP
                     );
-\`
+                    \`
                   }
                 }
               } catch (error) {
@@ -173,14 +175,15 @@ DELETE FROM languages;
                 for (const [language, bytes] of Object.entries(languages)) {
                   const percentage = totalBytes > 0 ? (bytes / totalBytes) * 100 : 0
                   
-                  sql += \`INSERT OR REPLACE INTO languages (repo_name, language, bytes, percentage, sync_date) VALUES (
+                  sql += \`
+                  INSERT OR REPLACE INTO languages (repo_name, language, bytes, percentage, sync_date) VALUES (
                     \${JSON.stringify(repo.name)},
                     \${JSON.stringify(language)},
                     \${bytes},
                     \${percentage.toFixed(2)},
                     CURRENT_TIMESTAMP
                   );
-\`
+                  \`
                 }
               } catch (error) {
                 console.log(\`Skipping languages for \${repo.name}: \${error.message}\`)
