@@ -227,10 +227,10 @@ jobs:
         echo "Using Turso CLI at: $TURSO_CLI"
         
         # Authenticate with Turso using auth token
-        $TURSO_CLI auth api-tokens add temp-token $TURSO_AUTH_TOKEN
+        export TURSO_API_TOKEN=$TURSO_AUTH_TOKEN
         
         echo "Syncing data to Turso database..."
-        $TURSO_CLI db shell ai-data-explorer --file github_data.sql
+        $TURSO_CLI db shell ai-data-explorer < github_data.sql
         
         echo "✅ Data sync completed successfully"
         
