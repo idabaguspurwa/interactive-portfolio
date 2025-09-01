@@ -238,27 +238,51 @@ jobs:
             statement=$(echo "$statement" | xargs)  # trim whitespace
             echo "Executing: ${statement:0:60}..."
             
-            # Escape quotes for JSON
-            escaped_sql=$(echo "$statement" | sed 's/"/\\"/g')
+            # Escape quotes for JSON - more thorough escaping
+            escaped_sql=$(echo "$statement" | sed 's/\\/\\\\/g; s/"/\\"/g; s/\t/\\t/g; s/\n/\\n/g; s/\r/\\r/g')
             
-            response=$(curl -s -X POST "$TURSO_DATABASE_URL/v2/pipeline" \
+            # Create the JSON payload
+            json_payload=$(printf '{"requests":[{"type":"execute","stmt":{"sql":"%s"}}]}' "$escaped_sql")
+            
+            response=$(curl -s -w "\nHTTP_CODE:%{http_code}" -X POST "$TURSO_DATABASE_URL/v2/pipeline" \
               -H "Authorization: Bearer $TURSO_AUTH_TOKEN" \
               -H "Content-Type: application/json" \
-              -d "{\"requests\": [{\"type\": \"execute\", \"stmt\": {\"sql\": \"$escaped_sql\"}}]}" || echo '{"error": "curl_failed"}')
+              -d "$json_payload" || echo -e '\n{"error": "curl_failed"}\nHTTP_CODE:000')
+            
+            # Extract HTTP status code and response body
+            http_code=$(echo "$response" | grep "HTTP_CODE:" | cut -d: -f2)
+            response_body=$(echo "$response" | sed '/HTTP_CODE:/d')
+            
+            # Check for HTTP errors first
+            if [[ "$http_code" != "200" ]]; then
+              echo "HTTP Error $http_code: $response_body"
+              continue
+            fi
             
             # Check for errors (fallback if jq fails)
             if command -v jq >/dev/null 2>&1; then
-              if echo "$response" | jq -e '.results[0].response.type == "error"' > /dev/null 2>&1; then
-                echo "Error: $(echo "$response" | jq -r '.results[0].response.error.message' 2>/dev/null || echo "Unknown error")"
+              if echo "$response_body" | jq -e '.results[0].response.type == "error"' > /dev/null 2>&1; then
+                echo "SQL Error: $(echo "$response_body" | jq -r '.results[0].response.error.message' 2>/dev/null || echo "Unknown error")"
+                echo "Response: $response_body"
+              elif echo "$response_body" | jq -e '.results[0].response.type' > /dev/null 2>&1; then
+                response_type=$(echo "$response_body" | jq -r '.results[0].response.type' 2>/dev/null || echo "ok")
+                if [[ "$response_type" == "ok" ]]; then
+                  affected_rows=$(echo "$response_body" | jq -r '.results[0].response.result.affected_row_count // 0' 2>/dev/null || echo "unknown")
+                  echo "Success: $response_type (affected rows: $affected_rows)"
+                else
+                  echo "Response: $response_type"
+                fi
               else
-                echo "Success: $(echo "$response" | jq -r '.results[0].response.type // "ok"' 2>/dev/null || echo "ok")"
+                echo "Success: Response received"
               fi
             else
               # Fallback without jq
-              if [[ "$response" == *'"type":"error"'* || "$response" == *'"error"'* ]]; then
-                echo "Error detected in response: $response"
+              if [[ "$response_body" == *'"type":"error"'* ]]; then
+                echo "Error detected: $response_body"
+              elif [[ "$response_body" == *'"type":"ok"'* ]]; then
+                echo "Success: SQL executed"
               else
-                echo "Success (response received)"
+                echo "Unknown response: $response_body"
               fi
             fi
           fi
@@ -266,6 +290,22 @@ jobs:
         
         # Re-enable exit on error
         set -e
+        
+        # Verify data was inserted by checking row counts
+        echo "Verifying data insertion..."
+        for table in repositories commits languages; do
+          count_response=$(curl -s -X POST "$TURSO_DATABASE_URL/v2/pipeline" \
+            -H "Authorization: Bearer $TURSO_AUTH_TOKEN" \
+            -H "Content-Type: application/json" \
+            -d "{\"requests\": [{\"type\": \"execute\", \"stmt\": {\"sql\": \"SELECT COUNT(*) as count FROM $table\"}}]}")
+          
+          if command -v jq >/dev/null 2>&1; then
+            count=$(echo "$count_response" | jq -r '.results[0].response.result.rows[0][0] // 0' 2>/dev/null || echo "unknown")
+            echo "$table table: $count rows"
+          else
+            echo "$table table: response received"
+          fi
+        done
         
         echo "✅ Data sync completed successfully"
         
