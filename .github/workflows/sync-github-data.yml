@@ -308,8 +308,20 @@ jobs:
         # Disable exit on error for this section to handle individual statement failures
         set +e
         
-        # Process SQL statements using grep to extract complete INSERT statements
-        grep -E "^INSERT|^CREATE|^DELETE" github_data.sql | while IFS= read -r statement; do
+        # Use awk to properly split multi-line SQL statements by semicolon
+        awk '
+        BEGIN { 
+          RS = ";" 
+          FS = "\n"
+        }
+        NF > 0 && !/^[[:space:]]*$/ && !/^[[:space:]]*\/\*/ {
+          # Remove leading/trailing whitespace and reconstruct statement
+          gsub(/^[[:space:]]+|[[:space:]]+$/, "")
+          if (length($0) > 0) {
+            print $0 ";"
+          }
+        }
+        ' github_data.sql | while IFS= read -r statement; do
           if [[ -n "$statement" && "$statement" != "/*"* ]]; then
             echo "Executing: ${statement:0:60}..."
             
