@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { RevealOnScroll } from '@/components/ScrollAnimations'
 import { PerformancePanel } from '@/components/PerformancePanel'
-import { ArrowLeft, Database, Zap, BarChart3, Github, Activity, RefreshCw, Users, TrendingUp, Download, AlertCircle, Code } from 'lucide-react'
+import { ArrowLeft, Database, Zap, BarChart3, Github, Activity, RefreshCw, Users, TrendingUp, Download, AlertCircle, Code, Sparkles } from 'lucide-react'
 import Link from 'next/link'
 import dynamicImport from 'next/dynamic'
 import { callPythonAPI } from '@/lib/python-api'
@@ -34,16 +34,6 @@ const GitHubEventsLiveDemo = dynamicImport(
   }
 )
 
-const QueryPlayground = dynamicImport(
-  () => import('@/components/QueryPlayground'),
-  { 
-    loading: () => (
-      <div className="flex items-center justify-center min-h-[400px]">
-        <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-blue-500"></div>
-      </div>
-    )
-  }
-)
 
 const EnterpriseDashboard = dynamicImport(
   () => import('@/components/enterprise-dashboard/EnterpriseWrapper').then(mod => ({ default: mod.EnterpriseWrapper })),
@@ -677,47 +667,56 @@ function GitHubEventsTab() {
         </div>
       </div>
 
-      {/* SQL Query Playground */}
-      <div className="bg-gray-50 dark:bg-gray-900/50">
+      {/* AI Data Explorer CTA */}
+      <div className="bg-gradient-to-r from-purple-50 to-blue-50 dark:from-purple-900/20 dark:to-blue-900/20">
         <div className="max-w-6xl mx-auto px-6 py-16">
-          <div className="text-center mb-12">
-            <div className="inline-flex items-center gap-2 px-3 py-1 bg-indigo-50 dark:bg-indigo-950/30 border border-indigo-200/30 dark:border-indigo-800/30 rounded-full text-indigo-700 dark:text-indigo-300 text-sm font-medium mb-4">
-              <Code className="w-4 h-4 sm:w-3 sm:h-3" />
-              SQL Playground
+          <div className="text-center">
+            <div className="inline-flex items-center gap-2 px-3 py-1 bg-purple-100 dark:bg-purple-900/30 border border-purple-200/30 dark:border-purple-800/30 rounded-full text-purple-700 dark:text-purple-300 text-sm font-medium mb-4">
+              <Sparkles className="w-4 h-4 sm:w-3 sm:h-3" />
+              AI-Powered
             </div>
             
-            <h2 className="text-3xl font-bold text-gray-900 dark:text-white mb-4">
-              Interactive Query Builder
+            <h2 className="text-3xl lg:text-4xl font-bold text-gray-900 dark:text-white mb-4">
+              Ask Questions in Plain English
             </h2>
             
-            <p className="text-lg text-gray-600 dark:text-gray-400 max-w-3xl mx-auto">
-              Write and execute SQL queries against the live Snowflake database with full query capabilities
+            <p className="text-lg text-gray-600 dark:text-gray-400 max-w-3xl mx-auto mb-8">
+              Skip the SQL and explore your GitHub data using natural language. Our AI understands your questions and generates insights automatically.
             </p>
-          </div>
 
-          <div className="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 overflow-hidden shadow-sm">
-            <ErrorBoundary 
-              fallback={
-                <div className="p-12 text-center">
-                  <div className="w-12 h-12 mx-auto bg-red-100 dark:bg-red-900/30 rounded-lg flex items-center justify-center mb-4">
-                    <AlertCircle className="w-6 h-6 text-red-600 dark:text-red-400" />
-                  </div>
-                  <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-2">Query Environment Unavailable</h3>
-                  <p className="text-gray-600 dark:text-gray-400 text-sm mb-4 max-w-sm mx-auto">
-                    Unable to initialize the SQL query environment
-                  </p>
-                  <button 
-                    onClick={() => window.location.reload()} 
-                    className="inline-flex items-center gap-2 bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors"
-                  >
-                    <RefreshCw className="w-4 h-4" />
-                    Reload Playground
-                  </button>
-                </div>
-              }
+            <Link 
+              href="/ai-explorer"
+              className="inline-flex items-center gap-2 bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700 text-white px-8 py-4 rounded-xl font-semibold text-lg transition-all transform hover:scale-105 shadow-lg"
             >
-              <QueryPlayground />
-            </ErrorBoundary>
+              <Sparkles className="w-5 h-5" />
+              Try AI Data Explorer
+            </Link>
+
+            <div className="mt-8 grid grid-cols-1 md:grid-cols-3 gap-6 max-w-4xl mx-auto">
+              {[
+                {
+                  question: "Which repositories had the most commits?",
+                  insight: "Get instant answers with AI-generated SQL"
+                },
+                {
+                  question: "Show me activity patterns by day",
+                  insight: "Natural language to beautiful visualizations"
+                },
+                {
+                  question: "What happened in the last week?",
+                  insight: "Conversational data exploration"
+                }
+              ].map((example, index) => (
+                <div key={index} className="bg-white dark:bg-gray-800 rounded-lg p-4 shadow-sm border border-gray-200 dark:border-gray-700">
+                  <div className="text-sm font-medium text-gray-900 dark:text-white mb-2">
+                    &ldquo;{example.question}&rdquo;
+                  </div>
+                  <div className="text-xs text-gray-600 dark:text-gray-400">
+                    {example.insight}
+                  </div>
+                </div>
+              ))}
+            </div>
           </div>
         </div>
       </div>

@@ -112,7 +112,7 @@ export function SQLGenerationDisplay({ sql, query, theme = 'light' }) {
               Generated SQL Query
             </h4>
             <p className="text-xs text-gray-600 dark:text-gray-400">
-              For: "{query}"
+              For: &ldquo;{query}&rdquo;
             </p>
           </div>
         </div>

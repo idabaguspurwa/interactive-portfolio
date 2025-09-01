@@ -57,7 +57,7 @@ jobs:
 
             // Create SQL statements with minimal data to save storage
             let sql = \`
--- Create tables if they don't exist
+/* Create tables if they don't exist */
 CREATE TABLE IF NOT EXISTS repositories (
   id INTEGER PRIMARY KEY,
   name TEXT NOT NULL,
@@ -101,7 +101,7 @@ CREATE TABLE IF NOT EXISTS languages (
   UNIQUE(repo_name, language)
 );
 
--- Clear existing data to prevent duplicates (efficient for small datasets)
+/* Clear existing data to prevent duplicates (efficient for small datasets) */
 DELETE FROM repositories;
 DELETE FROM commits; 
 DELETE FROM languages;
@@ -195,7 +195,7 @@ DELETE FROM languages;
             console.log('SQL file generated successfully')
             
             // Log estimated operations for monitoring
-            const lines = sql.split('\\n').filter(line => line.trim().startsWith('INSERT')).length
+            const lines = sql.split('\\n').filter(line => line.trim().indexOf('INSERT') === 0).length
             console.log(\`Estimated write operations: \${lines} (Limit: 10M)\`)
             
           } catch (error) {
