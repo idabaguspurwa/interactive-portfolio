@@ -221,18 +221,20 @@ jobs:
         # Run the script
         node fetch_github_data.js
 
-        # Find and use Turso CLI binary
-        source /home/runner/.bashrc
-        TURSO_CLI=$(find $HOME/.turso -name "turso" -type f | head -1)
-        echo "Using Turso CLI at: $TURSO_CLI"
+        # Use Turso HTTP API directly instead of CLI
+        echo "Syncing data to Turso database via HTTP API..."
         
-        # Configure Turso with auth token
-        echo "Configuring Turso authentication..."
-        echo "$TURSO_AUTH_TOKEN" | $TURSO_CLI auth login --headless
-        
-        # Sync data to Turso database
-        echo "Syncing data to Turso database..."
-        $TURSO_CLI db shell ai-data-explorer < github_data.sql
+        # Execute SQL statements via Turso HTTP API
+        while IFS= read -r line; do
+          if [[ -n "$line" && "$line" != "/*"* && "$line" != "--"* ]]; then
+            echo "Executing: ${line:0:50}..."
+            curl -s -X POST "$TURSO_DATABASE_URL/v2/pipeline" \
+              -H "Authorization: Bearer $TURSO_AUTH_TOKEN" \
+              -H "Content-Type: application/json" \
+              -d "{\"requests\": [{\"type\": \"execute\", \"stmt\": {\"sql\": \"$line\"}}]}" \
+              | jq -r '.results[0].response.type // "error"'
+          fi
+        done < github_data.sql
         
         echo "✅ Data sync completed successfully"
         
