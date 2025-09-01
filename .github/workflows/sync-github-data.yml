@@ -320,7 +320,16 @@ jobs:
             if not stmt or stmt.startswith('/*') or not any(c.isalpha() for c in stmt):
                 return
             
-            print(f'Executing: {stmt[:60]}...')
+            # Debug: show statement type and first line
+            stmt_type = 'UNKNOWN'
+            if stmt.upper().startswith('CREATE'):
+                stmt_type = 'CREATE'
+            elif stmt.upper().startswith('INSERT'):
+                stmt_type = 'INSERT'
+            elif stmt.upper().startswith('DELETE'):
+                stmt_type = 'DELETE'
+            
+            print(f'Executing {stmt_type}: {stmt[:60]}...')
             
             # Escape for JSON
             escaped_sql = stmt.replace('\\\\', '\\\\\\\\').replace('\"', '\\\"').replace('\t', '\\t').replace('\n', '\\n').replace('\r', '\\r')
@@ -379,12 +388,30 @@ jobs:
 
         # Split by semicolon followed by newline
         statements = re.split(r';\s*\n', content)
+        
+        # Debug: count statement types
+        create_count = sum(1 for s in statements if s.strip().upper().startswith('CREATE'))
+        insert_count = sum(1 for s in statements if s.strip().upper().startswith('INSERT'))
+        delete_count = sum(1 for s in statements if s.strip().upper().startswith('DELETE'))
+        print(f'Found {len(statements)} total statements: {create_count} CREATE, {insert_count} INSERT, {delete_count} DELETE')
 
         api_endpoint = '$API_ENDPOINT'
         auth_token = '$TURSO_AUTH_TOKEN'
 
+        # Process CREATE statements first to ensure tables exist
         for stmt in statements:
-            execute_sql(stmt, api_endpoint, auth_token)
+            if stmt.strip().upper().startswith('CREATE'):
+                execute_sql(stmt, api_endpoint, auth_token)
+        
+        # Then process DELETE statements
+        for stmt in statements:
+            if stmt.strip().upper().startswith('DELETE'):
+                execute_sql(stmt, api_endpoint, auth_token)
+        
+        # Finally process INSERT statements
+        for stmt in statements:
+            if stmt.strip().upper().startswith('INSERT'):
+                execute_sql(stmt, api_endpoint, auth_token)
         "
         
         # Re-enable exit on error
