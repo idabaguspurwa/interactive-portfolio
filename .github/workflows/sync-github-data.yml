@@ -226,11 +226,9 @@ jobs:
         TURSO_CLI=$(find $HOME/.turso -name "turso" -type f | head -1)
         echo "Using Turso CLI at: $TURSO_CLI"
         
-        # Authenticate with Turso using auth token
-        export TURSO_API_TOKEN=$TURSO_AUTH_TOKEN
-        
+        # Authenticate with Turso using the database URL directly
         echo "Syncing data to Turso database..."
-        $TURSO_CLI db shell ai-data-explorer < github_data.sql
+        $TURSO_CLI db shell $TURSO_DATABASE_URL --auth-token $TURSO_AUTH_TOKEN < github_data.sql
         
         echo "✅ Data sync completed successfully"
         
