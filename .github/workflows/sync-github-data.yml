@@ -136,27 +136,28 @@ jobs:
             for (const repo of repos.slice(0, 50)) { // Limit to top 50 repos
               const topics = repo.topics ? repo.topics.join(',') : ''
               
-              sql += `
-              INSERT INTO repositories VALUES (
-                ${repo.id},
-                ${sqlString(repo.name)},
-                ${sqlString(repo.full_name)},
-                ${sqlString(repo.description || '')},
-                ${sqlString(repo.language || '')},
-                ${repo.stargazers_count || 0},
-                ${repo.forks_count || 0},
-                ${repo.open_issues_count || 0},
-                ${repo.size || 0},
-                ${sqlString(repo.created_at)},
-                ${sqlString(repo.updated_at)},
-                ${sqlString(repo.pushed_at)},
-                ${repo.fork ? 1 : 0},
-                ${repo.private ? 1 : 0},
-                ${sqlString(repo.homepage || '')},
-                ${sqlString(topics)},
-                CURRENT_TIMESTAMP
-              );
-              `
+              // Build INSERT statement with proper string concatenation
+              const repoInsert = 'INSERT INTO repositories VALUES (' +
+                repo.id + ', ' +
+                sqlString(repo.name) + ', ' +
+                sqlString(repo.full_name) + ', ' +
+                sqlString(repo.description || '') + ', ' +
+                sqlString(repo.language || '') + ', ' +
+                (repo.stargazers_count || 0) + ', ' +
+                (repo.forks_count || 0) + ', ' +
+                (repo.open_issues_count || 0) + ', ' +
+                (repo.size || 0) + ', ' +
+                sqlString(repo.created_at) + ', ' +
+                sqlString(repo.updated_at) + ', ' +
+                sqlString(repo.pushed_at) + ', ' +
+                (repo.fork ? 1 : 0) + ', ' +
+                (repo.private ? 1 : 0) + ', ' +
+                sqlString(repo.homepage || '') + ', ' +
+                sqlString(topics) + ', ' +
+                'CURRENT_TIMESTAMP' +
+                ');\n'
+              
+              sql += repoInsert
 
               // Fetch recent commits (last 10 per repo to minimize API calls)
               try {
@@ -169,18 +170,18 @@ jobs:
 
                 for (const commit of commits) {
                   if (commit.author) {
-                    sql += `
-                    INSERT OR IGNORE INTO commits VALUES (
-                      ${sqlString(commit.sha)},
-                      ${sqlString(repo.name)},
-                      ${sqlString(commit.commit.author.name)},
-                      ${sqlString(commit.commit.author.email)},
-                      ${sqlString(commit.commit.message.split('\n')[0].substring(0, 200))},
-                      ${sqlString(commit.commit.author.date)},
-                      0, 0, 0,
-                      CURRENT_TIMESTAMP
-                    );
-                    `
+                    const commitInsert = 'INSERT OR IGNORE INTO commits VALUES (' +
+                      sqlString(commit.sha) + ', ' +
+                      sqlString(repo.name) + ', ' +
+                      sqlString(commit.commit.author.name) + ', ' +
+                      sqlString(commit.commit.author.email) + ', ' +
+                      sqlString(commit.commit.message.split('\n')[0].substring(0, 200)) + ', ' +
+                      sqlString(commit.commit.author.date) + ', ' +
+                      '0, 0, 0, ' +
+                      'CURRENT_TIMESTAMP' +
+                      ');\n'
+                    
+                    sql += commitInsert
                   }
                 }
               } catch (error) {
@@ -199,15 +200,15 @@ jobs:
                 for (const [language, bytes] of Object.entries(languages)) {
                   const percentage = totalBytes > 0 ? (bytes / totalBytes) * 100 : 0
                   
-                  sql += `
-                  INSERT OR REPLACE INTO languages (repo_name, language, bytes, percentage, sync_date) VALUES (
-                    ${sqlString(repo.name)},
-                    ${sqlString(language)},
-                    ${bytes},
-                    ${percentage.toFixed(2)},
-                    CURRENT_TIMESTAMP
-                  );
-                  `
+                  const langInsert = 'INSERT OR REPLACE INTO languages (repo_name, language, bytes, percentage, sync_date) VALUES (' +
+                    sqlString(repo.name) + ', ' +
+                    sqlString(language) + ', ' +
+                    bytes + ', ' +
+                    percentage.toFixed(2) + ', ' +
+                    'CURRENT_TIMESTAMP' +
+                    ');\n'
+                  
+                  sql += langInsert
                 }
               } catch (error) {
                 console.log(`Skipping languages for ${repo.name}: ${error.message}`)
