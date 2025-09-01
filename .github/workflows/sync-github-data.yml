@@ -308,89 +308,84 @@ jobs:
         # Disable exit on error for this section to handle individual statement failures
         set +e
         
-        # Use awk to properly split multi-line SQL statements by semicolon
-        awk '
-        BEGIN { 
-          RS = ";" 
-          FS = "\n"
-        }
-        NF > 0 && !/^[[:space:]]*$/ && !/^[[:space:]]*\/\*/ {
-          # Remove leading/trailing whitespace and reconstruct statement
-          gsub(/^[[:space:]]+|[[:space:]]+$/, "")
-          if (length($0) > 0) {
-            print $0 ";"
-          }
-        }
-        ' github_data.sql | while IFS= read -r statement; do
-          if [[ -n "$statement" && "$statement" != "/*"* ]]; then
-            echo "Executing: ${statement:0:60}..."
+        # Use python to properly split SQL statements and execute them one by one
+        python3 -c "
+        import re
+        import subprocess
+        import json
+
+        def execute_sql(statement, api_endpoint, auth_token):
+            # Clean up the statement
+            stmt = statement.strip()
+            if not stmt or stmt.startswith('/*') or not any(c.isalpha() for c in stmt):
+                return
             
-            # Escape quotes for JSON - more thorough escaping
-            escaped_sql=$(echo "$statement" | sed 's/\\/\\\\/g; s/"/\\"/g; s/\t/\\t/g; s/\n/\\n/g; s/\r/\\r/g')
+            print(f'Executing: {stmt[:60]}...')
             
-            # Create the JSON payload
-            json_payload=$(printf '{"requests":[{"type":"execute","stmt":{"sql":"%s"}}]}' "$escaped_sql")
+            # Escape for JSON
+            escaped_sql = stmt.replace('\\\\', '\\\\\\\\').replace('\"', '\\\"').replace('\t', '\\t').replace('\n', '\\n').replace('\r', '\\r')
             
-            response=$(curl -s -w "\nHTTP_CODE:%{http_code}" --max-time 30 -X POST "$API_ENDPOINT" \
-              -H "Authorization: Bearer $TURSO_AUTH_TOKEN" \
-              -H "Content-Type: application/json" \
-              -d "$json_payload" 2>/dev/null || echo -e '\n{"error": "curl_failed"}\nHTTP_CODE:000')
+            # Create JSON payload
+            payload = f'{{\"requests\":[{{\"type\":\"execute\",\"stmt\":{{\"sql\":\"{escaped_sql}\"}}}}]}}'
             
-            # Extract HTTP status code and response body
-            http_code=$(echo "$response" | grep "HTTP_CODE:" | cut -d: -f2)
-            response_body=$(echo "$response" | sed '/HTTP_CODE:/d')
+            # Execute curl command
+            cmd = [
+                'curl', '-s', '-w', '\nHTTP_CODE:%{http_code}', '--max-time', '30',
+                '-X', 'POST', api_endpoint,
+                '-H', f'Authorization: Bearer {auth_token}',
+                '-H', 'Content-Type: application/json',
+                '-d', payload
+            ]
             
-            # Check for HTTP errors first
-            if [[ "$http_code" != "200" ]]; then
-              echo "HTTP Error $http_code: $response_body"
-              continue
-            fi
-            
-            # Check for errors and show detailed response info
-            if command -v jq >/dev/null 2>&1; then
-              if echo "$response_body" | jq -e '.results[0].type == "error"' > /dev/null 2>&1; then
-                echo "SQL Error: $(echo "$response_body" | jq -r '.results[0].error.message' 2>/dev/null || echo "Unknown error")"
-                echo "Statement: ${statement:0:100}..."
-                continue  # Skip to next statement
-              elif echo "$response_body" | jq -e '.results[0].response.type' > /dev/null 2>&1; then
-                response_type=$(echo "$response_body" | jq -r '.results[0].response.type' 2>/dev/null || echo "ok")
-                if [[ "$response_type" == "ok" ]]; then
-                  # Try different paths for affected row count
-                  affected_rows=$(echo "$response_body" | jq -r '
-                    .results[0].response.result.affected_row_count // 
-                    .results[0].response.result.changes //
-                    .results[0].response.result.affected_rows //
-                    "not_available"
-                  ' 2>/dev/null || echo "unknown")
-                  
-                  if [[ "$affected_rows" == "not_available" || "$affected_rows" == "unknown" ]]; then
-                    # If we can't get affected rows, check if there's any result data
-                    has_result=$(echo "$response_body" | jq -r '.results[0].response.result != null' 2>/dev/null || echo "false")
-                    echo "Success: $response_type (result present: $has_result)"
-                    echo "Debug - Full response: $response_body"
-                  else
-                    echo "Success: $response_type (affected rows: $affected_rows)"
-                  fi
-                else
-                  echo "Response: $response_type"
-                  echo "Debug - Full response: $response_body"
-                fi
-              else
-                echo "Success: Response received"
-                echo "Debug - Full response: $response_body"
-              fi
-            else
-              # Fallback without jq
-              if [[ "$response_body" == *'"type":"error"'* ]]; then
-                echo "Error detected: $response_body"
-              elif [[ "$response_body" == *'"type":"ok"'* ]]; then
-                echo "Success: SQL executed"
-              else
-                echo "Unknown response: $response_body"
-              fi
-            fi
-          fi
-        done
+            try:
+                result = subprocess.run(cmd, capture_output=True, text=True, timeout=35)
+                response = result.stdout
+                
+                # Extract HTTP code and body
+                lines = response.split('\n')
+                http_line = [line for line in lines if line.startswith('HTTP_CODE:')]
+                http_code = http_line[0].split(':')[1] if http_line else '000'
+                response_body = '\n'.join([line for line in lines if not line.startswith('HTTP_CODE:')])
+                
+                if http_code != '200':
+                    print(f'HTTP Error {http_code}: {response_body}')
+                    return
+                
+                # Parse response
+                try:
+                    resp_data = json.loads(response_body)
+                    if resp_data.get('results', [{}])[0].get('type') == 'error':
+                        error_msg = resp_data['results'][0].get('error', {}).get('message', 'Unknown error')
+                        print(f'SQL Error: {error_msg}')
+                        print(f'Statement: {stmt[:100]}...')
+                    else:
+                        result_type = resp_data.get('results', [{}])[0].get('response', {}).get('type', 'ok')
+                        if result_type == 'execute':
+                            affected_rows = resp_data.get('results', [{}])[0].get('response', {}).get('result', {}).get('affected_row_count', 'unknown')
+                            print(f'Success: {result_type} (affected rows: {affected_rows})')
+                        else:
+                            print(f'Response: {result_type}')
+                except json.JSONDecodeError:
+                    print('Success: Response received')
+                    
+            except subprocess.TimeoutExpired:
+                print('Error: Request timeout')
+            except Exception as e:
+                print(f'Error: {str(e)}')
+
+        # Read and process SQL file
+        with open('github_data.sql', 'r') as f:
+            content = f.read()
+
+        # Split by semicolon followed by newline
+        statements = re.split(r';\s*\n', content)
+
+        api_endpoint = '$API_ENDPOINT'
+        auth_token = '$TURSO_AUTH_TOKEN'
+
+        for stmt in statements:
+            execute_sql(stmt, api_endpoint, auth_token)
+        "
         
         # Re-enable exit on error
         set -e
