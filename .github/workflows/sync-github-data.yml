@@ -229,6 +229,26 @@ jobs:
         # Use Turso HTTP API directly instead of CLI
         echo "Syncing data to Turso database via HTTP API..."
         
+        # Test the connection first
+        echo "Testing Turso database connection..."
+        test_response=$(curl -s -w "\nHTTP_CODE:%{http_code}" -X POST "$TURSO_DATABASE_URL/v2/pipeline" \
+          -H "Authorization: Bearer $TURSO_AUTH_TOKEN" \
+          -H "Content-Type: application/json" \
+          -d '{"requests":[{"type":"execute","stmt":{"sql":"SELECT 1"}}]}' || echo -e '\n{"error": "connection_test_failed"}\nHTTP_CODE:000')
+        
+        test_http_code=$(echo "$test_response" | grep "HTTP_CODE:" | cut -d: -f2)
+        test_body=$(echo "$test_response" | sed '/HTTP_CODE:/d')
+        
+        if [[ "$test_http_code" != "200" ]]; then
+          echo "❌ Connection test failed with HTTP $test_http_code"
+          echo "Database URL: $TURSO_DATABASE_URL"
+          echo "Response: $test_body"
+          echo "Skipping data sync due to connection issues."
+          exit 1
+        else
+          echo "✅ Database connection successful"
+        fi
+        
         # Split SQL file by semicolons and execute complete statements
         # Disable exit on error for this section to handle individual statement failures
         set +e
@@ -244,10 +264,10 @@ jobs:
             # Create the JSON payload
             json_payload=$(printf '{"requests":[{"type":"execute","stmt":{"sql":"%s"}}]}' "$escaped_sql")
             
-            response=$(curl -s -w "\nHTTP_CODE:%{http_code}" -X POST "$TURSO_DATABASE_URL/v2/pipeline" \
+            response=$(curl -s -w "\nHTTP_CODE:%{http_code}" --max-time 30 -X POST "$TURSO_DATABASE_URL/v2/pipeline" \
               -H "Authorization: Bearer $TURSO_AUTH_TOKEN" \
               -H "Content-Type: application/json" \
-              -d "$json_payload" || echo -e '\n{"error": "curl_failed"}\nHTTP_CODE:000')
+              -d "$json_payload" 2>/dev/null || echo -e '\n{"error": "curl_failed"}\nHTTP_CODE:000')
             
             # Extract HTTP status code and response body
             http_code=$(echo "$response" | grep "HTTP_CODE:" | cut -d: -f2)
@@ -293,19 +313,23 @@ jobs:
         
         # Verify data was inserted by checking row counts
         echo "Verifying data insertion..."
+        set +e  # Allow verification failures without stopping the workflow
+        
         for table in repositories commits languages; do
-          count_response=$(curl -s -X POST "$TURSO_DATABASE_URL/v2/pipeline" \
+          count_response=$(curl -s --max-time 15 -X POST "$TURSO_DATABASE_URL/v2/pipeline" \
             -H "Authorization: Bearer $TURSO_AUTH_TOKEN" \
             -H "Content-Type: application/json" \
-            -d "{\"requests\": [{\"type\": \"execute\", \"stmt\": {\"sql\": \"SELECT COUNT(*) as count FROM $table\"}}]}")
+            -d "{\"requests\": [{\"type\": \"execute\", \"stmt\": {\"sql\": \"SELECT COUNT(*) as count FROM $table\"}}]}" 2>/dev/null)
           
-          if command -v jq >/dev/null 2>&1; then
+          if [[ $? -eq 0 ]] && command -v jq >/dev/null 2>&1; then
             count=$(echo "$count_response" | jq -r '.results[0].response.result.rows[0][0] // 0' 2>/dev/null || echo "unknown")
             echo "$table table: $count rows"
           else
-            echo "$table table: response received"
+            echo "$table table: verification failed (connection issues)"
           fi
         done
+        
+        set -e  # Re-enable exit on error
         
         echo "✅ Data sync completed successfully"
         
