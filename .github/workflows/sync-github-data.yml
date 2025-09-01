@@ -308,9 +308,9 @@ jobs:
         # Disable exit on error for this section to handle individual statement failures
         set +e
         
-        cat github_data.sql | tr -d '\n' | sed 's/;/;\n/g' | while read -r statement; do
-          if [[ -n "$statement" && "$statement" != "/*"* && "$statement" =~ [A-Za-z] ]]; then
-            statement=$(echo "$statement" | xargs)  # trim whitespace
+        # Process SQL statements using grep to extract complete INSERT statements
+        grep -E "^INSERT|^CREATE|^DELETE" github_data.sql | while IFS= read -r statement; do
+          if [[ -n "$statement" && "$statement" != "/*"* ]]; then
             echo "Executing: ${statement:0:60}..."
             
             # Escape quotes for JSON - more thorough escaping
