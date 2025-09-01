@@ -218,14 +218,14 @@ jobs:
         # Run the script
         node fetch_github_data.js
 
-        # Add Turso CLI to PATH and upload to Turso
-        export PATH="$HOME/.turso/bin:$PATH"
+        # Use full path to Turso CLI and upload to Turso
+        TURSO_CLI="$HOME/.turso/bin/turso"
         
         # Authenticate with Turso using auth token
-        turso auth api-tokens add temp-token $TURSO_AUTH_TOKEN
+        $TURSO_CLI auth api-tokens add temp-token $TURSO_AUTH_TOKEN
         
         echo "Syncing data to Turso database..."
-        turso db shell ai-data-explorer --file github_data.sql
+        $TURSO_CLI db shell ai-data-explorer --file github_data.sql
         
         echo "✅ Data sync completed successfully"
         
