@@ -222,9 +222,16 @@ jobs:
             console.log('SQL file generated successfully')
             
             // Show a sample of the generated SQL for debugging
-            const sampleLines = sql.split('\n').slice(0, 20).join('\n')
+            const sampleLines = sql.split('\n').slice(0, 50).join('\n')
             console.log('Sample SQL generated:')
             console.log(sampleLines)
+            
+            // Show a specific INSERT statement
+            const insertLines = sql.split('\n').filter(line => line.trim().startsWith('INSERT'))
+            if (insertLines.length > 0) {
+              console.log('First INSERT statement:')
+              console.log(insertLines[0])
+            }
             
             // Log estimated operations for monitoring
             const lines = sql.split('\n').filter(line => line.trim().indexOf('INSERT') === 0).length
