@@ -56,7 +56,7 @@ jobs:
             console.log(`Found ${repos.length} repositories`)
 
             // Create SQL statements with minimal data to save storage
-            let sql = \`
+            let sql = `
             /* Create tables if they don't exist */
             CREATE TABLE IF NOT EXISTS repositories (
               id INTEGER PRIMARY KEY,
@@ -106,33 +106,33 @@ jobs:
             DELETE FROM commits; 
             DELETE FROM languages;
 
-            \`
+            `
 
             // Process repositories (limit data to stay under 5GB storage)
             for (const repo of repos.slice(0, 50)) { // Limit to top 50 repos
               const topics = repo.topics ? repo.topics.join(',') : ''
               
-              sql += \`
+              sql += `
               INSERT INTO repositories VALUES (
-                \${repo.id},
-                \${JSON.stringify(repo.name)},
-                \${JSON.stringify(repo.full_name)},
-                \${JSON.stringify(repo.description || '')},
-                \${JSON.stringify(repo.language || '')},
-                \${repo.stargazers_count || 0},
-                \${repo.forks_count || 0},
-                \${repo.open_issues_count || 0},
-                \${repo.size || 0},
-                \${JSON.stringify(repo.created_at)},
-                \${JSON.stringify(repo.updated_at)},
-                \${JSON.stringify(repo.pushed_at)},
-                \${repo.fork ? 1 : 0},
-                \${repo.private ? 1 : 0},
-                \${JSON.stringify(repo.homepage || '')},
-                \${JSON.stringify(topics)},
+                ${repo.id},
+                ${JSON.stringify(repo.name)},
+                ${JSON.stringify(repo.full_name)},
+                ${JSON.stringify(repo.description || '')},
+                ${JSON.stringify(repo.language || '')},
+                ${repo.stargazers_count || 0},
+                ${repo.forks_count || 0},
+                ${repo.open_issues_count || 0},
+                ${repo.size || 0},
+                ${JSON.stringify(repo.created_at)},
+                ${JSON.stringify(repo.updated_at)},
+                ${JSON.stringify(repo.pushed_at)},
+                ${repo.fork ? 1 : 0},
+                ${repo.private ? 1 : 0},
+                ${JSON.stringify(repo.homepage || '')},
+                ${JSON.stringify(topics)},
                 CURRENT_TIMESTAMP
               );
-              \`
+              `
 
               // Fetch recent commits (last 10 per repo to minimize API calls)
               try {
@@ -145,18 +145,18 @@ jobs:
 
                 for (const commit of commits) {
                   if (commit.author) {
-                    sql += \`
+                    sql += `
                     INSERT OR IGNORE INTO commits VALUES (
-                      \${JSON.stringify(commit.sha)},
-                      \${JSON.stringify(repo.name)},
-                      \${JSON.stringify(commit.commit.author.name)},
-                      \${JSON.stringify(commit.commit.author.email)},
-                      \${JSON.stringify(commit.commit.message.split('\\n')[0].substring(0, 200))},
-                      \${JSON.stringify(commit.commit.author.date)},
+                      ${JSON.stringify(commit.sha)},
+                      ${JSON.stringify(repo.name)},
+                      ${JSON.stringify(commit.commit.author.name)},
+                      ${JSON.stringify(commit.commit.author.email)},
+                      ${JSON.stringify(commit.commit.message.split('\n')[0].substring(0, 200))},
+                      ${JSON.stringify(commit.commit.author.date)},
                       0, 0, 0,
                       CURRENT_TIMESTAMP
                     );
-                    \`
+                    `
                   }
                 }
               } catch (error) {
@@ -175,18 +175,18 @@ jobs:
                 for (const [language, bytes] of Object.entries(languages)) {
                   const percentage = totalBytes > 0 ? (bytes / totalBytes) * 100 : 0
                   
-                  sql += \`
+                  sql += `
                   INSERT OR REPLACE INTO languages (repo_name, language, bytes, percentage, sync_date) VALUES (
-                    \${JSON.stringify(repo.name)},
-                    \${JSON.stringify(language)},
-                    \${bytes},
-                    \${percentage.toFixed(2)},
+                    ${JSON.stringify(repo.name)},
+                    ${JSON.stringify(language)},
+                    ${bytes},
+                    ${percentage.toFixed(2)},
                     CURRENT_TIMESTAMP
                   );
-                  \`
+                  `
                 }
               } catch (error) {
-                console.log(\`Skipping languages for \${repo.name}: \${error.message}\`)
+                console.log(`Skipping languages for ${repo.name}: ${error.message}`)
               }
 
               // Rate limiting: small delay between repos
@@ -198,8 +198,8 @@ jobs:
             console.log('SQL file generated successfully')
             
             // Log estimated operations for monitoring
-            const lines = sql.split('\\n').filter(line => line.trim().indexOf('INSERT') === 0).length
-            console.log(\`Estimated write operations: \${lines} (Limit: 10M)\`)
+            const lines = sql.split('\n').filter(line => line.trim().indexOf('INSERT') === 0).length
+            console.log(`Estimated write operations: ${lines} (Limit: 10M)`)
             
           } catch (error) {
             console.error('Error fetching GitHub data:', error)
