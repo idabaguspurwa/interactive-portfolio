@@ -306,21 +306,37 @@ jobs:
               continue
             fi
             
-            # Check for errors (fallback if jq fails)
+            # Check for errors and show detailed response info
             if command -v jq >/dev/null 2>&1; then
               if echo "$response_body" | jq -e '.results[0].response.type == "error"' > /dev/null 2>&1; then
                 echo "SQL Error: $(echo "$response_body" | jq -r '.results[0].response.error.message' 2>/dev/null || echo "Unknown error")"
-                echo "Response: $response_body"
+                echo "Full Response: $response_body"
               elif echo "$response_body" | jq -e '.results[0].response.type' > /dev/null 2>&1; then
                 response_type=$(echo "$response_body" | jq -r '.results[0].response.type' 2>/dev/null || echo "ok")
                 if [[ "$response_type" == "ok" ]]; then
-                  affected_rows=$(echo "$response_body" | jq -r '.results[0].response.result.affected_row_count // 0' 2>/dev/null || echo "unknown")
-                  echo "Success: $response_type (affected rows: $affected_rows)"
+                  # Try different paths for affected row count
+                  affected_rows=$(echo "$response_body" | jq -r '
+                    .results[0].response.result.affected_row_count // 
+                    .results[0].response.result.changes //
+                    .results[0].response.result.affected_rows //
+                    "not_available"
+                  ' 2>/dev/null || echo "unknown")
+                  
+                  if [[ "$affected_rows" == "not_available" || "$affected_rows" == "unknown" ]]; then
+                    # If we can't get affected rows, check if there's any result data
+                    has_result=$(echo "$response_body" | jq -r '.results[0].response.result != null' 2>/dev/null || echo "false")
+                    echo "Success: $response_type (result present: $has_result)"
+                    echo "Debug - Full response: $response_body"
+                  else
+                    echo "Success: $response_type (affected rows: $affected_rows)"
+                  fi
                 else
                   echo "Response: $response_type"
+                  echo "Debug - Full response: $response_body"
                 fi
               else
                 echo "Success: Response received"
+                echo "Debug - Full response: $response_body"
               fi
             else
               # Fallback without jq
@@ -349,7 +365,18 @@ jobs:
             -d "{\"requests\": [{\"type\": \"execute\", \"stmt\": {\"sql\": \"SELECT COUNT(*) as count FROM $table\"}}]}" 2>/dev/null)
           
           if [[ $? -eq 0 ]] && command -v jq >/dev/null 2>&1; then
-            count=$(echo "$count_response" | jq -r '.results[0].response.result.rows[0][0] // 0' 2>/dev/null || echo "unknown")
+            # Handle both string and object responses from Turso
+            count=$(echo "$count_response" | jq -r '
+              if .results[0].response.result.rows[0][0] then
+                if (.results[0].response.result.rows[0][0] | type) == "object" then
+                  .results[0].response.result.rows[0][0].value
+                else
+                  .results[0].response.result.rows[0][0]
+                end
+              else
+                0
+              end
+            ' 2>/dev/null || echo "unknown")
             echo "$table table: $count rows"
           else
             echo "$table table: verification failed (connection issues)"
