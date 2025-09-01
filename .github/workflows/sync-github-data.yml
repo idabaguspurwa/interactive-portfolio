@@ -230,6 +230,9 @@ jobs:
         echo "Syncing data to Turso database via HTTP API..."
         
         # Split SQL file by semicolons and execute complete statements
+        # Disable exit on error for this section to handle individual statement failures
+        set +e
+        
         cat github_data.sql | tr -d '\n' | sed 's/;/;\n/g' | while read -r statement; do
           if [[ -n "$statement" && "$statement" != "/*"* && "$statement" =~ [A-Za-z] ]]; then
             statement=$(echo "$statement" | xargs)  # trim whitespace
@@ -241,27 +244,28 @@ jobs:
             response=$(curl -s -X POST "$TURSO_DATABASE_URL/v2/pipeline" \
               -H "Authorization: Bearer $TURSO_AUTH_TOKEN" \
               -H "Content-Type: application/json" \
-              -d "{\"requests\": [{\"type\": \"execute\", \"stmt\": {\"sql\": \"$escaped_sql\"}}]}")
+              -d "{\"requests\": [{\"type\": \"execute\", \"stmt\": {\"sql\": \"$escaped_sql\"}}]}" || echo '{"error": "curl_failed"}')
             
             # Check for errors (fallback if jq fails)
             if command -v jq >/dev/null 2>&1; then
               if echo "$response" | jq -e '.results[0].response.type == "error"' > /dev/null 2>&1; then
-                echo "Error: $(echo "$response" | jq -r '.results[0].response.error.message')"
-                continue  # Continue with next statement instead of failing
+                echo "Error: $(echo "$response" | jq -r '.results[0].response.error.message' 2>/dev/null || echo "Unknown error")"
               else
-                echo "Success: $(echo "$response" | jq -r '.results[0].response.type // "ok"')"
+                echo "Success: $(echo "$response" | jq -r '.results[0].response.type // "ok"' 2>/dev/null || echo "ok")"
               fi
             else
               # Fallback without jq
-              if [[ "$response" == *'"type":"error"'* ]]; then
+              if [[ "$response" == *'"type":"error"'* || "$response" == *'"error"'* ]]; then
                 echo "Error detected in response: $response"
-                continue  # Continue with next statement instead of failing
               else
                 echo "Success (response received)"
               fi
             fi
           fi
         done
+        
+        # Re-enable exit on error
+        set -e
         
         echo "✅ Data sync completed successfully"
         
