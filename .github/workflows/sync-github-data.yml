@@ -117,6 +117,15 @@ jobs:
 
             `
 
+            // Helper function to safely quote SQL string values
+            function sqlString(value) {
+              if (value === null || value === undefined) {
+                return 'NULL'
+              }
+              // Escape single quotes by doubling them
+              return "'" + String(value).replace(/'/g, "''") + "'"
+            }
+
             // Process repositories (limit data to stay under 5GB storage)
             for (const repo of repos.slice(0, 50)) { // Limit to top 50 repos
               const topics = repo.topics ? repo.topics.join(',') : ''
@@ -124,21 +133,21 @@ jobs:
               sql += `
               INSERT INTO repositories VALUES (
                 ${repo.id},
-                ${JSON.stringify(repo.name)},
-                ${JSON.stringify(repo.full_name)},
-                ${JSON.stringify(repo.description || '')},
-                ${JSON.stringify(repo.language || '')},
+                ${sqlString(repo.name)},
+                ${sqlString(repo.full_name)},
+                ${sqlString(repo.description || '')},
+                ${sqlString(repo.language || '')},
                 ${repo.stargazers_count || 0},
                 ${repo.forks_count || 0},
                 ${repo.open_issues_count || 0},
                 ${repo.size || 0},
-                ${JSON.stringify(repo.created_at)},
-                ${JSON.stringify(repo.updated_at)},
-                ${JSON.stringify(repo.pushed_at)},
+                ${sqlString(repo.created_at)},
+                ${sqlString(repo.updated_at)},
+                ${sqlString(repo.pushed_at)},
                 ${repo.fork ? 1 : 0},
                 ${repo.private ? 1 : 0},
-                ${JSON.stringify(repo.homepage || '')},
-                ${JSON.stringify(topics)},
+                ${sqlString(repo.homepage || '')},
+                ${sqlString(topics)},
                 CURRENT_TIMESTAMP
               );
               `
@@ -156,12 +165,12 @@ jobs:
                   if (commit.author) {
                     sql += `
                     INSERT OR IGNORE INTO commits VALUES (
-                      ${JSON.stringify(commit.sha)},
-                      ${JSON.stringify(repo.name)},
-                      ${JSON.stringify(commit.commit.author.name)},
-                      ${JSON.stringify(commit.commit.author.email)},
-                      ${JSON.stringify(commit.commit.message.split('\n')[0].substring(0, 200))},
-                      ${JSON.stringify(commit.commit.author.date)},
+                      ${sqlString(commit.sha)},
+                      ${sqlString(repo.name)},
+                      ${sqlString(commit.commit.author.name)},
+                      ${sqlString(commit.commit.author.email)},
+                      ${sqlString(commit.commit.message.split('\n')[0].substring(0, 200))},
+                      ${sqlString(commit.commit.author.date)},
                       0, 0, 0,
                       CURRENT_TIMESTAMP
                     );
@@ -186,8 +195,8 @@ jobs:
                   
                   sql += `
                   INSERT OR REPLACE INTO languages (repo_name, language, bytes, percentage, sync_date) VALUES (
-                    ${JSON.stringify(repo.name)},
-                    ${JSON.stringify(language)},
+                    ${sqlString(repo.name)},
+                    ${sqlString(language)},
                     ${bytes},
                     ${percentage.toFixed(2)},
                     CURRENT_TIMESTAMP
@@ -308,9 +317,10 @@ jobs:
             
             # Check for errors and show detailed response info
             if command -v jq >/dev/null 2>&1; then
-              if echo "$response_body" | jq -e '.results[0].response.type == "error"' > /dev/null 2>&1; then
-                echo "SQL Error: $(echo "$response_body" | jq -r '.results[0].response.error.message' 2>/dev/null || echo "Unknown error")"
-                echo "Full Response: $response_body"
+              if echo "$response_body" | jq -e '.results[0].type == "error"' > /dev/null 2>&1; then
+                echo "SQL Error: $(echo "$response_body" | jq -r '.results[0].error.message' 2>/dev/null || echo "Unknown error")"
+                echo "Statement: ${statement:0:100}..."
+                continue  # Skip to next statement
               elif echo "$response_body" | jq -e '.results[0].response.type' > /dev/null 2>&1; then
                 response_type=$(echo "$response_body" | jq -r '.results[0].response.type' 2>/dev/null || echo "ok")
                 if [[ "$response_type" == "ok" ]]; then
