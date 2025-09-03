@@ -159,20 +159,20 @@ export default function AIExplorerPage() {
                 },
                 {
                   step: "2", 
-                  title: "AI Processes",
-                  description: "Gemini 2.5 Flash converts your question to optimized SQL",
+                  title: "Dual AI Processing",
+                  description: "Gemini 2.0 Flash generates SQL, DeepSeek analyzes results",
                   icon: "🧠"
                 },
                 {
                   step: "3",
                   title: "Execute Query",
-                  description: "Query runs against live Snowflake production database",
+                  description: "Query runs against live Turso SQLite database with GitHub data",
                   icon: "⚡"
                 },
                 {
                   step: "4",
-                  title: "Get Insights",
-                  description: "See results with auto-generated charts and AI analysis",
+                  title: "Smart Insights",
+                  description: "Get visualizations plus AI-powered data insights automatically",
                   icon: "📊"
                 }
               ].map((item, index) => (
@@ -210,28 +210,28 @@ export default function AIExplorerPage() {
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
               {[
                 {
-                  title: "Google Gemini 2.5 Flash",
-                  items: ["Natural language processing", "SQL query generation", "Context awareness", "Error handling"]
+                  title: "Dual AI Architecture",
+                  items: ["Gemini 2.0 Flash for SQL generation", "DeepSeek for intelligent insights", "Multi-layer reliability system", "Template-based fallbacks"]
                 },
                 {
-                  title: "Production Database",
-                  items: ["Live Snowflake connection", "Real GitHub events data", "Optimized query performance", "Enterprise security"]
+                  title: "Live GitHub Database",
+                  items: ["Turso Edge SQLite connection", "Real GitHub repository data", "Weekly automated sync", "Repository & commit analytics"]
                 },
                 {
                   title: "Smart Visualizations", 
-                  items: ["Observable Plot charts", "Auto chart type selection", "Interactive filtering", "Data export capabilities"]
+                  items: ["Auto chart type selection", "Interactive data tables", "Responsive design", "Dynamic result formatting"]
                 },
                 {
                   title: "Performance Monitoring",
-                  items: ["Real-time metrics tracking", "AI processing times", "Query performance", "User interaction analytics"]
+                  items: ["Real-time AI processing metrics", "Query execution tracking", "Dual AI response times", "System health monitoring"]
                 },
                 {
-                  title: "Conversational AI",
-                  items: ["Context-aware follow-ups", "Query history tracking", "Fallback mechanisms", "Error recovery"]
+                  title: "Advanced AI Features",
+                  items: ["Natural language understanding", "Context-aware SQL generation", "Intelligent data insights", "Multi-provider AI redundancy"]
                 },
                 {
-                  title: "Enterprise Features",
-                  items: ["Syntax highlighting", "Query validation", "Result pagination", "CSV export"]
+                  title: "Enterprise Security",
+                  items: ["SQL injection prevention", "Read-only query validation", "Secure API endpoints", "Rate limiting protection"]
                 }
               ].map((section, index) => (
                 <div key={section.title} className="bg-white/80 dark:bg-gray-900/80 rounded-xl p-6 border border-gray-200/50 dark:border-gray-700/50">

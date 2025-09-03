@@ -6,33 +6,33 @@ import { Send, Sparkles, Lightbulb, Clock, TrendingUp, Database } from 'lucide-r
 
 const SUGGESTED_QUESTIONS = [
   {
-    category: 'Popular',
+    category: 'Popular Projects',
     icon: TrendingUp,
     questions: [
-      "Which repositories had the most commits this week?",
-      "Show me the most active repositories",
-      "What are the trending repositories?",
-      "Find repositories with the most activity"
+      "What are the most popular JavaScript frameworks?",
+      "Show me repositories with over 50,000 stars",
+      "Compare React vs Vue.js vs Angular",
+      "Which TypeScript projects are trending?"
     ]
   },
   {
-    category: 'Time-based',
-    icon: Clock,
-    questions: [
-      "Show me activity patterns by day of week",
-      "What happened in the last 24 hours?",
-      "Compare this week vs last week",
-      "Show me hourly commit patterns"
-    ]
-  },
-  {
-    category: 'Analysis',
+    category: 'My Portfolio',
     icon: Database,
     questions: [
-      "Which events are most common?",
-      "Show me pull request vs commit ratio",
-      "Find repositories with unusual activity",
-      "What are the collaboration patterns?"
+      "How do my repositories compare to popular projects?",
+      "Show me the most active repositories",
+      "What programming languages do I use most?",
+      "Which of my projects have the most commits?"
+    ]
+  },
+  {
+    category: 'Tech Insights',
+    icon: Lightbulb,
+    questions: [
+      "Which programming languages are most popular?",
+      "Show me the biggest open source projects",
+      "What are the most forked repositories?",
+      "Find recently updated popular projects"
     ]
   }
 ]
@@ -113,7 +113,7 @@ export function NaturalLanguageInput({ onSubmit, disabled = false, placeholder =
                 Natural Language Query
               </h4>
               <p className="text-xs text-gray-600 dark:text-gray-400">
-                Powered by Google Gemini 2.5 Flash AI
+                Powered by Gemini 2.0 Flash + DeepSeek AI
               </p>
             </div>
             {disabled && (
