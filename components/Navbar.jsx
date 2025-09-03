@@ -14,6 +14,7 @@ const navItems = [
   { name: 'About', href: '/about' },
   { name: 'Projects', href: '/projects' },
   { name: 'Playground', href: '/playground' },
+  { name: 'AI Explorer', href: '/ai-explorer' },
   { name: 'Skills', href: '/skills' },
   { name: 'Experience', href: '/experience' },
   { name: 'Publications', href: '/publications' },

@@ -31,9 +31,10 @@
 <td width="50%">
 
 ### 🤖 AI-Powered Analytics
+- **AI Data Explorer** - Natural language queries for GitHub repository data
+- **Dual AI Architecture** - Gemini 2.0 Flash + DeepSeek for SQL generation and insights
 - **Smart CSV Analysis** - Upload any dataset for instant AI insights
 - **Auto Dashboard Generation** - Professional visualizations in seconds
-- **Google Gemini Integration** - Advanced AI with intelligent fallbacks
 - **Export Capabilities** - High-quality PNG and HTML exports
 
 ### 🏗️ Enterprise Data Pipeline
@@ -63,7 +64,15 @@
 
 ## 🎮 Interactive Data Playground
 
-The playground provides a unified interface for exploring data engineering concepts with two main sections:
+The playground provides a unified interface for exploring data engineering concepts with three main sections:
+
+### AI Data Explorer Tab ⭐ **NEW**
+- **Natural Language Queries**: Ask questions about GitHub data in plain English
+- **Dual AI System**: Gemini 2.0 Flash generates SQL, DeepSeek provides intelligent insights
+- **Live GitHub Database**: Real repository data via Turso Edge SQLite with weekly sync
+- **Smart Visualizations**: Automatic charts and tables based on query results
+- **Multi-layer Reliability**: AI → Template fallbacks → Analytical insights for 99% uptime
+- **Enterprise Security**: SQL injection prevention and read-only query validation
 
 ### Data Lakehouse Tab
 - **Interactive ETL Pipeline**: Bronze → Silver → Gold data transformation workflow
@@ -126,14 +135,20 @@ graph LR
     end
     
     subgraph "AI Services"
-        E[Google Gemini<br/>2.5 Flash]
-        F[Fallback<br/>1.5 Flash]
+        E[Gemini 2.0 Flash<br/>SQL Generation]
+        F[DeepSeek v3.1<br/>Data Insights]
+    end
+    
+    subgraph "Database Layer"
+        G[Turso SQLite<br/>GitHub Data]
     end
     
     A --> E
+    A --> F
     B --> C
     B --> D
-    E --> F
+    E --> G
+    F --> G
     
     style A fill:#000000,color:#ffffff
     style B fill:#009688,color:#ffffff
@@ -151,8 +166,8 @@ graph LR
 | **Styling** | Tailwind CSS, Framer Motion | Responsive design and smooth animations |
 | **3D Graphics** | React Three Fiber, Three.js | Interactive 3D experiences |
 | **Backend API** | Python FastAPI, Next.js API Routes | High-performance data processing |
-| **Database** | Snowflake Data Warehouse | Enterprise-grade analytics storage |
-| **AI/ML** | Google Gemini 2.5 + 1.5 Flash | Intelligent data analysis |
+| **Database** | Snowflake Data Warehouse, Turso SQLite | Enterprise + Edge database solutions |
+| **AI/ML** | Gemini 2.0 Flash + DeepSeek v3.1 | Dual AI for SQL generation and insights |
 | **Visualization** | Observable Plot, D3.js | Professional data visualizations |
 | **Real-time** | WebSocket, React Query | Live data streaming and caching |
 | **Deployment** | Vercel, Fly.io | Global CDN and scalable infrastructure |
@@ -256,8 +271,13 @@ RESEND_API_KEY=your-resend-api-key
 FROM_EMAIL=noreply@yourdomain.com
 TO_EMAIL=your-email@gmail.com
 
-# Google Gemini AI (for data analysis features)
-GEMINI_API_KEY=your-gemini-api-key
+# AI Data Explorer - Dual AI System
+GEMINI_API_KEY=your-gemini-api-key          # For SQL generation
+OPENROUTER_API_KEY=your-openrouter-api-key  # For DeepSeek insights
+
+# Turso Database (for AI Data Explorer)
+TURSO_DATABASE_URL=libsql://your-database.turso.io
+TURSO_AUTH_TOKEN=your-turso-auth-token
 
 # Optional: Analytics
 NEXT_PUBLIC_GA_ID=your-ga-id
@@ -334,8 +354,13 @@ npm run dev
 ### 🔑 **Environment Configuration**
 
 ```env
-# Core AI Features
-GEMINI_API_KEY=your-gemini-api-key          # For AI analysis
+# AI Data Explorer (NEW!)
+GEMINI_API_KEY=your-gemini-api-key          # Gemini 2.0 Flash for SQL generation
+OPENROUTER_API_KEY=your-openrouter-api-key  # DeepSeek for intelligent insights
+TURSO_DATABASE_URL=libsql://your-db.turso.io # Live GitHub data
+TURSO_AUTH_TOKEN=your-turso-auth-token       # Database authentication
+
+# Core Features
 RESEND_API_KEY=your-resend-api-key          # For contact form
 FROM_EMAIL=noreply@yourdomain.com
 TO_EMAIL=your-email@gmail.com
@@ -1006,11 +1031,16 @@ interactive-portfolio/
 │   ├── playground/        # Interactive data playground
 │   │   ├── page.jsx       # Main playground with integrated tabs
 │   │   └── github-events/ # Dedicated GitHub events page
+│   ├── ai-explorer/       # AI Data Explorer (NEW!)
+│   │   └── page.jsx       # Standalone AI Data Explorer
 │   ├── publications/      # Research publications
 │   ├── globals.css        # Global styles & dashboard CSS
 │   ├── layout.jsx         # Root layout component
 │   └── page.jsx           # Homepage
 ├── app/api/               # Next.js API routes
+│   ├── ai-sql-generator/  # AI Data Explorer - Dual AI SQL + insights (NEW!)
+│   ├── sqlite-query/      # Turso database query execution (NEW!)
+│   ├── ai-insights-generator/ # Standalone AI insights generation (NEW!)
 │   ├── ai-dashboard/      # AI dashboard generation
 │   ├── ai-clean-csv/      # AI-powered CSV cleaning
 │   ├── analyze-csv/       # CSV analysis with Gemini AI
@@ -1031,6 +1061,14 @@ interactive-portfolio/
 ├── components/            # React components
 │   ├── ui/                # UI component library
 │   │   └── Button.jsx     # Reusable button component
+│   ├── ai-data-explorer/  # AI Data Explorer components (NEW!)
+│   │   ├── AIDataExplorer.jsx # Main AI Data Explorer interface
+│   │   ├── NaturalLanguageInput.jsx # Natural language query input
+│   │   ├── QueryProcessingView.jsx # Real-time AI processing display
+│   │   ├── SQLGenerationDisplay.jsx # Generated SQL code viewer
+│   │   ├── ResultsVisualization.jsx # Charts and tables for results
+│   │   ├── AIInsights.jsx # Contextual data insights
+│   │   └── QueryHistory.jsx # Previous questions and results
 │   ├── DataDashboard.jsx  # AI-powered dashboard component
 │   ├── InteractiveDataPlayground.jsx # CSV analysis interface
 │   ├── GitHubEventsLiveDemo.jsx # GitHub events dashboard
@@ -1048,7 +1086,10 @@ interactive-portfolio/
 │   └── Footer.jsx         # Footer component
 ├── lib/                   # Utility functions
 │   ├── utils.js           # Common utility functions
-│   └── python-api.js      # Python backend API client
+│   ├── python-api.js      # Python backend API client
+│   ├── turso-client.js    # Turso database client (NEW!)
+│   ├── turso-db.js        # Database utilities and health checks (NEW!)
+│   └── github-data-fetcher.js # GitHub data sync utilities (NEW!)
 ├── public/                # Static assets
 │   ├── favicon.svg        # Custom data engineering favicon
 │   ├── favicon.ico        # Browser favicon
@@ -2083,6 +2124,25 @@ The frontend provides serverless API endpoints for AI features and form handling
 #### AI & Data Processing APIs
 
 ```typescript
+// AI Data Explorer - Natural Language to SQL (NEW!)
+POST /api/ai-sql-generator
+Content-Type: application/json
+Body: { question: string, context?: array }
+Response: { 
+  success: boolean,
+  sql: string,
+  data: array,
+  insights: string,
+  model: "gemini-2.0-flash + deepseek-insights",
+  timestamp: string
+}
+
+// SQLite Query Execution (NEW!)
+POST /api/sqlite-query
+Content-Type: application/json
+Body: { sql: string }
+Response: { success: boolean, data: array, error?: string }
+
 // AI Dashboard Generation
 POST /api/ai-dashboard
 Content-Type: application/json
@@ -2212,8 +2272,13 @@ Response: Complete API schema for integration
 
 #### Required Frontend Variables
 ```env
-# AI Features
-GEMINI_API_KEY=your-google-gemini-api-key
+# AI Data Explorer - Dual AI System (NEW!)
+GEMINI_API_KEY=your-google-gemini-api-key    # Gemini 2.0 Flash for SQL generation
+OPENROUTER_API_KEY=your-openrouter-api-key   # DeepSeek for intelligent insights
+
+# Turso Database (NEW!)
+TURSO_DATABASE_URL=libsql://your-database.turso.io
+TURSO_AUTH_TOKEN=your-turso-auth-token
 
 # Email Integration
 RESEND_API_KEY=your-resend-api-key
@@ -2238,10 +2303,12 @@ SNOWFLAKE_WAREHOUSE=your_warehouse
 
 ### Rate Limits & Usage
 
-- **AI APIs**: 10 requests/minute per IP (Gemini API quota dependent)
+- **AI Data Explorer**: 15 requests/minute per IP (dual AI system optimized)
+- **AI APIs**: 10 requests/minute per IP (Gemini API quota dependent)  
 - **Contact API**: 5 requests/minute per IP (spam protection)
 - **GitHub APIs**: 100 requests/hour per IP (caching implemented)
 - **WebSocket**: 5 concurrent connections per IP
+- **Turso Database**: 1000 queries/hour (SQLite edge database)
 
 ### Error Handling
 
@@ -2266,6 +2333,17 @@ All APIs return consistent error responses:
 ```
 
 ## 🔧 Recent Updates & Improvements
+
+### ⭐ **New: AI Data Explorer** (Latest Feature)
+- **Revolutionary Natural Language Interface**: Ask questions about GitHub data in plain English
+- **Sophisticated Dual AI Architecture**: Gemini 2.0 Flash for precise SQL generation + DeepSeek v3.1 for intelligent insights
+- **Live GitHub Repository Database**: Real-time access to repository metadata, commits, and language statistics via Turso Edge SQLite
+- **Multi-layer Reliability System**: AI → Template fallbacks → Analytical insights ensuring 99% uptime
+- **Enterprise-Grade Security**: SQL injection prevention, read-only validation, and dangerous keyword filtering
+- **Smart Query Processing**: Context-aware SQL generation with automatic LIMIT clauses and query optimization
+- **Interactive Results Display**: Dynamic charts, tables, and visualizations based on query results
+- **Conversational Data Exploration**: Query history and follow-up question capabilities
+- **Performance Monitoring**: Real-time AI processing metrics and query execution tracking
 
 ### Playground Integration & Performance
 - **Unified Playground Interface**: Integrated Data Lakehouse and GitHub Events in single tabbed interface

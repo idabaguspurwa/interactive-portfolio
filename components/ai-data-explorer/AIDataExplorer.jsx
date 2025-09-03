@@ -61,7 +61,15 @@ export function AIDataExplorer({ theme = 'light' }) {
       const sqlResponse = await generateSQLWithGemini(naturalLanguageQuery, newContext)
       setGeneratedSQL(sqlResponse.sql)
       setQueryResults(sqlResponse.data || [])
-      setAIInsights(sqlResponse.insights || `Found ${sqlResponse.count || 0} results for your query.`)
+      
+      // Use enhanced insights or generate client-side fallback
+      let insights = sqlResponse.insights || ''
+      if (!insights || insights.trim() === '' || insights.length < 20) {
+        console.log('🔄 Using client-side insight generation')
+        insights = generateClientSideInsights(naturalLanguageQuery, sqlResponse.data || [], sqlResponse.count || 0)
+      }
+      console.log('📋 Final insights to display:', insights)
+      setAIInsights(insights)
       
       trackPerformance('SQL Generation + Execution', startTime)
 
@@ -119,6 +127,85 @@ export function AIDataExplorer({ theme = 'light' }) {
     return await response.json()
   }
 
+  // Generate insights on the client side if server-side insights fail
+  const generateClientSideInsights = (question, data, count) => {
+    if (!data || data.length === 0) {
+      return '• **No Results Found:** Your query returned no matching records. Try adjusting your search criteria or exploring different aspects of your GitHub data.'
+    }
+
+    const resultCount = data.length
+    const firstResult = data[0] || {}
+    const columns = Object.keys(firstResult)
+    
+    let insights = [`• **Query Results:** Successfully retrieved ${resultCount} records from your GitHub data`]
+    
+    // Repository-specific insights
+    if (columns.includes('stars')) {
+      const totalStars = data.reduce((sum, repo) => sum + (repo.stars || 0), 0)
+      const avgStars = resultCount > 0 ? Math.round(totalStars / resultCount) : 0
+      const topRepo = data.reduce((max, repo) => (repo.stars || 0) > (max.stars || 0) ? repo : max, data[0])
+      
+      if (topRepo && topRepo.name) {
+        insights.push(`• **Repository Performance:** "${topRepo.name}" leads with ${topRepo.stars} stars. Average across all results: ${avgStars} stars`)
+      }
+    }
+    
+    // Language analysis
+    if (columns.includes('language')) {
+      const languages = [...new Set(data.map(item => item.language).filter(Boolean))]
+      const languageCount = {}
+      data.forEach(item => {
+        if (item.language) {
+          languageCount[item.language] = (languageCount[item.language] || 0) + 1
+        }
+      })
+      const topLanguages = Object.entries(languageCount)
+        .sort((a, b) => b[1] - a[1])
+        .slice(0, 3)
+      
+      if (topLanguages.length > 0) {
+        const topLangText = topLanguages.map(([lang, count]) => `${lang} (${count})`).join(', ')
+        insights.push(`• **Technology Stack:** ${languages.length} programming languages represented. Most common: ${topLangText}`)
+      }
+    }
+    
+    // Size analysis
+    if (columns.includes('size_kb')) {
+      const sizes = data.map(item => item.size_kb || 0).filter(size => size > 0)
+      if (sizes.length > 0) {
+        const totalSize = sizes.reduce((sum, size) => sum + size, 0)
+        const avgSize = Math.round(totalSize / sizes.length / 1024 * 10) / 10 // Convert to MB
+        insights.push(`• **Project Scale:** Average repository size is ${avgSize} MB. Total codebase: ${Math.round(totalSize / 1024)} MB`)
+      }
+    }
+    
+    // Activity analysis
+    if (columns.includes('updated_at')) {
+      const dates = data.map(item => new Date(item.updated_at)).filter(d => !isNaN(d))
+      if (dates.length > 0) {
+        const mostRecent = new Date(Math.max(...dates))
+        const oldest = new Date(Math.min(...dates))
+        const daysSinceUpdate = Math.floor((Date.now() - mostRecent.getTime()) / (1000 * 60 * 60 * 24))
+        
+        const activityLevel = daysSinceUpdate < 7 ? 'very active' : daysSinceUpdate < 30 ? 'active' : 'moderate'
+        insights.push(`• **Development Activity:** Most recent update was ${daysSinceUpdate} days ago, indicating ${activityLevel} development pace`)
+      }
+    }
+    
+    // Commit-specific insights
+    if (columns.includes('commit_count')) {
+      const totalCommits = data.reduce((sum, item) => sum + (item.commit_count || 0), 0)
+      const avgCommits = resultCount > 0 ? Math.round(totalCommits / resultCount) : 0
+      const mostActiveRepo = data.reduce((max, repo) => (repo.commit_count || 0) > (max.commit_count || 0) ? repo : max, data[0])
+      
+      if (mostActiveRepo && mostActiveRepo.repo_name) {
+        insights.push(`• **Commit Activity:** "${mostActiveRepo.repo_name}" has the most commits (${mostActiveRepo.commit_count}). Average: ${avgCommits} commits per repository`)
+      }
+    }
+    
+    return insights.join('\n')
+  }
+
 
   const handleHistorySelect = (historyItem) => {
     setQuery(historyItem.query)
@@ -151,7 +238,7 @@ export function AIDataExplorer({ theme = 'light' }) {
                 AI Data Explorer
               </h3>
               <p className="text-base text-gray-600 dark:text-gray-400 mt-1">
-                Enterprise-grade natural language data analysis powered by Google Gemini 2.5 Flash
+                Dual AI system: Gemini 2.0 Flash for SQL generation + DeepSeek for intelligent insights
               </p>
               <div className="flex items-center gap-4 mt-2">
                 <span className="inline-flex items-center gap-1.5 px-3 py-1 bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400 rounded-full text-xs font-medium">
@@ -161,6 +248,10 @@ export function AIDataExplorer({ theme = 'light' }) {
                 <span className="inline-flex items-center gap-1.5 px-3 py-1 bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-400 rounded-full text-xs font-medium">
                   <Database className="w-3 h-3" />
                   Turso Edge SQLite
+                </span>
+                <span className="inline-flex items-center gap-1.5 px-3 py-1 bg-purple-100 dark:bg-purple-900/30 text-purple-700 dark:text-purple-400 rounded-full text-xs font-medium">
+                  <Sparkles className="w-3 h-3" />
+                  Dual AI Engine
                 </span>
               </div>
             </div>
@@ -245,24 +336,40 @@ export function AIDataExplorer({ theme = 'light' }) {
                     <div className="grid grid-cols-1 gap-3">
                       {[
                         {
-                          query: "What are my most popular repositories by stars?",
-                          icon: "⭐",
-                          category: "Repository Analytics"
+                          query: "What are the most popular repositories?",
+                          icon: "🏆",
+                          category: "Top Performers",
+                          description: "Discover the most starred and forked GitHub projects"
                         },
                         {
-                          query: "Which programming languages do I use most?", 
-                          icon: "💻",
-                          category: "Language Analysis"
+                          query: "Which programming languages are most popular?", 
+                          icon: "🔥",
+                          category: "Technology Stack",
+                          description: "Analyze language usage and developer preferences"
                         },
                         {
-                          query: "Show me my recent commits and activity patterns",
-                          icon: "📈", 
-                          category: "Activity Insights"
+                          query: "What are the most popular JavaScript frameworks?",
+                          icon: "⚡",
+                          category: "Framework Analysis", 
+                          description: "Explore popular JavaScript libraries and frameworks"
                         },
                         {
-                          query: "What are my largest projects by code size?",
+                          query: "Show me recent projects and activity",
+                          icon: "🚀", 
+                          category: "Latest Development",
+                          description: "View recently updated repositories and commits"
+                        },
+                        {
+                          query: "What are the biggest projects by size?",
                           icon: "📦",
-                          category: "Project Analysis"
+                          category: "Project Scale",
+                          description: "Find the largest codebases and repositories"
+                        },
+                        {
+                          query: "Give me an overview of repositories",
+                          icon: "📊",
+                          category: "Portfolio Summary",
+                          description: "Complete analysis of the GitHub repository dataset"
                         }
                       ].map((suggestion, index) => (
                         <button
