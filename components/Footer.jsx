@@ -121,6 +121,7 @@ export function FloatingQuickNav() {
     { name: 'Projects', href: '/projects', icon: '🚀', color: 'from-purple-500 to-purple-600' },
     { name: 'Skills', href: '/skills', icon: '⚡', color: 'from-orange-500 to-orange-600' },
     { name: 'Experience', href: '/experience', icon: '📚', color: 'from-red-500 to-red-600' },
+    { name: 'AI Explorer', href: '/ai-explorer', icon: '🤖', color: 'from-violet-500 to-violet-600' },
     { name: 'Playground', href: '/playground', icon: '🎮', color: 'from-pink-500 to-pink-600' },
     { name: 'Publications', href: '/publications', icon: '📖', color: 'from-indigo-500 to-indigo-600' },
     { name: 'Contact', href: '/contact', icon: '📧', color: 'from-teal-500 to-teal-600' },
@@ -193,6 +194,7 @@ export function Footer() {
       { name: 'Experience', href: '/experience', icon: '📚' },
     ],
     'Special Features': [
+      { name: 'AI Data Explorer', href: '/ai-explorer', icon: '🤖' },
       { name: 'Data Playground', href: '/playground', icon: '🎮' },
       { name: 'Publications', href: '/publications', icon: '📖' },
       { name: 'Contact', href: '/contact', icon: '📧' },
@@ -273,6 +275,11 @@ export function Footer() {
                     <span className="group-hover:translate-x-1 transition-transform duration-200">
                       {link.name}
                     </span>
+                    {link.name === 'AI Data Explorer' && (
+                      <span className="text-xs bg-purple-100 dark:bg-purple-900/30 text-purple-600 dark:text-purple-400 px-2 py-1 rounded-full">
+                        NEW
+                      </span>
+                    )}
                     {link.name === 'Data Playground' && (
                       <span className="text-xs bg-blue-100 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 px-2 py-1 rounded-full">
                         Interactive
