@@ -225,33 +225,39 @@ export function AIDataExplorer({ theme = 'light' }) {
   }
 
   return (
-    <div className="w-full min-h-[900px] bg-white dark:bg-gray-900 rounded-2xl overflow-hidden shadow-2xl border border-gray-200/50 dark:border-gray-700/50">
+    <div className="w-full min-h-[600px] sm:min-h-[900px] bg-white dark:bg-gray-900 rounded-2xl overflow-hidden shadow-2xl border border-gray-200/50 dark:border-gray-700/50">
       {/* Professional Header */}
-      <div className="bg-gradient-to-r from-purple-50 via-blue-50 to-indigo-50 dark:from-purple-900/20 dark:via-blue-900/20 dark:to-indigo-900/20 p-8 border-b border-gray-200 dark:border-gray-700">
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-4">
-            <div className="w-14 h-14 bg-gradient-to-r from-purple-500 via-blue-500 to-indigo-500 rounded-xl flex items-center justify-center shadow-lg">
-              <Sparkles className="w-7 h-7 text-white" />
+      <div className="bg-gradient-to-r from-purple-50 via-blue-50 to-indigo-50 dark:from-purple-900/20 dark:via-blue-900/20 dark:to-indigo-900/20 p-4 sm:p-8 border-b border-gray-200 dark:border-gray-700">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+          <div className="flex items-center gap-3 sm:gap-4">
+            <div className="w-10 h-10 sm:w-14 sm:h-14 bg-gradient-to-r from-purple-500 via-blue-500 to-indigo-500 rounded-xl flex items-center justify-center shadow-lg">
+              <Sparkles className="w-5 h-5 sm:w-7 sm:h-7 text-white" />
             </div>
             <div>
-              <h3 className="text-2xl font-bold text-gray-900 dark:text-white bg-gradient-to-r from-purple-600 to-blue-600 bg-clip-text text-transparent">
+              <h3 className="text-lg sm:text-2xl font-bold text-gray-900 dark:text-white bg-gradient-to-r from-purple-600 to-blue-600 bg-clip-text text-transparent">
                 AI Data Explorer
               </h3>
-              <p className="text-base text-gray-600 dark:text-gray-400 mt-1">
+              <p className="text-sm sm:text-base text-gray-600 dark:text-gray-400 mt-1 hidden sm:block">
                 Dual AI system: Gemini 2.0 Flash for SQL generation + DeepSeek for intelligent insights
               </p>
-              <div className="flex items-center gap-4 mt-2">
-                <span className="inline-flex items-center gap-1.5 px-3 py-1 bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400 rounded-full text-xs font-medium">
+              <p className="text-sm text-gray-600 dark:text-gray-400 mt-1 sm:hidden">
+                AI-powered data exploration
+              </p>
+              <div className="flex flex-wrap items-center gap-2 sm:gap-4 mt-2">
+                <span className="inline-flex items-center gap-1.5 px-2 py-1 bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400 rounded-full text-xs font-medium">
                   <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></div>
-                  Live GitHub Data
+                  <span className="hidden sm:inline">Live GitHub Data</span>
+                  <span className="sm:hidden">Live Data</span>
                 </span>
-                <span className="inline-flex items-center gap-1.5 px-3 py-1 bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-400 rounded-full text-xs font-medium">
+                <span className="inline-flex items-center gap-1.5 px-2 py-1 bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-400 rounded-full text-xs font-medium">
                   <Database className="w-3 h-3" />
-                  Turso Edge SQLite
+                  <span className="hidden sm:inline">Turso Edge SQLite</span>
+                  <span className="sm:hidden">SQLite</span>
                 </span>
-                <span className="inline-flex items-center gap-1.5 px-3 py-1 bg-purple-100 dark:bg-purple-900/30 text-purple-700 dark:text-purple-400 rounded-full text-xs font-medium">
+                <span className="inline-flex items-center gap-1.5 px-2 py-1 bg-purple-100 dark:bg-purple-900/30 text-purple-700 dark:text-purple-400 rounded-full text-xs font-medium">
                   <Sparkles className="w-3 h-3" />
-                  Dual AI Engine
+                  <span className="hidden sm:inline">Dual AI Engine</span>
+                  <span className="sm:hidden">AI</span>
                 </span>
               </div>
             </div>
@@ -260,26 +266,27 @@ export function AIDataExplorer({ theme = 'light' }) {
           {currentState !== 'idle' && (
             <button
               onClick={resetExplorer}
-              className="px-4 py-2.5 text-sm font-medium bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-xl hover:bg-gray-50 dark:hover:bg-gray-700 transition-all duration-200 shadow-sm hover:shadow-md"
+              className="px-3 py-2 sm:px-4 sm:py-2.5 text-xs sm:text-sm font-medium bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-xl hover:bg-gray-50 dark:hover:bg-gray-700 transition-all duration-200 shadow-sm hover:shadow-md shrink-0"
             >
-              <MessageSquare className="w-4 h-4 mr-2 inline" />
-              New Question
+              <MessageSquare className="w-4 h-4 mr-1 sm:mr-2 inline" />
+              <span className="hidden sm:inline">New Question</span>
+              <span className="sm:hidden">New</span>
             </button>
           )}
         </div>
       </div>
 
       {/* Enhanced Main Content */}
-      <div className="flex min-h-[780px]">
+      <div className="flex flex-col lg:flex-row min-h-[500px] sm:min-h-[780px]">
         {/* Enhanced Left Panel - Input and History */}
-        <div className="w-2/5 border-r border-gray-200 dark:border-gray-700 flex flex-col bg-gray-50/50 dark:bg-gray-800/50">
-          <div className="p-6 flex-1">
-            <div className="mb-6">
-              <h4 className="text-lg font-semibold text-gray-900 dark:text-white mb-2 flex items-center gap-2">
-                <Lightbulb className="w-5 h-5 text-purple-600 dark:text-purple-400" />
+        <div className="w-full lg:w-2/5 border-b lg:border-b-0 lg:border-r border-gray-200 dark:border-gray-700 flex flex-col bg-gray-50/50 dark:bg-gray-800/50">
+          <div className="p-4 sm:p-6 flex-1">
+            <div className="mb-4 sm:mb-6">
+              <h4 className="text-base sm:text-lg font-semibold text-gray-900 dark:text-white mb-2 flex items-center gap-2">
+                <Lightbulb className="w-4 h-4 sm:w-5 sm:h-5 text-purple-600 dark:text-purple-400" />
                 Ask Your Question
               </h4>
-              <p className="text-sm text-gray-600 dark:text-gray-400">
+              <p className="text-xs sm:text-sm text-gray-600 dark:text-gray-400">
                 Use natural language to explore your GitHub analytics data
               </p>
             </div>
@@ -291,8 +298,8 @@ export function AIDataExplorer({ theme = 'light' }) {
             />
             
             {queryHistory.length > 0 && (
-              <div className="mt-8">
-                <h5 className="text-base font-medium text-gray-900 dark:text-white mb-4 flex items-center gap-2">
+              <div className="mt-6 sm:mt-8">
+                <h5 className="text-sm sm:text-base font-medium text-gray-900 dark:text-white mb-3 sm:mb-4 flex items-center gap-2">
                   <History className="w-4 h-4 text-gray-600 dark:text-gray-400" />
                   Recent Queries
                 </h5>
@@ -307,7 +314,7 @@ export function AIDataExplorer({ theme = 'light' }) {
         </div>
 
         {/* Enhanced Right Panel - Processing and Results */}
-        <div className="flex-1 flex flex-col bg-white dark:bg-gray-900">
+        <div className="flex-1 flex flex-col bg-white dark:bg-gray-900 min-h-0">
           <AnimatePresence mode="wait">
             {currentState === 'idle' && (
               <motion.div
@@ -317,23 +324,23 @@ export function AIDataExplorer({ theme = 'light' }) {
                 exit={{ opacity: 0, y: -20 }}
                 className="flex-1 flex items-center justify-center p-12"
               >
-                <div className="text-center max-w-2xl">
-                  <div className="w-24 h-24 mx-auto mb-6 bg-gradient-to-r from-purple-100 via-blue-100 to-indigo-100 dark:from-purple-900/30 dark:via-blue-900/30 dark:to-indigo-900/30 rounded-2xl flex items-center justify-center shadow-lg">
-                    <Database className="w-12 h-12 text-purple-600 dark:text-purple-400" />
+                <div className="text-center max-w-2xl px-4 sm:px-0">
+                  <div className="w-16 h-16 sm:w-24 sm:h-24 mx-auto mb-4 sm:mb-6 bg-gradient-to-r from-purple-100 via-blue-100 to-indigo-100 dark:from-purple-900/30 dark:via-blue-900/30 dark:to-indigo-900/30 rounded-2xl flex items-center justify-center shadow-lg">
+                    <Database className="w-8 h-8 sm:w-12 sm:h-12 text-purple-600 dark:text-purple-400" />
                   </div>
-                  <h4 className="text-2xl font-bold text-gray-900 dark:text-white mb-3">
+                  <h4 className="text-xl sm:text-2xl font-bold text-gray-900 dark:text-white mb-3">
                     Enterprise Data Analytics Ready
                   </h4>
-                  <p className="text-lg text-gray-600 dark:text-gray-400 mb-8 leading-relaxed">
+                  <p className="text-base sm:text-lg text-gray-600 dark:text-gray-400 mb-6 sm:mb-8 leading-relaxed">
                     Your AI-powered data analyst is ready to help you discover insights from your GitHub repository data. 
                     Ask questions in natural language and get professional-grade analysis.
                   </p>
                   
-                  <div className="bg-gradient-to-r from-purple-50 to-blue-50 dark:from-purple-900/20 dark:to-blue-900/20 rounded-xl p-6 mb-8">
-                    <h5 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">
+                  <div className="bg-gradient-to-r from-purple-50 to-blue-50 dark:from-purple-900/20 dark:to-blue-900/20 rounded-xl p-4 sm:p-6 mb-6 sm:mb-8">
+                    <h5 className="text-base sm:text-lg font-semibold text-gray-900 dark:text-white mb-3 sm:mb-4">
                       Try These Example Queries
                     </h5>
-                    <div className="grid grid-cols-1 gap-3">
+                    <div className="grid grid-cols-1 gap-2 sm:gap-3">
                       {[
                         {
                           query: "What are the most popular repositories?",
@@ -375,19 +382,19 @@ export function AIDataExplorer({ theme = 'light' }) {
                         <button
                           key={index}
                           onClick={() => handleQuery(suggestion.query)}
-                          className="group p-4 text-left border border-gray-200 dark:border-gray-600 rounded-lg hover:border-purple-300 dark:hover:border-purple-600 hover:bg-white dark:hover:bg-gray-800/50 transition-all duration-200 shadow-sm hover:shadow-md"
+                          className="group p-3 sm:p-4 text-left border border-gray-200 dark:border-gray-600 rounded-lg hover:border-purple-300 dark:hover:border-purple-600 hover:bg-white dark:hover:bg-gray-800/50 transition-all duration-200 shadow-sm hover:shadow-md min-h-[60px] sm:min-h-[auto]"
                         >
-                          <div className="flex items-start gap-3">
-                            <span className="text-2xl">{suggestion.icon}</span>
-                            <div className="flex-1">
-                              <div className="text-sm font-medium text-purple-600 dark:text-purple-400 mb-1">
+                          <div className="flex items-start gap-2 sm:gap-3">
+                            <span className="text-lg sm:text-2xl flex-shrink-0">{suggestion.icon}</span>
+                            <div className="flex-1 min-w-0">
+                              <div className="text-xs sm:text-sm font-medium text-purple-600 dark:text-purple-400 mb-1">
                                 {suggestion.category}
                               </div>
-                              <div className="text-base text-gray-900 dark:text-white group-hover:text-purple-600 dark:group-hover:text-purple-400 transition-colors">
+                              <div className="text-sm sm:text-base text-gray-900 dark:text-white group-hover:text-purple-600 dark:group-hover:text-purple-400 transition-colors leading-tight sm:leading-normal">
                                 {suggestion.query}
                               </div>
                             </div>
-                            <Zap className="w-4 h-4 text-gray-400 group-hover:text-purple-500 transition-colors" />
+                            <Zap className="w-3 h-3 sm:w-4 sm:h-4 text-gray-400 group-hover:text-purple-500 transition-colors flex-shrink-0" />
                           </div>
                         </button>
                       ))}
@@ -427,7 +434,7 @@ export function AIDataExplorer({ theme = 'light' }) {
 
                 {/* Enhanced Results and Insights */}
                 <div className="flex-1 flex flex-col overflow-hidden">
-                  <div className="flex-1 p-6 overflow-auto">
+                  <div className="flex-1 p-4 sm:p-6 overflow-auto">
                     <ResultsVisualization 
                       data={queryResults}
                       query={query}

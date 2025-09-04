@@ -52,19 +52,22 @@ export function AIInsights({ insights, theme = 'light' }) {
     >
       {/* Header */}
       <div 
-        className="flex items-center justify-between p-4 cursor-pointer"
+        className="flex items-center justify-between p-3 sm:p-4 cursor-pointer"
         onClick={toggleExpanded}
       >
-        <div className="flex items-center gap-3">
-          <div className="w-8 h-8 bg-gradient-to-r from-purple-500 to-blue-500 rounded-lg flex items-center justify-center">
-            <Sparkles className="w-4 h-4 text-white" />
+        <div className="flex items-center gap-2 sm:gap-3">
+          <div className="w-6 h-6 sm:w-8 sm:h-8 bg-gradient-to-r from-purple-500 to-blue-500 rounded-lg flex items-center justify-center">
+            <Sparkles className="w-3 h-3 sm:w-4 sm:h-4 text-white" />
           </div>
           <div>
             <h4 className="text-sm font-medium text-gray-900 dark:text-white">
               AI Insights
             </h4>
-            <p className="text-xs text-gray-600 dark:text-gray-400">
+            <p className="text-xs text-gray-600 dark:text-gray-400 hidden sm:block">
               AI-generated analysis of your query results
+            </p>
+            <p className="text-xs text-gray-600 dark:text-gray-400 sm:hidden">
+              AI analysis
             </p>
           </div>
         </div>
@@ -83,19 +86,19 @@ export function AIInsights({ insights, theme = 'light' }) {
             exit={{ height: 0, opacity: 0 }}
             className="overflow-hidden"
           >
-            <div className="px-4 pb-4 space-y-4">
+            <div className="px-3 sm:px-4 pb-3 sm:pb-4 space-y-3 sm:space-y-4">
               {isStructured ? (
                 <>
                   {/* Summary */}
                   {parsedInsights.summary && (
-                    <div className="bg-white/70 dark:bg-gray-800/70 rounded-lg p-4">
-                      <div className="flex items-start gap-3">
-                        <Lightbulb className="w-5 h-5 text-amber-600 dark:text-amber-400 mt-0.5 flex-shrink-0" />
+                    <div className="bg-white/70 dark:bg-gray-800/70 rounded-lg p-3 sm:p-4">
+                      <div className="flex items-start gap-2 sm:gap-3">
+                        <Lightbulb className="w-4 h-4 sm:w-5 sm:h-5 text-amber-600 dark:text-amber-400 mt-0.5 flex-shrink-0" />
                         <div>
-                          <h5 className="font-medium text-gray-900 dark:text-white mb-2">
+                          <h5 className="font-medium text-gray-900 dark:text-white mb-2 text-sm sm:text-base">
                             Summary
                           </h5>
-                          <p className="text-sm text-gray-700 dark:text-gray-300 leading-relaxed">
+                          <p className="text-xs sm:text-sm text-gray-700 dark:text-gray-300 leading-relaxed">
                             {parsedInsights.summary}
                           </p>
                         </div>
@@ -105,16 +108,16 @@ export function AIInsights({ insights, theme = 'light' }) {
 
                   {/* Key Findings */}
                   {parsedInsights.keyFindings?.length > 0 && (
-                    <div className="bg-white/70 dark:bg-gray-800/70 rounded-lg p-4">
-                      <div className="flex items-start gap-3">
-                        <TrendingUp className="w-5 h-5 text-green-600 dark:text-green-400 mt-0.5 flex-shrink-0" />
+                    <div className="bg-white/70 dark:bg-gray-800/70 rounded-lg p-3 sm:p-4">
+                      <div className="flex items-start gap-2 sm:gap-3">
+                        <TrendingUp className="w-4 h-4 sm:w-5 sm:h-5 text-green-600 dark:text-green-400 mt-0.5 flex-shrink-0" />
                         <div className="flex-1">
-                          <h5 className="font-medium text-gray-900 dark:text-white mb-2">
+                          <h5 className="font-medium text-gray-900 dark:text-white mb-2 text-sm sm:text-base">
                             Key Findings
                           </h5>
-                          <ul className="space-y-2">
+                          <ul className="space-y-1 sm:space-y-2">
                             {parsedInsights.keyFindings.map((finding, index) => (
-                              <li key={index} className="flex items-start gap-2 text-sm text-gray-700 dark:text-gray-300">
+                              <li key={index} className="flex items-start gap-2 text-xs sm:text-sm text-gray-700 dark:text-gray-300">
                                 <CheckCircle className="w-3 h-3 text-green-500 mt-1 flex-shrink-0" />
                                 <span>{finding}</span>
                               </li>
@@ -171,14 +174,14 @@ export function AIInsights({ insights, theme = 'light' }) {
                 </>
               ) : (
                 // Simple text insights
-                <div className="bg-white/70 dark:bg-gray-800/70 rounded-lg p-4">
-                  <div className="flex items-start gap-3">
-                    <Lightbulb className="w-5 h-5 text-purple-600 dark:text-purple-400 mt-0.5 flex-shrink-0" />
+                <div className="bg-white/70 dark:bg-gray-800/70 rounded-lg p-3 sm:p-4">
+                  <div className="flex items-start gap-2 sm:gap-3">
+                    <Lightbulb className="w-4 h-4 sm:w-5 sm:h-5 text-purple-600 dark:text-purple-400 mt-0.5 flex-shrink-0" />
                     <div className="flex-1">
-                      <h5 className="font-medium text-gray-900 dark:text-white mb-2">
+                      <h5 className="font-medium text-gray-900 dark:text-white mb-2 text-sm sm:text-base">
                         Analysis
                       </h5>
-                      <div className="text-sm text-gray-700 dark:text-gray-300 leading-relaxed whitespace-pre-line">
+                      <div className="text-xs sm:text-sm text-gray-700 dark:text-gray-300 leading-relaxed whitespace-pre-line">
                         {insights}
                       </div>
                     </div>
@@ -188,9 +191,10 @@ export function AIInsights({ insights, theme = 'light' }) {
 
               {/* AI Attribution */}
               <div className="flex items-center justify-center pt-2">
-                <div className="flex items-center gap-2 text-xs text-gray-500 dark:text-gray-400">
+                <div className="flex items-center gap-1 sm:gap-2 text-xs text-gray-500 dark:text-gray-400 text-center">
                   <Sparkles className="w-3 h-3" />
-                  <span>Generated by AI • Insights may vary based on data interpretation</span>
+                  <span className="hidden sm:inline">Generated by AI • Insights may vary based on data interpretation</span>
+                  <span className="sm:hidden">AI Generated</span>
                 </div>
               </div>
             </div>

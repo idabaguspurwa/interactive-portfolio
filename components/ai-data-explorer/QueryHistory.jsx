@@ -66,7 +66,7 @@ export function QueryHistory({ history = [], onSelect, onClear, currentQuery }) 
       </div>
 
       {/* History List */}
-      <div className="space-y-2 max-h-64 overflow-y-auto">
+      <div className="space-y-2 max-h-48 sm:max-h-64 overflow-y-auto">
         <AnimatePresence>
           {history.map((item, index) => (
             <motion.div
@@ -75,7 +75,7 @@ export function QueryHistory({ history = [], onSelect, onClear, currentQuery }) 
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: -10 }}
               transition={{ delay: index * 0.05 }}
-              className={`group relative p-3 rounded-lg border cursor-pointer transition-all duration-200 ${
+              className={`group relative p-2 sm:p-3 rounded-lg border cursor-pointer transition-all duration-200 min-h-[60px] sm:min-h-[auto] ${
                 currentQuery === item.query
                   ? 'bg-blue-50 dark:bg-blue-900/20 border-blue-200 dark:border-blue-700'
                   : 'bg-gray-50 dark:bg-gray-800 border-gray-200 dark:border-gray-700 hover:bg-gray-100 dark:hover:bg-gray-700'
@@ -83,15 +83,16 @@ export function QueryHistory({ history = [], onSelect, onClear, currentQuery }) 
               onClick={() => onSelect(item)}
             >
               {/* Query Text */}
-              <div className="mb-2">
-                <p className="text-sm font-medium text-gray-900 dark:text-white leading-relaxed">
-                  {truncateText(item.query)}
+              <div className="mb-1 sm:mb-2">
+                <p className="text-xs sm:text-sm font-medium text-gray-900 dark:text-white leading-tight sm:leading-relaxed">
+                  <span className="block sm:hidden">{truncateText(item.query, 40)}</span>
+                  <span className="hidden sm:block">{truncateText(item.query)}</span>
                 </p>
               </div>
 
               {/* Metadata */}
               <div className="flex items-center justify-between text-xs text-gray-500 dark:text-gray-400">
-                <div className="flex items-center gap-3">
+                <div className="flex items-center gap-2 sm:gap-3 flex-wrap">
                   <div className="flex items-center gap-1">
                     <Clock className="w-3 h-3" />
                     <span>{formatTimeAgo(item.timestamp)}</span>
@@ -100,7 +101,8 @@ export function QueryHistory({ history = [], onSelect, onClear, currentQuery }) 
                   {item.results && (
                     <div className="flex items-center gap-1">
                       <BarChart3 className="w-3 h-3" />
-                      <span>{item.results.length} results</span>
+                      <span className="hidden sm:inline">{item.results.length} results</span>
+                      <span className="sm:hidden">{item.results.length}</span>
                     </div>
                   )}
                 </div>
@@ -112,7 +114,7 @@ export function QueryHistory({ history = [], onSelect, onClear, currentQuery }) 
 
               {/* SQL Preview */}
               {item.sql && (
-                <div className="mt-2 p-2 bg-white dark:bg-gray-900 rounded border border-gray-200 dark:border-gray-600">
+                <div className="mt-2 p-2 bg-white dark:bg-gray-900 rounded border border-gray-200 dark:border-gray-600 hidden sm:block">
                   <div className="flex items-center gap-1 mb-1">
                     <Database className="w-3 h-3 text-gray-500" />
                     <span className="text-xs text-gray-500">SQL</span>
@@ -125,7 +127,7 @@ export function QueryHistory({ history = [], onSelect, onClear, currentQuery }) 
 
               {/* Insights Preview */}
               {item.insights && (
-                <div className="mt-2 text-xs text-gray-600 dark:text-gray-400 italic">
+                <div className="mt-2 text-xs text-gray-600 dark:text-gray-400 italic hidden sm:block">
                   💡 {truncateText(item.insights, 100)}
                 </div>
               )}
@@ -142,7 +144,8 @@ export function QueryHistory({ history = [], onSelect, onClear, currentQuery }) 
       {/* Footer */}
       <div className="mt-3 pt-3 border-t border-gray-200 dark:border-gray-700">
         <p className="text-xs text-gray-500 dark:text-gray-400 text-center">
-          Click any question to rerun it
+          <span className="hidden sm:inline">Click any question to rerun it</span>
+          <span className="sm:hidden">Tap to rerun</span>
         </p>
       </div>
     </div>

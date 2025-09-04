@@ -470,10 +470,10 @@ export function ResultsVisualization({ data, query, theme = 'light' }) {
 
   if (!processedData || processedData.length === 0) {
     return (
-      <div className="flex items-center justify-center h-64 text-gray-500 dark:text-gray-400">
+      <div className="flex items-center justify-center h-32 sm:h-64 text-gray-500 dark:text-gray-400">
         <div className="text-center">
-          <BarChart3 className="w-12 h-12 mx-auto mb-4 opacity-50" />
-          <p>No data to visualize</p>
+          <BarChart3 className="w-8 h-8 sm:w-12 sm:h-12 mx-auto mb-2 sm:mb-4 opacity-50" />
+          <p className="text-sm sm:text-base">No data to visualize</p>
         </div>
       </div>
     )
@@ -482,30 +482,31 @@ export function ResultsVisualization({ data, query, theme = 'light' }) {
   return (
     <div className="space-y-4">
       {/* Controls */}
-      <div className="flex items-center justify-between">
-        <div className="flex items-center gap-2">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 sm:gap-0">
+        <div className="flex flex-col sm:flex-row sm:items-center gap-2">
           <span className="text-sm font-medium text-gray-700 dark:text-gray-300">
             Visualization:
           </span>
-          <div className="flex items-center border border-gray-200 dark:border-gray-600 rounded-lg overflow-hidden">
+          <div className="flex items-center border border-gray-200 dark:border-gray-600 rounded-lg overflow-hidden overflow-x-auto">
             {Object.entries(CHART_TYPES).map(([type, config]) => (
               <button
                 key={type}
                 onClick={() => setChartType(type)}
-                className={`flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium transition-colors ${
+                className={`flex items-center gap-1 sm:gap-1.5 px-2 sm:px-3 py-1.5 text-xs font-medium transition-colors whitespace-nowrap ${
                   chartType === type
                     ? 'bg-blue-600 text-white'
                     : 'text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-700'
                 }`}
               >
                 <config.icon className="w-3 h-3" />
-                {config.label}
+                <span className="hidden sm:inline">{config.label}</span>
+                <span className="sm:hidden">{config.label.split(' ')[0]}</span>
               </button>
             ))}
           </div>
         </div>
         
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-2 justify-end sm:justify-start">
           <button
             onClick={() => setIsExpanded(!isExpanded)}
             className="p-2 text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
@@ -516,10 +517,11 @@ export function ResultsVisualization({ data, query, theme = 'light' }) {
           
           <button
             onClick={downloadData}
-            className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-600 transition-colors"
+            className="inline-flex items-center gap-1 sm:gap-1.5 px-2 sm:px-3 py-1.5 text-xs font-medium text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-600 transition-colors"
           >
             <Download className="w-3 h-3" />
-            Export CSV
+            <span className="hidden sm:inline">Export CSV</span>
+            <span className="sm:hidden">Export</span>
           </button>
         </div>
       </div>
@@ -527,13 +529,14 @@ export function ResultsVisualization({ data, query, theme = 'light' }) {
       {/* Visualization */}
       <div className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg overflow-hidden">
         {chartType === 'table' ? (
-          <div className="overflow-x-auto max-h-96">
+          <div className="overflow-x-auto max-h-80 sm:max-h-96">
             <table className="w-full text-sm">
               <thead className="bg-gray-50 dark:bg-gray-700">
                 <tr>
                   {Object.keys(processedData[0] || {}).filter(key => key !== '_id').map(header => (
-                    <th key={header} className="px-4 py-3 text-left font-medium text-gray-900 dark:text-white">
-                      {header}
+                    <th key={header} className="px-2 sm:px-4 py-2 sm:py-3 text-left font-medium text-gray-900 dark:text-white text-xs sm:text-sm">
+                      <span className="block sm:hidden">{header.length > 8 ? header.slice(0, 8) + '...' : header}</span>
+                      <span className="hidden sm:block">{header}</span>
                     </th>
                   ))}
                 </tr>
@@ -542,8 +545,10 @@ export function ResultsVisualization({ data, query, theme = 'light' }) {
                 {processedData.slice(0, 100).map((row, index) => (
                   <tr key={row._id || index} className="hover:bg-gray-50 dark:hover:bg-gray-700">
                     {Object.entries(row).filter(([key]) => key !== '_id').map(([key, value]) => (
-                      <td key={key} className="px-4 py-3 text-gray-900 dark:text-gray-100">
-                        {typeof value === 'number' ? value.toLocaleString() : String(value)}
+                      <td key={key} className="px-2 sm:px-4 py-2 sm:py-3 text-gray-900 dark:text-gray-100 text-xs sm:text-sm">
+                        <div className="truncate max-w-[80px] sm:max-w-none" title={String(value)}>
+                          {typeof value === 'number' ? value.toLocaleString() : String(value)}
+                        </div>
                       </td>
                     ))}
                   </tr>
@@ -551,7 +556,7 @@ export function ResultsVisualization({ data, query, theme = 'light' }) {
               </tbody>
             </table>
             {processedData.length > 100 && (
-              <div className="p-4 bg-gray-50 dark:bg-gray-700 text-center text-sm text-gray-600 dark:text-gray-400">
+              <div className="p-3 sm:p-4 bg-gray-50 dark:bg-gray-700 text-center text-xs sm:text-sm text-gray-600 dark:text-gray-400">
                 Showing first 100 of {processedData.length} results
               </div>
             )}
@@ -559,13 +564,13 @@ export function ResultsVisualization({ data, query, theme = 'light' }) {
         ) : (
           <div 
             ref={chartRef} 
-            className={`w-full ${isExpanded ? 'h-[500px]' : 'h-[300px]'} overflow-hidden`}
+            className={`w-full ${isExpanded ? 'h-[400px] sm:h-[500px]' : 'h-[250px] sm:h-[300px]'} overflow-hidden`}
           />
         )}
       </div>
 
       {/* Results Summary */}
-      <div className="flex items-center justify-between text-sm text-gray-600 dark:text-gray-400">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-1 sm:gap-0 text-xs sm:text-sm text-gray-600 dark:text-gray-400">
         <span>
           {processedData.length.toLocaleString()} result{processedData.length !== 1 ? 's' : ''} found
         </span>
