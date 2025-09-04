@@ -102,30 +102,36 @@ export function NaturalLanguageInput({ onSubmit, disabled = false, placeholder =
     <div ref={containerRef} className="relative">
       {/* Enhanced Professional Input Area */}
       <div className="relative">
-        <div className="bg-white dark:bg-gray-800 rounded-2xl border-2 border-gray-200 dark:border-gray-600 focus-within:border-purple-500 dark:focus-within:border-purple-400 transition-all duration-300 shadow-lg hover:shadow-xl">
+        <div className="bg-white dark:bg-gray-800 rounded-xl sm:rounded-2xl border-2 border-gray-200 dark:border-gray-600 focus-within:border-purple-500 dark:focus-within:border-purple-400 transition-all duration-300 shadow-lg hover:shadow-xl">
           {/* Input Header */}
-          <div className="flex items-center gap-3 p-4 border-b border-gray-100 dark:border-gray-700 bg-gradient-to-r from-purple-50/50 to-blue-50/50 dark:from-purple-900/20 dark:to-blue-900/20">
-            <div className="w-10 h-10 bg-gradient-to-r from-purple-500 via-blue-500 to-indigo-500 rounded-xl flex items-center justify-center flex-shrink-0 shadow-md">
-              <Sparkles className="w-5 h-5 text-white" />
+          <div className="flex items-center gap-2 sm:gap-3 p-3 sm:p-4 border-b border-gray-100 dark:border-gray-700 bg-gradient-to-r from-purple-50/50 to-blue-50/50 dark:from-purple-900/20 dark:to-blue-900/20">
+            <div className="w-8 h-8 sm:w-10 sm:h-10 bg-gradient-to-r from-purple-500 via-blue-500 to-indigo-500 rounded-xl flex items-center justify-center flex-shrink-0 shadow-md">
+              <Sparkles className="w-4 h-4 sm:w-5 sm:h-5 text-white" />
             </div>
-            <div className="flex-1">
-              <h4 className="text-sm font-semibold text-gray-900 dark:text-white">
+            <div className="flex-1 min-w-0">
+              <h4 className="text-xs sm:text-sm font-semibold text-gray-900 dark:text-white truncate">
                 Natural Language Query
               </h4>
-              <p className="text-xs text-gray-600 dark:text-gray-400">
+              <p className="text-xs text-gray-600 dark:text-gray-400 hidden sm:block">
                 Powered by Gemini 2.0 Flash + DeepSeek AI
+              </p>
+              <p className="text-xs text-gray-600 dark:text-gray-400 sm:hidden">
+                AI-Powered
               </p>
             </div>
             {disabled && (
-              <div className="flex items-center gap-2 px-3 py-1 bg-orange-100 dark:bg-orange-900/30 rounded-full">
+              <div className="flex items-center gap-1 sm:gap-2 px-2 sm:px-3 py-1 bg-orange-100 dark:bg-orange-900/30 rounded-full flex-shrink-0">
                 <div className="w-2 h-2 bg-orange-500 rounded-full animate-pulse"></div>
-                <span className="text-xs font-medium text-orange-700 dark:text-orange-400">Processing...</span>
+                <span className="text-xs font-medium text-orange-700 dark:text-orange-400">
+                  <span className="hidden sm:inline">Processing...</span>
+                  <span className="sm:hidden">...</span>
+                </span>
               </div>
             )}
           </div>
           
           {/* Input Content */}
-          <div className="p-6">
+          <div className="p-4 sm:p-6">
             <textarea
               ref={textareaRef}
               value={input}
@@ -134,21 +140,24 @@ export function NaturalLanguageInput({ onSubmit, disabled = false, placeholder =
               onFocus={handleInputFocus}
               placeholder={placeholder}
               disabled={disabled}
-              rows={5}
+              rows={3}
               className="w-full bg-transparent border-none outline-none resize-none text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 text-base leading-relaxed font-medium"
             />
             
-            <div className="flex items-center justify-between mt-4 pt-4 border-t border-gray-100 dark:border-gray-700">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 sm:gap-0 mt-4 pt-4 border-t border-gray-100 dark:border-gray-700">
               <div className="flex items-center gap-4">
-                <div className="text-xs text-gray-500 dark:text-gray-400">
+                <div className="text-xs text-gray-500 dark:text-gray-400 hidden sm:block">
                   <kbd className="px-2 py-1 bg-gray-100 dark:bg-gray-700 rounded text-xs">Enter</kbd> to submit • <kbd className="px-2 py-1 bg-gray-100 dark:bg-gray-700 rounded text-xs">Shift+Enter</kbd> for new line
+                </div>
+                <div className="text-xs text-gray-500 dark:text-gray-400 sm:hidden">
+                  <kbd className="px-1 py-0.5 bg-gray-100 dark:bg-gray-700 rounded text-xs">↵</kbd> submit • <kbd className="px-1 py-0.5 bg-gray-100 dark:bg-gray-700 rounded text-xs">⇧↵</kbd> new line
                 </div>
               </div>
               
               <button
                 onClick={() => handleSubmit()}
                 disabled={!input.trim() || disabled}
-                className="inline-flex items-center gap-2.5 px-6 py-3 bg-gradient-to-r from-purple-600 via-blue-600 to-indigo-600 hover:from-purple-700 hover:via-blue-700 hover:to-indigo-700 text-white text-sm font-semibold rounded-xl disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200 shadow-lg hover:shadow-xl transform hover:scale-[1.02] active:scale-[0.98]"
+                className="inline-flex items-center gap-1.5 sm:gap-2.5 px-4 sm:px-6 py-2.5 sm:py-3 bg-gradient-to-r from-purple-600 via-blue-600 to-indigo-600 hover:from-purple-700 hover:via-blue-700 hover:to-indigo-700 text-white text-sm font-semibold rounded-xl disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200 shadow-lg hover:shadow-xl transform hover:scale-[1.02] active:scale-[0.98] min-h-[44px] w-full sm:w-auto justify-center"
               >
                 {disabled ? (
                   <>
@@ -158,7 +167,7 @@ export function NaturalLanguageInput({ onSubmit, disabled = false, placeholder =
                 ) : (
                   <>
                     <Send className="w-4 h-4" />
-                    Ask AI
+                    <span>Ask AI</span>
                   </>
                 )}
               </button>
@@ -174,7 +183,7 @@ export function NaturalLanguageInput({ onSubmit, disabled = false, placeholder =
             initial={{ opacity: 0, y: -10 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -10 }}
-            className="absolute top-full left-0 right-0 mt-2 bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-600 shadow-lg z-50 overflow-hidden"
+            className="absolute top-full left-0 right-0 mt-2 bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-600 shadow-lg z-50 overflow-hidden max-h-[80vh] sm:max-h-none"
           >
             <div className="p-3 border-b border-gray-200 dark:border-gray-700">
               <div className="flex items-center gap-2 text-sm text-gray-600 dark:text-gray-400">
@@ -184,35 +193,36 @@ export function NaturalLanguageInput({ onSubmit, disabled = false, placeholder =
             </div>
 
             {/* Category Tabs */}
-            <div className="flex border-b border-gray-200 dark:border-gray-700">
+            <div className="flex overflow-x-auto border-b border-gray-200 dark:border-gray-700">
               {SUGGESTED_QUESTIONS.map((category, index) => (
                 <button
                   key={category.category}
                   onClick={() => setSelectedCategory(index)}
-                  className={`flex-1 flex items-center justify-center gap-2 py-3 px-4 text-xs font-medium transition-colors ${
+                  className={`flex-1 flex items-center justify-center gap-1 sm:gap-2 py-3 px-2 sm:px-4 text-xs font-medium transition-colors whitespace-nowrap ${
                     selectedCategory === index
                       ? 'text-purple-600 dark:text-purple-400 bg-purple-50 dark:bg-purple-900/20 border-b-2 border-purple-500'
                       : 'text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white'
                   }`}
                 >
                   <category.icon className="w-3 h-3" />
-                  {category.category}
+                  <span className="hidden sm:inline">{category.category}</span>
+                  <span className="sm:hidden">{category.category.split(' ')[0]}</span>
                 </button>
               ))}
             </div>
 
             {/* Questions */}
-            <div className="max-h-64 overflow-y-auto">
+            <div className="max-h-48 sm:max-h-64 overflow-y-auto">
               <div className="p-2">
                 {SUGGESTED_QUESTIONS[selectedCategory].questions.map((question, index) => (
                   <button
                     key={index}
                     onClick={() => selectSuggestion(question)}
-                    className="w-full text-left p-3 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 rounded-lg transition-colors"
+                    className="w-full text-left p-3 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 rounded-lg transition-colors min-h-[44px] flex items-start"
                   >
                     <div className="flex items-start gap-2">
                       <div className="w-1 h-1 bg-purple-500 rounded-full mt-2 flex-shrink-0"></div>
-                      <span className="leading-relaxed">{question}</span>
+                      <span className="leading-relaxed text-left">{question}</span>
                     </div>
                   </button>
                 ))}
@@ -222,7 +232,8 @@ export function NaturalLanguageInput({ onSubmit, disabled = false, placeholder =
             {/* Footer */}
             <div className="p-3 bg-gray-50 dark:bg-gray-700/50 border-t border-gray-200 dark:border-gray-600">
               <div className="text-xs text-gray-500 dark:text-gray-400 text-center">
-                Ask anything about repositories, commits, pull requests, issues, and more
+                <span className="hidden sm:inline">Ask anything about repositories, commits, pull requests, issues, and more</span>
+                <span className="sm:hidden">Ask about your GitHub data</span>
               </div>
             </div>
           </motion.div>
