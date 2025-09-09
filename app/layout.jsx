@@ -18,11 +18,33 @@ export const viewport = {
 };
 
 export const metadata = {
-  title: "Ida Bagus Gede Purwa Manik Adiputra - Data Engineer & ETL Specialist | Portfolio",
+  title: {
+    default: "Ida Bagus Gede Purwa Manik Adiputra - Data Engineer & ETL Specialist | Portfolio",
+    template: "%s | Ida Bagus Purwa - Data Engineer"
+  },
   description:
-    "Portfolio of Ida Bagus Gede Purwa Manik Adiputra, a Data Engineer specializing in cloud platforms, Apache Spark, Kafka, and modern data pipelines. Expertise in ETL, cloud architecture, and business intelligence. View projects, skills, and experience.",
-  keywords:
-    "Ida Bagus Gede Purwa Manik Adiputra, Ida Bagus Purwa, data engineer, ETL specialist, cloud platforms, Apache Spark, Apache Kafka, data pipelines, business intelligence, GCP, Azure, AWS, Python, SQL, Scala, PySpark, data engineering, portfolio, Indonesia, Bina Nusantara University, Bank Central Asia",
+    "Experienced Data Engineer specializing in cloud platforms, Apache Spark, Kafka, and modern data pipelines. 5+ years building scalable ETL solutions at Bank Central Asia. Expert in Python, SQL, Scala, GCP, Azure, AWS. View my projects, skills, and professional experience.",
+  keywords: [
+    "Ida Bagus Gede Purwa Manik Adiputra",
+    "Ida Bagus Purwa", 
+    "data engineer",
+    "ETL specialist",
+    "cloud platforms",
+    "Apache Spark",
+    "Apache Kafka",
+    "data pipelines",
+    "business intelligence",
+    "GCP", "Azure", "AWS",
+    "Python", "SQL", "Scala", "PySpark",
+    "data engineering portfolio",
+    "Indonesia data engineer",
+    "Bina Nusantara University",
+    "Bank Central Asia",
+    "Jakarta data engineer",
+    "data engineer",
+    "data architecture",
+    "real-time analytics"
+  ],
   authors: [{ name: "Ida Bagus Gede Purwa Manik Adiputra" }],
   creator: "Ida Bagus Gede Purwa Manik Adiputra",
   publisher: "Ida Bagus Gede Purwa Manik Adiputra",
@@ -32,9 +54,9 @@ export const metadata = {
   },
   openGraph: {
     title: "Ida Bagus Gede Purwa Manik Adiputra - Data Engineer & ETL Specialist",
-    description: "Transforming raw data into actionable insights through robust ETL pipelines, cloud-native architectures, and cutting-edge data engineering solutions. View my portfolio, projects, and expertise.",
+    description: "Experienced Data Engineer with 5+ years at Bank Central Asia. Specializing in Apache Spark, Kafka, cloud platforms (GCP, Azure, AWS), and scalable ETL pipelines. View my portfolio showcasing real-world data engineering projects and expertise.",
     url: "https://idabaguspurwa.com",
-    siteName: "Ida Bagus Purwa Portfolio",
+    siteName: "Ida Bagus Purwa - Data Engineer Portfolio",
     images: [
       {
         url: "/logo.jpg",
@@ -44,18 +66,29 @@ export const metadata = {
       },
     ],
     locale: "en_US",
-    type: "website",
+    type: "profile",
+    profile: {
+      firstName: "Ida Bagus Gede Purwa Manik",
+      lastName: "Adiputra",
+      username: "idabaguspurwa",
+      gender: "male"
+    },
   },
   twitter: {
     card: "summary_large_image",
-    title: "Ida Bagus Gede Purwa Manik Adiputra - Data Engineer Portfolio",
-    description: "Data Engineer specializing in cloud platforms, Apache Spark, and modern ETL pipelines. View my portfolio and projects.",
+    title: "Ida Bagus Purwa - Data Engineer | ETL & Cloud Specialist",
+    description: "5+ years experience building scalable data pipelines at Bank Central Asia. Expert in Apache Spark, Kafka, Python, and cloud platforms. Explore my data engineering portfolio.",
     images: ["/logo.jpg"],
     creator: "@idabaguspurwa",
+    site: "@idabaguspurwa",
   },
   robots: {
     index: true,
     follow: true,
+    noarchive: false,
+    nosnippet: false,
+    noimageindex: false,
+    nocache: false,
     googleBot: {
       index: true,
       follow: true,
@@ -65,18 +98,17 @@ export const metadata = {
     },
   },
   verification: {
-    google: "your-google-verification-code", // Add your Google Search Console verification
+    google: "your-google-verification-code",
   },
-  manifest: "/manifest.json",
+  manifest: "/favicon/site.webmanifest",
   icons: {
     icon: [
-      { url: "/favicon.svg?v=2", type: "image/svg+xml" },
-      { url: "/favicon.ico?v=2", type: "image/x-icon" },
-      { url: "/favicon-16x16.png?v=2", type: "image/png", sizes: "16x16" },
-      { url: "/favicon-32x32.png?v=2", type: "image/png", sizes: "32x32" },
+      { url: "/favicon/favicon.ico", type: "image/x-icon" },
+      { url: "/favicon/favicon-16x16.png", type: "image/png", sizes: "16x16" },
+      { url: "/favicon/favicon-32x32.png", type: "image/png", sizes: "32x32" },
     ],
     apple: [
-      { url: "/favicon.svg?v=2", type: "image/svg+xml", sizes: "180x180" },
+      { url: "/favicon/apple-touch-icon.png", sizes: "180x180" },
     ],
   },
   appleWebApp: {
@@ -102,20 +134,18 @@ export default function RootLayout({ children }) {
   return (
     <html lang="en" suppressHydrationWarning>
       <head>
-        {/* Modern SVG favicon for all modern browsers */}
-        <link rel="icon" type="image/svg+xml" href="/favicon.svg?v=2" />
-        {/* Fallback ICO for older browsers */}
-        <link rel="icon" type="image/x-icon" href="/favicon.ico?v=2" />
-        {/* PNG fallbacks for different sizes */}
-        <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png?v=2" />
-        <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png?v=2" />
+        {/* Favicon ICO for all browsers */}
+        <link rel="icon" type="image/x-icon" href="/favicon/favicon.ico" />
+        {/* PNG favicons for different sizes */}
+        <link rel="icon" type="image/png" sizes="16x16" href="/favicon/favicon-16x16.png" />
+        <link rel="icon" type="image/png" sizes="32x32" href="/favicon/favicon-32x32.png" />
         {/* Apple touch icon for iOS devices */}
-        <link rel="apple-touch-icon" sizes="180x180" href="/favicon.svg?v=2" />
+        <link rel="apple-touch-icon" sizes="180x180" href="/favicon/apple-touch-icon.png" />
         {/* Android Chrome icons */}
-        <link rel="icon" type="image/svg+xml" sizes="192x192" href="/favicon.svg?v=2" />
-        <link rel="icon" type="image/svg+xml" sizes="512x512" href="/favicon.svg?v=2" />
+        <link rel="icon" type="image/png" sizes="192x192" href="/favicon/android-chrome-192x192.png" />
+        <link rel="icon" type="image/png" sizes="512x512" href="/favicon/android-chrome-512x512.png" />
         {/* Web app manifest */}
-        <link rel="manifest" href="/manifest.json" />
+        <link rel="manifest" href="/favicon/site.webmanifest" />
         {/* Preconnect to external resources */}
         <link rel="preconnect" href="https://fonts.googleapis.com" />
         <link
