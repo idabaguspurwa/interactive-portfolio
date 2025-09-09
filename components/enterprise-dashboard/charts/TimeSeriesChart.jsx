@@ -205,7 +205,8 @@ export function TimeSeriesChart({ data, filters, theme, realtimeData, expanded =
     }
 
     return () => {
-      if (containerRef.current && plot.parentNode) {
+      const container = containerRef.current;
+      if (container && plot.parentNode) {
         plot.remove();
       }
     };
