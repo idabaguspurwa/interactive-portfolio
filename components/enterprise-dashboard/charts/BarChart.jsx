@@ -149,7 +149,8 @@ export function BarChart({ data, filters, theme, realtimeData, expanded = false 
     containerRef.current.appendChild(plot);
 
     return () => {
-      if (containerRef.current && plot.parentNode) {
+      const container = containerRef.current;
+      if (container && plot.parentNode) {
         plot.remove();
       }
     };

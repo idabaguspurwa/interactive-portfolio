@@ -75,19 +75,7 @@ export function PreloadCriticalResources() {
       document.head.appendChild(link)
     })
 
-    // Preload critical fonts
-    const criticalFonts = [
-      'https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap'
-    ]
-    
-    criticalFonts.forEach(href => {
-      const link = document.createElement('link')
-      link.rel = 'preload'
-      link.as = 'style'
-      link.href = href
-      link.onload = function() { this.rel = 'stylesheet' }
-      document.head.appendChild(link)
-    })
+    // Fonts are now handled by Next.js font optimization
   }, [])
 
   return null

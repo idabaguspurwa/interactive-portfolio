@@ -1,10 +1,26 @@
 import "./globals.css";
+import { Inter, Poppins } from "next/font/google";
 import { ThemeProvider } from "@/components/ThemeProvider";
 import { Navbar } from "@/components/Navbar";
 import { Footer, FloatingQuickNav } from "@/components/Footer";
 import { PageTransition } from "@/components/PageTransition";
 import { WebGLProvider } from "@/components/WebGLManager";
 import { QueryProvider } from "@/components/QueryProvider";
+
+// Optimized font loading with display=swap for better Core Web Vitals
+const inter = Inter({
+  subsets: ["latin"],
+  display: "swap",
+  weight: ["300", "400", "500", "600", "700"],
+  variable: "--font-inter",
+});
+
+const poppins = Poppins({
+  subsets: ["latin"],
+  display: "swap", 
+  weight: ["300", "400", "500", "600", "700"],
+  variable: "--font-poppins",
+});
 
 export const viewport = {
   width: "device-width",
@@ -146,13 +162,19 @@ export default function RootLayout({ children }) {
         <link rel="icon" type="image/png" sizes="512x512" href="/favicon/android-chrome-512x512.png" />
         {/* Web app manifest */}
         <link rel="manifest" href="/favicon/site.webmanifest" />
-        {/* Preconnect to external resources */}
-        <link rel="preconnect" href="https://fonts.googleapis.com" />
-        <link
-          rel="preconnect"
-          href="https://fonts.gstatic.com"
-          crossOrigin="anonymous"
-        />
+        
+        {/* Performance optimizations */}
+        <link rel="dns-prefetch" href="//fonts.gstatic.com" />
+        <link rel="preload" href="/logo.jpg" as="image" type="image/jpeg" />
+        
+        {/* Prevent layout shift with critical CSS */}
+        <style dangerouslySetInnerHTML={{
+          __html: `
+            body { font-family: system-ui, -apple-system, sans-serif; }
+            .hero-section { min-height: 80vh; }
+            .navbar { height: 64px; }
+          `
+        }} />
         <script
           type="application/ld+json"
           dangerouslySetInnerHTML={{
@@ -198,7 +220,7 @@ export default function RootLayout({ children }) {
           }}
         />
       </head>
-      <body className="min-h-screen bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-gray-100">
+      <body className={`min-h-screen bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-gray-100 ${inter.variable} ${poppins.variable}`}>
         <QueryProvider>
           <ThemeProvider>
             <WebGLProvider>

@@ -151,7 +151,8 @@ export function HeatmapChart({ data, filters, theme, realtimeData, expanded = fa
     containerRef.current.appendChild(plot);
 
     return () => {
-      if (containerRef.current && plot.parentNode) {
+      const container = containerRef.current;
+      if (container && plot.parentNode) {
         plot.remove();
       }
     };
