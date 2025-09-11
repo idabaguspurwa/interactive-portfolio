@@ -2,7 +2,12 @@
 
 import React, { useRef, useEffect, useState } from 'react';
 import { motion } from 'framer-motion';
-import * as d3 from "d3";
+// Import only specific D3 functions to reduce bundle size
+import {
+  group, sum, mean, select,
+  forceSimulation, forceLink, forceManyBody, forceCenter, forceCollide,
+  drag
+} from "d3";
 import { Network, GitBranch, Users, Zap } from 'lucide-react';
 
 export function NetworkChart({ data, filters, theme, realtimeData, expanded = false }) {
@@ -26,12 +31,12 @@ export function NetworkChart({ data, filters, theme, realtimeData, expanded = fa
     });
 
     // Create nodes (repositories)
-    const repositoryStats = d3.group(filteredData, d => d.repository);
+    const repositoryStats = group(filteredData, d => d.repository);
     const nodes = Array.from(repositoryStats, ([repository, items]) => {
-      const totalActivity = d3.sum(items, d => (d.commits || 0) + (d.pullRequests || 0) + (d.issues || 0));
-      const commits = d3.sum(items, d => d.commits || 0);
-      const pullRequests = d3.sum(items, d => d.pullRequests || 0);
-      const issues = d3.sum(items, d => d.issues || 0);
+      const totalActivity = sum(items, d => (d.commits || 0) + (d.pullRequests || 0) + (d.issues || 0));
+      const commits = sum(items, d => d.commits || 0);
+      const pullRequests = sum(items, d => d.pullRequests || 0);
+      const issues = sum(items, d => d.issues || 0);
       
       return {
         id: repository,
@@ -77,7 +82,7 @@ export function NetworkChart({ data, filters, theme, realtimeData, expanded = fa
   useEffect(() => {
     if (!svgRef.current || networkData.nodes.length === 0) return;
 
-    const svg = d3.select(svgRef.current);
+    const svg = select(svgRef.current);
     svg.selectAll("*").remove();
 
     const width = svgRef.current.clientWidth;
@@ -87,14 +92,14 @@ export function NetworkChart({ data, filters, theme, realtimeData, expanded = fa
     svg.attr("width", width).attr("height", height);
 
     // Create simulation
-    const sim = d3.forceSimulation(networkData.nodes)
-      .force("link", d3.forceLink(networkData.links)
+    const sim = forceSimulation(networkData.nodes)
+      .force("link", forceLink(networkData.links)
         .id(d => d.id)
         .strength(d => d.value * 0.5)
         .distance(expanded ? 100 : 50))
-      .force("charge", d3.forceManyBody().strength(expanded ? -400 : -200))
-      .force("center", d3.forceCenter(width / 2, height / 2))
-      .force("collision", d3.forceCollide().radius(d => d.size + 5));
+      .force("charge", forceManyBody().strength(expanded ? -400 : -200))
+      .force("center", forceCenter(width / 2, height / 2))
+      .force("collision", forceCollide().radius(d => d.size + 5));
 
     setSimulation(sim);
 
@@ -116,7 +121,7 @@ export function NetworkChart({ data, filters, theme, realtimeData, expanded = fa
       .join("g")
       .attr("class", "node")
       .style("cursor", "pointer")
-      .call(d3.drag()
+      .call(drag()
         .on("start", (event, d) => {
           if (!event.active) sim.alphaTarget(0.3).restart();
           d.fx = d.x;
@@ -169,14 +174,14 @@ export function NetworkChart({ data, filters, theme, realtimeData, expanded = fa
     // Mouse events
     node.on("mouseover", function(event, d) {
       setSelectedNode(d);
-      d3.select(this).select("circle")
+      select(this).select("circle")
         .transition()
         .duration(200)
         .attr("r", d.size * 1.2);
     })
     .on("mouseout", function(event, d) {
       setSelectedNode(null);
-      d3.select(this).select("circle")
+      select(this).select("circle")
         .transition()
         .duration(200)
         .attr("r", d.size);
@@ -204,7 +209,7 @@ export function NetworkChart({ data, filters, theme, realtimeData, expanded = fa
   const totalNodes = networkData.nodes.length;
   const totalConnections = networkData.links.length;
   const avgActivity = totalNodes > 0 
-    ? Math.round(d3.mean(networkData.nodes, d => d.totalActivity) || 0)
+    ? Math.round(mean(networkData.nodes, d => d.totalActivity) || 0)
     : 0;
 
   return (

@@ -2,7 +2,11 @@ import { GoogleGenerativeAI } from '@google/generative-ai'
 import { NextResponse } from 'next/server'
 import { queryTurso } from '@/lib/turso-client'
 
-const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY)
+// Initialize Gemini AI only if API key is available
+let genAI = null
+if (process.env.GEMINI_API_KEY) {
+  genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY)
+}
 
 const TURSO_GITHUB_SCHEMA = `
 Database: Turso SQLite Database
@@ -76,6 +80,27 @@ SELECT name, description, language, stars, updated_at FROM repositories WHERE is
 LANGUAGES/PROGRAMMING:
 SELECT l.language, COUNT(DISTINCT l.repo_name) as repo_count, ROUND(AVG(l.percentage), 2) as avg_percentage, SUM(l.bytes) as total_bytes FROM languages l JOIN repositories r ON l.repo_name = r.name WHERE r.is_private = 0 GROUP BY l.language ORDER BY repo_count DESC, total_bytes DESC LIMIT 15
 
+POPULAR LANGUAGE REPOSITORIES (Python, Java, etc):
+SELECT name, description, language, stars, forks, topics FROM repositories WHERE is_private = 0 AND language = '{LANGUAGE}' ORDER BY stars DESC LIMIT 20
+
+POPULAR PYTHON:
+SELECT name, description, language, stars, forks, created_at, topics FROM repositories WHERE is_private = 0 AND language = 'Python' ORDER BY stars DESC LIMIT 25
+
+POPULAR JAVA:
+SELECT name, description, language, stars, forks, created_at, topics FROM repositories WHERE is_private = 0 AND language = 'Java' ORDER BY stars DESC LIMIT 25
+
+POPULAR TYPESCRIPT:
+SELECT name, description, language, stars, forks, created_at, topics FROM repositories WHERE is_private = 0 AND language = 'TypeScript' ORDER BY stars DESC LIMIT 25
+
+POPULAR GO:
+SELECT name, description, language, stars, forks, created_at, topics FROM repositories WHERE is_private = 0 AND language = 'Go' ORDER BY stars DESC LIMIT 25
+
+POPULAR RUST:
+SELECT name, description, language, stars, forks, created_at, topics FROM repositories WHERE is_private = 0 AND language = 'Rust' ORDER BY stars DESC LIMIT 25
+
+POPULAR C++:
+SELECT name, description, language, stars, forks, created_at, topics FROM repositories WHERE is_private = 0 AND language = 'C++' ORDER BY stars DESC LIMIT 25
+
 BIG/LARGE/SIZE:
 SELECT name, description, language, size_kb, stars FROM repositories WHERE is_private = 0 AND size_kb > 0 ORDER BY size_kb DESC LIMIT 15
 
@@ -102,6 +127,29 @@ export async function POST(request) {
   let question = ''
   
   try {
+    // Check if required environment variables are available
+    if (!process.env.GEMINI_API_KEY) {
+      return NextResponse.json(
+        { 
+          error: 'AI Data Explorer is not configured', 
+          message: 'Missing GEMINI_API_KEY environment variable. Please check your deployment configuration.',
+          configured: false
+        },
+        { status: 503 } // Service Unavailable
+      )
+    }
+
+    if (!process.env.TURSO_DATABASE_URL || !process.env.TURSO_AUTH_TOKEN) {
+      return NextResponse.json(
+        { 
+          error: 'Database is not configured', 
+          message: 'Missing Turso database environment variables. Please check your deployment configuration.',
+          configured: false
+        },
+        { status: 503 } // Service Unavailable
+      )
+    }
+
     const { question: userQuestion, context = [] } = await request.json()
     question = userQuestion
 
@@ -414,7 +462,45 @@ Focus on the actual repository names, numbers, and patterns shown in the data - 
 function generateFallbackSQL(question) {
   const lowerQuestion = question.toLowerCase()
   
-  // Most popular repositories
+  // Language-specific popular repositories
+  const languageMap = {
+    'python': 'Python',
+    'java': 'Java', 
+    'javascript': 'JavaScript',
+    'typescript': 'TypeScript',
+    'go': 'Go',
+    'rust': 'Rust',
+    'c++': 'C++',
+    'cpp': 'C++',
+    'c#': 'C#',
+    'csharp': 'C#',
+    'php': 'PHP',
+    'ruby': 'Ruby',
+    'swift': 'Swift',
+    'kotlin': 'Kotlin'
+  }
+  
+  // Check for language-specific queries
+  for (const [keyword, language] of Object.entries(languageMap)) {
+    if (lowerQuestion.includes(keyword) && (lowerQuestion.includes('popular') || lowerQuestion.includes('best') || lowerQuestion.includes('top'))) {
+      return `
+        SELECT name,
+               description,
+               language,
+               stars,
+               forks,
+               created_at,
+               topics
+        FROM repositories
+        WHERE is_private = 0 
+          AND language = '${language}'
+        ORDER BY stars DESC
+        LIMIT 25
+      `.trim()
+    }
+  }
+  
+  // Most popular repositories (general)
   if (lowerQuestion.includes('most popular') || (lowerQuestion.includes('most') && lowerQuestion.includes('star'))) {
     return `
       SELECT name,
