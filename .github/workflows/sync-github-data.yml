@@ -119,10 +119,10 @@ jobs:
               UNIQUE(repo_name, language)
             );
 
-            /* Clear existing data to prevent duplicates (efficient for small datasets) */
-            DELETE FROM repositories;
-            DELETE FROM commits; 
-            DELETE FROM languages;
+            /* Clear only personal repository data to preserve public repositories */
+            DELETE FROM repositories WHERE full_name LIKE '${username}/%';
+            DELETE FROM commits WHERE repo_name IN (SELECT name FROM repositories WHERE full_name LIKE '${username}/%');
+            DELETE FROM languages WHERE repo_name IN (SELECT name FROM repositories WHERE full_name LIKE '${username}/%');
 
             `
 

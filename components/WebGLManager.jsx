@@ -1,7 +1,72 @@
 'use client'
 
-import { createContext, useContext, useEffect, useState, useRef, Component } from 'react'
+import { createContext, useContext, useEffect, useState, useRef, Component, lazy, Suspense } from 'react'
 import { usePageTransition } from './PageTransition'
+
+// Lazy load Three.js Canvas to reduce initial bundle size
+const LazyCanvas = lazy(async () => {
+  const { Canvas } = await import('@react-three/fiber')
+  return { default: Canvas }
+})
+
+// Lazy wrapper for Three.js Canvas with loading state
+function LazyThreeCanvas({ children, className, fallback, ...props }) {
+  const [renderError, setRenderError] = useState(null)
+
+  if (renderError) {
+    return fallback || (
+      <div className={`${className} flex items-center justify-center bg-gradient-to-br from-gray-100 to-gray-200 dark:from-gray-800 dark:to-gray-900 rounded-lg`}>
+        <div className="text-center p-8">
+          <div className="w-16 h-16 mx-auto mb-4 bg-gradient-to-br from-blue-500 to-purple-600 rounded-full flex items-center justify-center">
+            <span className="text-white text-2xl">3D</span>
+          </div>
+          <p className="text-gray-600 dark:text-gray-400 text-sm">
+            3D visualization temporarily disabled for optimal performance
+          </p>
+        </div>
+      </div>
+    )
+  }
+
+  return (
+    <Suspense fallback={
+      <div className={`${className} flex items-center justify-center bg-gray-100 dark:bg-gray-800 rounded-lg animate-pulse`}>
+        <div className="text-center p-4">
+          <div className="w-8 h-8 mx-auto mb-2 bg-blue-500 rounded-full animate-spin">
+            <div className="w-6 h-6 bg-white rounded-full m-1"></div>
+          </div>
+          <p className="text-gray-600 dark:text-gray-400 text-xs">Loading 3D...</p>
+        </div>
+      </div>
+    }>
+      <ThreeJSErrorBoundary className={className} fallback={fallback}>
+        <LazyCanvas
+          className={className}
+          gl={{
+            powerPreference: 'default',
+            antialias: false,
+            alpha: true,
+            preserveDrawingBuffer: false,
+            clearColor: [0, 0, 0, 0]
+          }}
+          dpr={[1, 1.5]}
+          performance={{ min: 0.5 }}
+          onCreated={({ gl }) => {
+            gl.setClearColor(0x000000, 0)
+            console.log('Three.js Canvas loaded and created')
+          }}
+          onError={(error) => {
+            console.warn('Three.js render error:', error)
+            setRenderError('3D rendering failed')
+          }}
+          {...props}
+        >
+          {children}
+        </LazyCanvas>
+      </ThreeJSErrorBoundary>
+    </Suspense>
+  )
+}
 
 // Simplified Error Boundary for Three.js components
 class ThreeJSErrorBoundary extends Component {
@@ -209,52 +274,5 @@ export function SafeCanvas({ children, fallback, className = '', ...props }) {
     )
   }
 
-  try {
-    // Dynamic import of Canvas to avoid loading Three.js when disabled
-    const { Canvas } = require('@react-three/fiber')
-
-    return (
-      <ThreeJSErrorBoundary className={className} fallback={fallback}>
-        <Canvas
-          className={className}
-          gl={{
-            powerPreference: 'default',
-            antialias: false,
-            alpha: true,
-            preserveDrawingBuffer: false,
-            clearColor: [0, 0, 0, 0]
-          }}
-          dpr={[1, 1.5]} // Limit DPI scaling
-          performance={{ min: 0.5 }} // Lower performance threshold
-          onCreated={({ gl }) => {
-            // Set clear color to transparent
-            gl.setClearColor(0x000000, 0)
-            console.log('Three.js Canvas created successfully')
-          }}
-          onError={(error) => {
-            console.warn('Three.js render error:', error)
-            setRenderError('3D rendering failed')
-          }}
-          {...props}
-        >
-          {children}
-        </Canvas>
-      </ThreeJSErrorBoundary>
-    )
-  } catch (error) {
-    console.warn('Three.js Canvas creation failed:', error)
-    setRenderError('Canvas creation failed')
-    return fallback || (
-      <div className={`${className} flex items-center justify-center bg-gradient-to-br from-gray-100 to-gray-200 dark:from-gray-800 dark:to-gray-900 rounded-lg`}>
-        <div className="text-center p-8">
-          <div className="w-16 h-16 mx-auto mb-4 bg-gradient-to-br from-blue-500 to-purple-600 rounded-full flex items-center justify-center">
-            <span className="text-white text-2xl">3D</span>
-          </div>
-          <p className="text-gray-600 dark:text-gray-400 text-sm">
-            3D visualization temporarily disabled for optimal performance
-          </p>
-        </div>
-      </div>
-    )
-  }
+  return <LazyThreeCanvas className={className} fallback={fallback} {...props}>{children}</LazyThreeCanvas>
 }

@@ -44,8 +44,8 @@ export function TypewriterEffect({ words = [], text, delay = 100, className = ""
   }, [currentIndex, currentWordIndex, isDeleting, delay, textToType, words.length])
 
   return (
-    <motion.div
-      className={`text-4xl md:text-6xl font-heading font-bold mb-6 ${className}`}
+    <motion.span
+      className={`inline-block ${className}`}
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       transition={{ duration: 0.5 }}
@@ -58,6 +58,6 @@ export function TypewriterEffect({ words = [], text, delay = 100, className = ""
       >
         |
       </motion.span>
-    </motion.div>
+    </motion.span>
   )
 }

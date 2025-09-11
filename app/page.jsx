@@ -1,15 +1,7 @@
 "use client";
 
 import Image from "next/image";
-import { motion } from "framer-motion";
-import { SafeCanvas } from "@/components/WebGLManager";
-import {
-  OrbitControls,
-  Float,
-  Text3D,
-  Environment,
-  Sparkles,
-} from "@react-three/drei";
+import dynamic from "next/dynamic";
 import { TypewriterEffect } from "@/components/TypewriterEffect";
 import { Button } from "@/components/ui/Button";
 import {
@@ -25,8 +17,7 @@ import {
   Zap,
 } from "lucide-react";
 import Link from "next/link";
-import { useRef, Suspense, useState, useEffect } from "react";
-import { useFrame } from "@react-three/fiber";
+import { useState, useEffect } from "react";
 import { useTheme } from "@/components/ThemeProvider";
 import {
   ScrollProgress,
@@ -36,122 +27,50 @@ import {
   StaggerItem,
 } from "@/components/ScrollAnimations";
 
-function CreativeDataSphere() {
-  const groupRef = useRef();
-  const sphereRef = useRef();
-  const { theme } = useTheme();
+// Dynamically import framer-motion
+const FramerMotion = dynamic(() => import("framer-motion"), {
+  ssr: false,
+  loading: () => null
+});
 
-  useFrame((state, delta) => {
-    if (groupRef.current) {
-      groupRef.current.rotation.y += delta * 0.2;
-      groupRef.current.position.y =
-        Math.sin(state.clock.elapsedTime * 0.5) * 0.3;
-    }
-    if (sphereRef.current) {
-      sphereRef.current.rotation.x += delta * 0.1;
-      sphereRef.current.rotation.z += delta * 0.05;
-    }
-  });
+const ThreeDBackground = dynamic(() => import("@/components/ThreeDBackground"), {
+  ssr: false,
+  loading: () => (
+    <div className="absolute inset-0 bg-gradient-to-br from-blue-500/5 to-orange-500/5 dark:from-blue-400/10 dark:to-orange-400/10"></div>
+  )
+});
 
-  return (
-    <group ref={groupRef} position={[3, 0, -1]}>
-      {/* Main data sphere */}
-      <Float speed={1.2} rotationIntensity={0.3} floatIntensity={0.4}>
-        <mesh ref={sphereRef}>
-          <icosahedronGeometry args={[1.5, 2]} />
-          <meshStandardMaterial
-            color={theme === "dark" ? "#50A6FF" : "#4B7BEC"}
-            wireframe={true}
-            transparent={true}
-            opacity={0.7}
-          />
-        </mesh>
-      </Float>
+// Create a wrapper for motion components
+function MotionDiv({ children, ...props }) {
+  const [MotionComponent, setMotionComponent] = useState(null);
 
-      {/* Orbiting data nodes */}
-      {Array.from({ length: 8 }, (_, i) => (
-        <Float
-          key={i}
-          speed={0.8 + i * 0.1}
-          rotationIntensity={0.2}
-          floatIntensity={0.3}
-        >
-          <mesh
-            position={[
-              Math.cos((i / 8) * Math.PI * 2) * 2.5,
-              Math.sin((i / 8) * Math.PI * 2) * 0.5,
-              Math.sin((i / 8) * Math.PI * 2) * 2.5,
-            ]}
-          >
-            <boxGeometry args={[0.2, 0.2, 0.2]} />
-            <meshStandardMaterial
-              color={theme === "dark" ? "#FF8A5C" : "#FF6F61"}
-              emissive={theme === "dark" ? "#FF8A5C" : "#FF6F61"}
-              emissiveIntensity={0.2}
-            />
-          </mesh>
-        </Float>
-      ))}
+  useEffect(() => {
+    import("framer-motion").then((mod) => {
+      setMotionComponent(() => mod.motion.div);
+    });
+  }, []);
 
-      {/* Connecting particles */}
-      <Sparkles
-        count={20}
-        scale={6}
-        size={2}
-        speed={0.4}
-        color={theme === "dark" ? "#50A6FF" : "#4B7BEC"}
-        opacity={0.4}
-      />
-    </group>
-  );
+  if (!MotionComponent) {
+    return <div {...(props.className ? { className: props.className } : {})}>{children}</div>;
+  }
+
+  return <MotionComponent {...props}>{children}</MotionComponent>;
 }
 
-function DataVisualization3D() {
-  const groupRef = useRef();
-  const { theme } = useTheme();
+function MotionSpan({ children, ...props }) {
+  const [MotionComponent, setMotionComponent] = useState(null);
 
-  useFrame((state) => {
-    if (groupRef.current) {
-      groupRef.current.rotation.y = state.clock.elapsedTime * 0.05;
-    }
-  });
+  useEffect(() => {
+    import("framer-motion").then((mod) => {
+      setMotionComponent(() => mod.motion.span);
+    });
+  }, []);
 
-  const dataPoints = Array.from({ length: 20 }, (_, i) => ({
-    position: [
-      (Math.random() - 0.5) * 6,
-      (Math.random() - 0.5) * 4,
-      (Math.random() - 0.5) * 6,
-    ],
-    scale: Math.random() * 0.5 + 0.2,
-    delay: i * 0.1,
-  }));
+  if (!MotionComponent) {
+    return <span {...(props.className ? { className: props.className } : {})}>{children}</span>;
+  }
 
-  return (
-    <group ref={groupRef} position={[0, 0, -2]}>
-      {dataPoints.map((point, i) => (
-        <mesh key={i} position={point.position} scale={point.scale}>
-          <boxGeometry args={[0.3, 0.3, 0.3]} />
-          <meshStandardMaterial
-            color={theme === "dark" ? "#50A6FF" : "#4B7BEC"}
-            transparent={true}
-            opacity={0.7}
-            emissive={theme === "dark" ? "#1a365d" : "#2d5aa0"}
-            emissiveIntensity={0.2}
-          />
-        </mesh>
-      ))}
-
-      {/* Connecting lines effect */}
-      <Sparkles
-        count={15}
-        scale={8}
-        size={1}
-        speed={0.1}
-        color={theme === "dark" ? "#FF8A5C" : "#FF6F61"}
-        opacity={0.3}
-      />
-    </group>
-  );
+  return <MotionComponent {...props}>{children}</MotionComponent>;
 }
 
 export default function Home() {
@@ -176,33 +95,8 @@ export default function Home() {
             <div className="absolute inset-0 bg-[radial-gradient(circle_at_80%_20%,rgba(255,111,97,0.1),transparent_70%)] dark:bg-[radial-gradient(circle_at_80%_20%,rgba(255,138,92,0.15),transparent_70%)]"></div>
           </div>
 
-          {/* 3D Background Elements */}
-          <div className="absolute inset-0 z-0 pointer-events-none three-js-container">
-            <SafeCanvas
-              camera={{ position: [0, 0, 5], fov: 60 }}
-              style={{ 
-                background: "transparent",
-                position: "absolute",
-                top: 0,
-                left: 0,
-                width: "100%",
-                height: "100%"
-              }}
-            >
-              <Suspense fallback={null}>
-                <ambientLight intensity={0.4} />
-                <directionalLight position={[10, 10, 5]} intensity={0.6} />
-                <pointLight
-                  position={[-10, -10, -5]}
-                  intensity={0.3}
-                  color="#4B7BEC"
-                />
-                <Environment preset="dawn" background={false} />
-                <CreativeDataSphere />
-                <DataVisualization3D />
-              </Suspense>
-            </SafeCanvas>
-          </div>
+          {/* 3D Background Elements - Dynamically Loaded */}
+          <ThreeDBackground />
 
           {/* Main Content Grid */}
           <div className="relative z-10 w-full max-w-7xl mx-auto px-6">
@@ -214,12 +108,12 @@ export default function Home() {
                   <div className="inline-block">
                     <div className="bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm rounded-full px-6 py-3 border border-blue-500/20 dark:border-blue-400/20 shadow-lg">
                       <span className="text-sm font-medium text-blue-600 dark:text-blue-400 flex items-center gap-2">
-                        <motion.span
+                        <MotionSpan
                           animate={{ scale: [1, 1.2, 1] }}
                           transition={{ duration: 1.5, repeat: Infinity }}
                         >
                           👋
-                        </motion.span>
+                        </MotionSpan>
                         Hello, I&apos;m a Data Engineer
                       </span>
                     </div>
@@ -246,7 +140,7 @@ export default function Home() {
                         "ETL Specialist",
                         "Cloud Architect",
                       ].map((title, index) => (
-                        <motion.span
+                        <MotionSpan
                           key={title}
                           initial={{ opacity: 0, scale: 0.8 }}
                           animate={{ opacity: 1, scale: 1 }}
@@ -257,7 +151,7 @@ export default function Home() {
                           className="bg-gradient-to-r from-gray-100 to-gray-200 dark:from-gray-700 dark:to-gray-600 px-4 py-2 rounded-xl text-sm font-medium text-gray-700 dark:text-gray-300 shadow-md"
                         >
                           {title}
-                        </motion.span>
+                        </MotionSpan>
                       ))}
                     </div>
                   </div>
@@ -289,7 +183,7 @@ export default function Home() {
                 <RevealOnScroll direction="up" delay={0.8}>
                   {/* CTA Buttons */}
                   <div className="flex flex-wrap gap-4 pt-6">
-                    <motion.div
+                    <MotionDiv
                       whileHover={{ scale: 1.05 }}
                       whileTap={{ scale: 0.95 }}
                     >
@@ -299,14 +193,14 @@ export default function Home() {
                           className="bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-600/90 hover:to-blue-700/90 text-white px-8 py-4 rounded-xl shadow-xl hover:shadow-2xl transition-all duration-300 group"
                         >
                           <span>Explore My Work</span>
-                          <motion.div className="ml-2 group-hover:translate-x-1 transition-transform duration-200">
+                          <MotionDiv className="ml-2 group-hover:translate-x-1 transition-transform duration-200">
                             ✨
-                          </motion.div>
+                          </MotionDiv>
                         </Button>
                       </Link>
-                    </motion.div>
+                    </MotionDiv>
 
-                    <motion.div
+                    <MotionDiv
                       whileHover={{ scale: 1.05 }}
                       whileTap={{ scale: 0.95 }}
                     >
@@ -316,14 +210,14 @@ export default function Home() {
                           className="bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 text-white px-8 py-4 rounded-xl shadow-xl hover:shadow-2xl transition-all duration-300 group"
                         >
                           <span>Try Data Playground</span>
-                          <motion.div className="ml-2 group-hover:scale-110 transition-transform duration-200">
+                          <MotionDiv className="ml-2 group-hover:scale-110 transition-transform duration-200">
                             🚀
-                          </motion.div>
+                          </MotionDiv>
                         </Button>
                       </Link>
-                    </motion.div>
+                    </MotionDiv>
 
-                    <motion.div
+                    <MotionDiv
                       whileHover={{ scale: 1.05 }}
                       whileTap={{ scale: 0.95 }}
                     >
@@ -334,12 +228,12 @@ export default function Home() {
                           className="border-2 border-gray-300 dark:border-gray-600 hover:border-blue-500 dark:hover:border-blue-400 text-gray-700 dark:text-gray-300 hover:text-blue-600 dark:hover:text-blue-400 px-8 py-4 rounded-xl backdrop-blur-sm group"
                         >
                           <span>Let&apos;s Connect</span>
-                          <motion.div className="ml-2 group-hover:rotate-12 transition-transform duration-200">
+                          <MotionDiv className="ml-2 group-hover:rotate-12 transition-transform duration-200">
                             <Mail className="w-5 h-5" />
-                          </motion.div>
+                          </MotionDiv>
                         </Button>
                       </Link>
-                    </motion.div>
+                    </MotionDiv>
                   </div>
                 </RevealOnScroll>
               </div>
@@ -347,14 +241,14 @@ export default function Home() {
               {/* Right Content - Interactive Profile */}
               <div className="lg:col-span-5 flex justify-center lg:justify-end">
                 <RevealOnScroll direction="right" delay={0.3}>
-                  <motion.div
+                  <MotionDiv
                     className="relative"
                     initial={{ opacity: 0, scale: 0.8 }}
                     animate={{ opacity: 1, scale: 1 }}
                     transition={{ duration: 0.8, delay: 0.5 }}
                   >
                     {/* Floating cards around profile */}
-                    <motion.div
+                    <MotionDiv
                       className="absolute -top-8 -left-8 bg-white/90 dark:bg-gray-800/90 backdrop-blur-sm rounded-2xl p-4 shadow-xl border border-gray-200/50 dark:border-gray-700/50 z-20"
                       animate={{
                         y: [0, -10, 0],
@@ -372,9 +266,9 @@ export default function Home() {
                           Currently Available
                         </span>
                       </div>
-                    </motion.div>
+                    </MotionDiv>
 
-                    <motion.div
+                    <MotionDiv
                       className="absolute -bottom-8 -right-8 bg-white/90 dark:bg-gray-800/90 backdrop-blur-sm rounded-2xl p-4 shadow-xl border border-gray-200/50 dark:border-gray-700/50 z-20"
                       animate={{
                         y: [0, 10, 0],
@@ -393,10 +287,10 @@ export default function Home() {
                           Data Engineering
                         </span>
                       </div>
-                    </motion.div>
+                    </MotionDiv>
 
                     {/* Main profile image */}
-                    <motion.div
+                    <MotionDiv
                       className="relative w-80 h-80 rounded-3xl overflow-hidden shadow-2xl"
                       whileHover={{ scale: 1.02 }}
                       transition={{ duration: 0.3 }}
@@ -406,14 +300,15 @@ export default function Home() {
                         src="/logo.jpg"
                         alt="Ida Bagus Gede Purwa Manik Adiputra"
                         fill
+                        priority
                         className="object-cover relative z-10"
                         sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
                       />
 
                       {/* Overlay gradient */}
                       <div className="absolute inset-0 bg-gradient-to-t from-black/20 via-transparent to-transparent"></div>
-                    </motion.div>
-                  </motion.div>
+                    </MotionDiv>
+                  </MotionDiv>
                 </RevealOnScroll>
               </div>
             </div>
@@ -470,7 +365,7 @@ export default function Home() {
                   },
                 ].map((stat, index) => (
                   <StaggerItem key={stat.label}>
-                    <motion.div
+                    <MotionDiv
                       className="relative group h-full"
                       whileHover={{ scale: 1.05, y: -5 }}
                       transition={{ duration: 0.3 }}
@@ -495,7 +390,7 @@ export default function Home() {
                           {stat.label}
                         </div>
                       </div>
-                    </motion.div>
+                    </MotionDiv>
                   </StaggerItem>
                 ))}
               </div>
@@ -522,7 +417,7 @@ export default function Home() {
                     "Docker",
                     "Kubernetes",
                   ].map((tech, index) => (
-                    <motion.span
+                    <MotionSpan
                       key={tech}
                       initial={{ opacity: 0, scale: 0.8 }}
                       animate={{ opacity: 1, scale: 1 }}
@@ -530,7 +425,7 @@ export default function Home() {
                       className="bg-gradient-to-r from-blue-500/10 to-orange-500/10 dark:from-blue-400/10 dark:to-orange-400/10 backdrop-blur-sm border border-blue-500/20 dark:border-blue-400/20 px-4 py-2 rounded-full text-sm font-medium text-gray-700 dark:text-gray-300 hover:scale-105 transition-transform duration-200 cursor-default"
                     >
                       {tech}
-                    </motion.span>
+                    </MotionSpan>
                   ))}
                 </div>
               </div>
@@ -579,7 +474,7 @@ export default function Home() {
                   },
                 ].map((item, index) => (
                   <StaggerItem key={index}>
-                    <motion.div
+                    <MotionDiv
                       className="group relative overflow-hidden rounded-2xl bg-white/90 dark:bg-gray-800/90 backdrop-blur-sm border border-gray-200/50 dark:border-gray-700/50 p-8 shadow-lg hover:shadow-2xl transition-all duration-300 h-80 flex flex-col"
                       whileHover={{ y: -10, scale: 1.02 }}
                       transition={{ duration: 0.3 }}
@@ -605,7 +500,7 @@ export default function Home() {
                         </p>
                       </div>
 
-                      <motion.div
+                      <MotionDiv
                         className="absolute -bottom-2 -right-2 w-20 h-20 rounded-full opacity-10 group-hover:opacity-20 transition-opacity duration-300"
                         style={{
                           background: `linear-gradient(135deg, ${
@@ -619,7 +514,7 @@ export default function Home() {
                           ease: "linear",
                         }}
                       />
-                    </motion.div>
+                    </MotionDiv>
                   </StaggerItem>
                 ))}
               </div>

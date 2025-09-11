@@ -59,7 +59,7 @@ export function AIDataExplorer({ theme = 'light' }) {
 
       // Generate SQL and execute using Turso backend (integrated response)
       const sqlResponse = await generateSQLWithGemini(naturalLanguageQuery, newContext)
-      setGeneratedSQL(sqlResponse.sql)
+      setGeneratedSQL(sqlResponse.sql || 'Enhanced multi-source query')
       setQueryResults(sqlResponse.data || [])
       
       // Use enhanced insights or generate client-side fallback
@@ -70,6 +70,21 @@ export function AIDataExplorer({ theme = 'light' }) {
       }
       console.log('📋 Final insights to display:', insights)
       setAIInsights(insights)
+      
+      // Store enhanced query metadata for display
+      if (sqlResponse.method) {
+        // For enhanced queries, the data is already properly formatted
+        // Just add metadata properties to the array
+        if (Array.isArray(queryResults)) {
+          queryResults._meta = {
+            method: sqlResponse.method,
+            data_source: sqlResponse.data_source,
+            reasoning: sqlResponse.reasoning,
+            model: sqlResponse.model,
+            isEnhanced: true
+          }
+        }
+      }
       
       trackPerformance('SQL Generation + Execution', startTime)
 
@@ -97,10 +112,15 @@ export function AIDataExplorer({ theme = 'light' }) {
     }
   }
 
-  const generateSQLWithGemini = async (question, context) => {
+  const generateSQLWithGemini = async (question, context, useEnhanced = false) => {
     const startTime = performance.now()
     
-    const response = await fetch('/api/ai-sql-generator', {
+    // Determine which endpoint to use based on query complexity
+    const endpoint = useEnhanced || isComplexQuery(question) 
+      ? '/api/ai-enhanced-explorer' 
+      : '/api/ai-sql-generator'
+    
+    const response = await fetch(endpoint, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json'
@@ -114,17 +134,39 @@ export function AIDataExplorer({ theme = 'light' }) {
     if (!response.ok) {
       // Track failed API calls
       if (window.playgroundPerformance) {
-        window.playgroundPerformance.addApiCall('/api/ai-sql-generator', performance.now() - startTime, 'error')
+        window.playgroundPerformance.addApiCall(endpoint, performance.now() - startTime, 'error')
       }
+      
+      // If enhanced endpoint fails, try fallback to standard
+      if (endpoint === '/api/ai-enhanced-explorer') {
+        console.log('🔄 Enhanced endpoint failed, falling back to standard')
+        return generateSQLWithGemini(question, context, false)
+      }
+      
       throw new Error(`Failed to generate SQL: ${response.statusText}`)
     }
 
     // Track successful API calls
     if (window.playgroundPerformance) {
-      window.playgroundPerformance.addApiCall('/api/ai-sql-generator', performance.now() - startTime, 'success')
+      window.playgroundPerformance.addApiCall(endpoint, performance.now() - startTime, 'success')
     }
 
     return await response.json()
+  }
+
+  // Detect if a query needs enhanced processing
+  const isComplexQuery = (question) => {
+    const complexIndicators = [
+      'trending', 'recent', 'this week', 'this month', 'latest',
+      'compare', 'vs', 'versus', 'alternative', 'similar to',
+      'best for', 'recommend', 'should i use',
+      'growing', 'popular in 2024', 'new', 'emerging',
+      'machine learning', 'ai tools', 'data science',
+      'enterprise', 'production ready', 'scalable'
+    ]
+    
+    const lowerQuestion = question.toLowerCase()
+    return complexIndicators.some(indicator => lowerQuestion.includes(indicator))
   }
 
   // Generate insights on the client side if server-side insights fail

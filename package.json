@@ -44,7 +44,6 @@
     "react": "^18",
     "react-dom": "^18",
     "resend": "^6.0.1",
-    "socket.io-client": "^4.8.1",
     "sqlite": "^5.1.1",
     "sqlite3": "^5.1.7",
     "tailwind-merge": "^2.0.0",
