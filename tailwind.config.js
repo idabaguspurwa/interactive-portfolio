@@ -60,6 +60,12 @@ module.exports = {
           dark: '#48484A',      // Medium border for dark mode
         },
         
+        // shadcn/ui required colors
+        popover: {
+          DEFAULT: 'hsl(var(--popover))',
+          foreground: 'hsl(var(--popover-foreground))',
+        },
+        
         // Enhanced gray scale for refined design system
         gray: {
           50: '#F2F2F7',
@@ -132,5 +138,5 @@ module.exports = {
       },
     },
   },
-  plugins: [],
+  plugins: [require("tailwindcss-animate")],
 }
