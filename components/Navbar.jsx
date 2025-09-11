@@ -26,7 +26,9 @@ export function Navbar() {
   const [scrolled, setScrolled] = useState(false)
   const pathname = usePathname()
   const { theme, toggleTheme } = useTheme()
-  // Removed transition dependency for simpler navbar
+  
+  // Check if we're on the home page with farm background
+  const isHomePage = pathname === '/'
 
   useEffect(() => {
     const handleScroll = () => {
@@ -39,7 +41,11 @@ export function Navbar() {
   return (
     <motion.nav
       className={`fixed top-0 left-0 right-0 z-[100] transition-all duration-300 pointer-events-auto ${
-        scrolled ? 'glass-effect shadow-lg' : 'bg-transparent'
+        isHomePage 
+          ? 'bg-transparent' 
+          : scrolled 
+            ? 'glass-effect shadow-lg' 
+            : 'bg-transparent'
       }`}
       initial={{ y: -100 }}
       animate={{ y: 0 }}
@@ -53,7 +59,11 @@ export function Navbar() {
             className="flex-shrink-0"
             whileHover={{ scale: 1.05 }}
           >
-            <Link href="/" className="text-2xl font-heading font-bold text-primary">
+            <Link href="/" className={`text-2xl font-heading font-bold ${
+              isHomePage 
+                ? 'text-white drop-shadow-lg' 
+                : 'text-primary'
+            }`}>
               IB
             </Link>
           </motion.div>
@@ -66,9 +76,13 @@ export function Navbar() {
                   <Link
                     href={item.href}
                     className={`px-3 py-2 rounded-md text-sm font-medium transition-all duration-200 ${
-                      pathname === item.href
-                        ? 'text-primary'
-                        : 'text-secondary hover:text-primary'
+                      isHomePage 
+                        ? (pathname === item.href
+                            ? 'text-white font-bold drop-shadow-lg'
+                            : 'text-white/90 hover:text-white drop-shadow-md')
+                        : (pathname === item.href
+                            ? 'text-primary'
+                            : 'text-secondary hover:text-primary')
                     }`}
                   >
                     {item.name}
@@ -82,7 +96,11 @@ export function Navbar() {
                   variant="outline"
                   size="sm"
                   onClick={() => window.open('/CV.pdf', '_blank')}
-                  className="ml-2 px-4 py-2 text-sm font-medium border-primary text-primary hover:bg-primary hover:text-white transition-all duration-200 flex items-center gap-2"
+                  className={`ml-2 px-4 py-2 text-sm font-medium transition-all duration-200 flex items-center gap-2 ${
+                    isHomePage
+                      ? 'border-white/60 text-white hover:bg-white hover:text-black drop-shadow-lg backdrop-blur-sm'
+                      : 'border-primary text-primary hover:bg-primary hover:text-white'
+                  }`}
                 >
                   <FileText className="w-4 h-4" />
                   View CV
@@ -97,7 +115,11 @@ export function Navbar() {
               variant="ghost"
               size="sm"
               onClick={toggleTheme}
-              className="p-2"
+              className={`p-2 ${
+                isHomePage 
+                  ? 'text-white hover:bg-white/20 drop-shadow-md' 
+                  : ''
+              }`}
             >
               <motion.div
                 initial={false}
@@ -118,7 +140,11 @@ export function Navbar() {
                 variant="ghost"
                 size="sm"
                 onClick={() => setIsOpen(!isOpen)}
-                className="p-2"
+                className={`p-2 ${
+                  isHomePage 
+                    ? 'text-white hover:bg-white/20 drop-shadow-md' 
+                    : ''
+                }`}
               >
                 <motion.div
                   animate={{ rotate: isOpen ? 90 : 0 }}
