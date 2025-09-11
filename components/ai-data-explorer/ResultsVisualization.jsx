@@ -3,7 +3,8 @@
 import { useState, useEffect, useRef } from 'react'
 import { motion } from 'framer-motion'
 import * as Plot from "@observablehq/plot"
-import * as d3 from "d3"
+// Import only specific D3 functions to reduce bundle size
+import { select, selectAll, create, pie, arc, scaleOrdinal, schemeCategory10, sum } from "d3"
 import { 
   BarChart3, 
   Table, 
@@ -32,7 +33,18 @@ export function ResultsVisualization({ data, query, theme = 'light' }) {
   const [processedData, setProcessedData] = useState([])
 
   useEffect(() => {
-    if (!data || !Array.isArray(data)) return
+    console.log('🎯 ResultsVisualization received data:', {
+      dataType: typeof data,
+      isArray: Array.isArray(data),
+      length: data ? data.length : 'undefined',
+      firstItem: data && data.length > 0 ? Object.keys(data[0]) : 'none'
+    })
+
+    if (!data || !Array.isArray(data) || data.length === 0) {
+      console.log('❌ No valid data for visualization')
+      setProcessedData([])
+      return
+    }
 
     // Process and clean the data
     const processed = data.map((row, index) => ({
@@ -47,10 +59,17 @@ export function ResultsVisualization({ data, query, theme = 'light' }) {
       )
     }))
 
+    console.log('✅ Processed data for visualization:', {
+      length: processed.length,
+      sampleColumns: processed[0] ? Object.keys(processed[0]) : 'none',
+      sampleItem: processed[0] ? JSON.stringify(processed[0], null, 2).substring(0, 150) : 'none'
+    })
+
     setProcessedData(processed)
     
     // Auto-detect best chart type
     const detectedType = detectBestVisualization(processed, query)
+    console.log('📊 Detected chart type:', detectedType)
     setChartType(detectedType)
   }, [data, query])
 
@@ -101,7 +120,7 @@ export function ResultsVisualization({ data, query, theme = 'light' }) {
     const startTime = performance.now()
 
     // Clear previous chart
-    d3.select(chartRef.current).selectAll("*").remove()
+    select(chartRef.current).selectAll("*").remove()
 
     const width = chartRef.current.clientWidth
     const height = isExpanded ? 500 : 300
@@ -320,7 +339,7 @@ export function ResultsVisualization({ data, query, theme = 'light' }) {
     const pieData = data.slice(0, 8) // Limit to 8 slices for readability
     
     // Create SVG element
-    const svg = d3.create("svg")
+    const svg = create("svg")
       .attr("width", width)
       .attr("height", height)
       .style("background", "transparent")
@@ -329,41 +348,41 @@ export function ResultsVisualization({ data, query, theme = 'light' }) {
       .attr("transform", `translate(${width / 2}, ${height / 2})`)
 
     // Create pie generator
-    const pie = d3.pie()
+    const pieGenerator = pie()
       .value(d => d[valueCol])
       .sort(null)
 
     // Create arc generator
-    const arc = d3.arc()
+    const arcGenerator = arc()
       .innerRadius(0)
       .outerRadius(radius)
 
     // Color scale
-    const color = d3.scaleOrdinal()
+    const color = scaleOrdinal()
       .domain(pieData.map(d => d[labelCol]))
       .range(theme === 'dark' 
-        ? d3.schemeCategory10 
-        : d3.schemeCategory10
+        ? schemeCategory10 
+        : schemeCategory10
       )
 
     // Create pie slices
     const slices = g.selectAll(".arc")
-      .data(pie(pieData))
+      .data(pieGenerator(pieData))
       .enter().append("g")
       .attr("class", "arc")
 
     // Add paths
     slices.append("path")
-      .attr("d", arc)
+      .attr("d", arcGenerator)
       .style("fill", d => color(d.data[labelCol]))
       .style("stroke", theme === 'dark' ? '#374151' : '#ffffff')
       .style("stroke-width", 2)
       .style("cursor", "pointer")
       .on("mouseover", function(event, d) {
-        d3.select(this).style("opacity", 0.8)
+        select(this).style("opacity", 0.8)
         
         // Create tooltip
-        const tooltip = d3.select("body").append("div")
+        const tooltip = select("body").append("div")
           .attr("class", "pie-tooltip")
           .style("position", "absolute")
           .style("background", theme === 'dark' ? '#1F2937' : '#ffffff')
@@ -379,7 +398,7 @@ export function ResultsVisualization({ data, query, theme = 'light' }) {
           .html(`
             <div><strong>${d.data[labelCol]}</strong></div>
             <div>Value: ${d.data[valueCol].toLocaleString()}</div>
-            <div>Percentage: ${((d.data[valueCol] / d3.sum(pieData, dd => dd[valueCol])) * 100).toFixed(1)}%</div>
+            <div>Percentage: ${((d.data[valueCol] / sum(pieData, dd => dd[valueCol])) * 100).toFixed(1)}%</div>
           `)
 
         tooltip.transition()
@@ -389,13 +408,13 @@ export function ResultsVisualization({ data, query, theme = 'light' }) {
           .style("top", (event.pageY - 10) + "px")
       })
       .on("mouseout", function() {
-        d3.select(this).style("opacity", 1)
-        d3.selectAll(".pie-tooltip").remove()
+        select(this).style("opacity", 1)
+        selectAll(".pie-tooltip").remove()
       })
 
     // Add labels
     slices.append("text")
-      .attr("transform", d => `translate(${arc.centroid(d)})`)
+      .attr("transform", d => `translate(${arcGenerator.centroid(d)})`)
       .attr("dy", "0.35em")
       .style("text-anchor", "middle")
       .style("font-size", "11px")
@@ -403,7 +422,7 @@ export function ResultsVisualization({ data, query, theme = 'light' }) {
       .style("fill", theme === 'dark' ? '#ffffff' : '#000000')
       .style("pointer-events", "none")
       .text(d => {
-        const percentage = (d.data[valueCol] / d3.sum(pieData, dd => dd[valueCol])) * 100
+        const percentage = (d.data[valueCol] / sum(pieData, dd => dd[valueCol])) * 100
         return percentage > 5 ? `${percentage.toFixed(0)}%` : '' // Only show label if slice is big enough
       })
 

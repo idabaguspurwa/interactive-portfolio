@@ -44,7 +44,7 @@ async function fetchPopularRepositories() {
   
   try {
     // Conservative approach to stay well under Turso free tier limits
-    const languages = ['javascript', 'python', 'typescript']  // Reduced to 3 languages
+    const languages = ['javascript', 'python', 'typescript', 'java', 'go', 'rust']  // Expand to 6 languages for better coverage
     const allRepos = []
     
     for (const language of languages) {
@@ -54,7 +54,7 @@ async function fetchPopularRepositories() {
         q: `language:${language} stars:>5000 pushed:>2024-01-01`,  // Higher star threshold
         sort: 'stars',
         order: 'desc',
-        per_page: 10, // 10 per language = 30 total repos (conservative)
+        per_page: 8, // 8 per language = 48 total repos (conservative)
       })
       
       allRepos.push(...data.items)
@@ -69,7 +69,7 @@ async function fetchPopularRepositories() {
       q: 'stars:>10000 pushed:>2024-06-01',  // Only very popular repos
       sort: 'updated',
       order: 'desc',
-      per_page: 20,  // Reduced from 25
+      per_page: 15,  // Reduced from 20
     })
     
     allRepos.push(...trendingData.items)

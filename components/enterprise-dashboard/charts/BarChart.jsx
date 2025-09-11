@@ -3,7 +3,8 @@
 import React, { useRef, useEffect, useState } from 'react';
 import { motion } from 'framer-motion';
 import * as Plot from "@observablehq/plot";
-import * as d3 from "d3";
+// Import only specific D3 functions to reduce bundle size
+import { group, sum, select } from "d3";
 import { BarChart3, GitBranch, TrendingUp } from 'lucide-react';
 
 export function BarChart({ data, filters, theme, realtimeData, expanded = false }) {
@@ -30,12 +31,12 @@ export function BarChart({ data, filters, theme, realtimeData, expanded = false 
 
     if (chartMode === 'repository') {
       // Group by repository
-      const grouped = d3.group(filteredData, d => d.repository);
+      const grouped = group(filteredData, d => d.repository);
       
       aggregatedData = Array.from(grouped, ([repository, items]) => {
-        const commits = d3.sum(items, d => d.commits || 0);
-        const pullRequests = d3.sum(items, d => d.pullRequests || 0);
-        const issues = d3.sum(items, d => d.issues || 0);
+        const commits = sum(items, d => d.commits || 0);
+        const pullRequests = sum(items, d => d.pullRequests || 0);
+        const issues = sum(items, d => d.issues || 0);
         
         return {
           category: repository,
@@ -54,7 +55,7 @@ export function BarChart({ data, filters, theme, realtimeData, expanded = false 
         'IssuesEvent': 'issues'
       };
 
-      const grouped = d3.group(filteredData, d => d.eventType);
+      const grouped = group(filteredData, d => d.eventType);
       
       aggregatedData = Array.from(grouped, ([eventType, items]) => {
         const count = items.length;
@@ -82,7 +83,7 @@ export function BarChart({ data, filters, theme, realtimeData, expanded = false 
     if (!containerRef.current || barData.length === 0) return;
 
     // Clear previous chart
-    d3.select(containerRef.current).selectAll("*").remove();
+    select(containerRef.current).selectAll("*").remove();
 
     const width = containerRef.current.clientWidth;
     const height = expanded ? 400 : 160;

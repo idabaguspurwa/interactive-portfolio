@@ -1,12 +1,15 @@
 "use client";
 
-import React, { useRef, useEffect, useState } from 'react';
+import React, { useRef, useEffect, useState, lazy, Suspense } from 'react';
 import { motion } from 'framer-motion';
-import * as Plot from "@observablehq/plot";
-import * as d3 from "d3";
 import { Activity } from 'lucide-react';
 
-export function TimeSeriesChart({ data, filters, theme, realtimeData, expanded = false }) {
+// Lazy load heavy charting libraries
+const LazyPlot = lazy(() => import("@observablehq/plot"));
+const LazyD3 = lazy(() => import("d3"));
+
+// Lazy chart renderer
+function TimeSeriesChartRenderer({ data, filters, theme, realtimeData, expanded = false }) {
   const containerRef = useRef(null);
   const [selectedData, setSelectedData] = useState(null);
   const [chartData, setChartData] = useState([]);
@@ -66,151 +69,165 @@ export function TimeSeriesChart({ data, filters, theme, realtimeData, expanded =
     }
   }, [realtimeData]);
 
-  // Create Observable Plot chart
+  // Create Observable Plot chart with dynamic imports
   useEffect(() => {
     if (!containerRef.current || chartData.length === 0) return;
     
-    const chartStartTime = performance.now();
+    const renderChart = async () => {
+      try {
+        const chartStartTime = performance.now();
+        
+        // Dynamically import the libraries
+        const [Plot, d3] = await Promise.all([
+          import("@observablehq/plot"),
+          import("d3")
+        ]);
 
-    // Clear previous chart
-    d3.select(containerRef.current).selectAll("*").remove();
+        // Clear previous chart
+        d3.select(containerRef.current).selectAll("*").remove();
 
-    const width = containerRef.current.clientWidth;
-    const height = expanded ? 600 : 200;
+        const width = containerRef.current.clientWidth;
+        const height = expanded ? 600 : 200;
 
-    // Group data by repository for multiple lines
-    const groupedData = d3.group(chartData, d => d.repository);
-    const repositories = Array.from(groupedData.keys());
+        // Group data by repository for multiple lines
+        const groupedData = d3.group(chartData, d => d.repository);
+        const repositories = Array.from(groupedData.keys());
 
-    const plot = Plot.plot({
-      width,
-      height,
-      style: {
-        backgroundColor: theme === 'dark' ? 'transparent' : 'transparent',
-        overflow: 'visible'
-      },
-      marginTop: 20,
-      marginRight: 40,
-      marginBottom: 40,
-      marginLeft: 60,
-      
-      // Color scale for repositories
-      color: {
-        type: "categorical",
-        domain: repositories,
-        range: theme === 'dark' 
-          ? ["#60A5FA", "#34D399", "#F472B6", "#FBBF24", "#A78BFA"]
-          : ["#3B82F6", "#10B981", "#EC4899", "#F59E0B", "#8B5CF6"]
-      },
+        const plot = Plot.plot({
+          width,
+          height,
+          style: {
+            backgroundColor: theme === 'dark' ? 'transparent' : 'transparent',
+            overflow: 'visible'
+          },
+          marginTop: 20,
+          marginRight: 40,
+          marginBottom: 40,
+          marginLeft: 60,
+          
+          // Color scale for repositories
+          color: {
+            type: "categorical",
+            domain: repositories,
+            range: theme === 'dark' 
+              ? ["#60A5FA", "#34D399", "#F472B6", "#FBBF24", "#A78BFA"]
+              : ["#3B82F6", "#10B981", "#EC4899", "#F59E0B", "#8B5CF6"]
+          },
 
-      // Grid and axes
-      grid: true,
-      x: {
-        type: "time",
-        label: "Date",
-        labelAnchor: "center",
-        tickFormat: expanded ? "%b %d" : "%m/%d",
-        ticks: expanded ? 8 : 4
-      },
-      y: {
-        label: "Activity Count",
-        labelAnchor: "center",
-        grid: true
-      },
+          // Grid and axes
+          grid: true,
+          x: {
+            type: "time",
+            label: "Date",
+            labelAnchor: "center",
+            tickFormat: expanded ? "%b %d" : "%m/%d",
+            ticks: expanded ? 8 : 4
+          },
+          y: {
+            label: "Activity Count",
+            labelAnchor: "center",
+            grid: true
+          },
 
-      marks: [
-        // Area charts for each repository (background)
-        ...repositories.map(repo => 
-          Plot.areaY(
-            Array.from(groupedData.get(repo)), 
-            {
+          marks: [
+            // Area charts for each repository (background)
+            ...repositories.map(repo => 
+              Plot.areaY(
+                Array.from(groupedData.get(repo)), 
+                {
+                  x: "date",
+                  y: "totalActivity",
+                  fill: repo,
+                  fillOpacity: 0.1,
+                  curve: "catmull-rom"
+                }
+              )
+            ),
+
+            // Line charts for each repository
+            ...repositories.map(repo => 
+              Plot.line(
+                Array.from(groupedData.get(repo)), 
+                {
+                  x: "date",
+                  y: "totalActivity",
+                  stroke: repo,
+                  strokeWidth: expanded ? 3 : 2,
+                  curve: "catmull-rom",
+                  marker: expanded ? "circle" : null,
+                  title: d => `${repo}\n${d.date.toLocaleDateString()}\nActivity: ${d.totalActivity}`
+                }
+              )
+            ),
+
+            // Interactive dots on hover
+            Plot.dot(chartData, {
               x: "date",
               y: "totalActivity",
-              fill: repo,
-              fillOpacity: 0.1,
-              curve: "catmull-rom"
-            }
-          )
-        ),
+              fill: "repository",
+              r: 4,
+              fillOpacity: 0,
+              stroke: "repository",
+              strokeWidth: 2,
+              title: d => `${d.repository}\n${d.date.toLocaleDateString()}\nCommits: ${d.commits}\nPRs: ${d.pullRequests}\nIssues: ${d.issues}`
+            }),
 
-        // Line charts for each repository
-        ...repositories.map(repo => 
-          Plot.line(
-            Array.from(groupedData.get(repo)), 
-            {
+            // Crosshair for interactivity
+            Plot.crosshair(chartData, {
               x: "date",
-              y: "totalActivity",
-              stroke: repo,
-              strokeWidth: expanded ? 3 : 2,
-              curve: "catmull-rom",
-              marker: expanded ? "circle" : null,
-              title: d => `${repo}\n${d.date.toLocaleDateString()}\nActivity: ${d.totalActivity}`
-            }
-          )
-        ),
+              y: "totalActivity"
+            })
+          ]
+        });
 
-        // Interactive dots on hover
-        Plot.dot(chartData, {
-          x: "date",
-          y: "totalActivity",
-          fill: "repository",
-          r: 4,
-          fillOpacity: 0,
-          stroke: "repository",
-          strokeWidth: 2,
-          title: d => `${d.repository}\n${d.date.toLocaleDateString()}\nCommits: ${d.commits}\nPRs: ${d.pullRequests}\nIssues: ${d.issues}`
-        }),
+        // Add click handling for drill-down (scoped to chart only)
+        plot.addEventListener('click', (event) => {
+          // Only handle clicks if they're specifically on chart elements, not navigation links
+          if (event.target.closest('a') || event.target.closest('nav') || event.target.closest('[data-navigation]')) {
+            return; // Let navigation links work normally
+          }
+          
+          // Prevent event from bubbling to avoid interfering with navigation
+          event.stopPropagation();
+          
+          // Find closest data point
+          const rect = containerRef.current.getBoundingClientRect();
+          const x = event.clientX - rect.left;
+          const y = event.clientY - rect.top;
+          
+          // Simple drill-down simulation
+          const clickedData = {
+            x: x / width,
+            y: y / height,
+            timestamp: new Date()
+          };
+          
+          setSelectedData(clickedData);
+        });
 
-        // Crosshair for interactivity
-        Plot.crosshair(chartData, {
-          x: "date",
-          y: "totalActivity"
-        })
-      ]
-    });
-
-    // Add click handling for drill-down (scoped to chart only)
-    plot.addEventListener('click', (event) => {
-      // Only handle clicks if they're specifically on chart elements, not navigation links
-      if (event.target.closest('a') || event.target.closest('nav') || event.target.closest('[data-navigation]')) {
-        return; // Let navigation links work normally
-      }
-      
-      // Prevent event from bubbling to avoid interfering with navigation
-      event.stopPropagation();
-      
-      // Find closest data point
-      const rect = containerRef.current.getBoundingClientRect();
-      const x = event.clientX - rect.left;
-      const y = event.clientY - rect.top;
-      
-      // Simple drill-down simulation
-      const clickedData = {
-        x: x / width,
-        y: y / height,
-        timestamp: new Date()
-      };
-      
-      setSelectedData(clickedData);
-    });
-
-    containerRef.current.appendChild(plot);
-    
-    // Track chart rendering performance
-    const chartEndTime = performance.now();
-    const renderTime = chartEndTime - chartStartTime;
-    
-    if (window.playgroundPerformance) {
-      window.playgroundPerformance.addOperation(`TimeSeriesChart Render`, renderTime);
-    }
-
-    return () => {
-      const container = containerRef.current;
-      if (container && plot.parentNode) {
-        plot.remove();
+        containerRef.current.appendChild(plot);
+        
+        // Track chart rendering performance
+        const chartEndTime = performance.now();
+        const renderTime = chartEndTime - chartStartTime;
+        
+        if (window.playgroundPerformance) {
+          window.playgroundPerformance.addOperation(`TimeSeriesChart Render`, renderTime);
+        }
+      } catch (error) {
+        console.warn('Chart rendering failed:', error);
       }
     };
-  }, [chartData, theme, expanded]);
+
+  renderChart();
+
+  return () => {
+    const container = containerRef.current;
+    if (container) {
+      container.innerHTML = '';
+    }
+  };
+}, [chartData, theme, expanded]);
 
   return (
     <div className="h-full relative">
@@ -316,5 +333,23 @@ export function TimeSeriesChart({ data, filters, theme, realtimeData, expanded =
         </div>
       )}
     </div>
+  );
+}
+
+// Main component with lazy loading
+export function TimeSeriesChart(props) {
+  return (
+    <Suspense fallback={
+      <div className="h-full flex items-center justify-center bg-gray-100 dark:bg-gray-800 rounded-lg animate-pulse">
+        <div className="text-center p-4">
+          <div className="w-8 h-8 mx-auto mb-2 bg-blue-500 rounded-full animate-spin">
+            <div className="w-6 h-6 bg-white rounded-full m-1"></div>
+          </div>
+          <p className="text-gray-600 dark:text-gray-400 text-xs">Loading chart...</p>
+        </div>
+      </div>
+    }>
+      <TimeSeriesChartRenderer {...props} />
+    </Suspense>
   );
 }
