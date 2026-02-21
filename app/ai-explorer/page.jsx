@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { motion } from 'framer-motion'
+import { motion } from 'motion/react'
 import { ArrowLeft, Sparkles, Database, Zap, Brain, BarChart3, Lightbulb } from 'lucide-react'
 import Link from 'next/link'
 import { AIDataExplorer } from '@/components/ai-data-explorer/AIDataExplorer'

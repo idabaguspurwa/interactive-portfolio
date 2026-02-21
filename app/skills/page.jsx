@@ -1,6 +1,6 @@
 'use client'
 
-import { motion } from 'framer-motion'
+import { motion } from 'motion/react'
 import { SafeCanvas } from '@/components/WebGLManager'
 import { OrbitControls, Float, Icosahedron, Octahedron, Dodecahedron, MeshDistortMaterial, Sphere, Box } from '@react-three/drei'
 import { 

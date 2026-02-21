@@ -1,6 +1,6 @@
 'use client'
 
-import { motion, useScroll, useTransform, useSpring } from 'framer-motion'
+import { motion, useScroll, useTransform, useSpring } from 'motion/react'
 import { useRef, useEffect, useState } from 'react'
 
 // Simple scroll progress bar - no conflicts with page transitions

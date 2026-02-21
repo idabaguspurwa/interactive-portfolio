@@ -1,6 +1,6 @@
 'use client'
 
-import { motion } from 'framer-motion'
+import { motion } from 'motion/react'
 import { ExternalLink, FileText, Users, Calendar } from 'lucide-react'
 import { Button } from '@/components/ui/Button'
 import { ScrollProgress, RevealOnScroll, StaggerContainer, StaggerItem } from '@/components/ScrollAnimations'
