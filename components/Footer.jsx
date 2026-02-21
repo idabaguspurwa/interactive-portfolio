@@ -19,6 +19,7 @@ const COLORS = {
 
 const footerLinks = [
   { name: 'Home', href: '/' },
+  { name: 'About', href: '/about' },
 ]
 
 const socials = [

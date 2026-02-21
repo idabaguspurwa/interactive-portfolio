@@ -1,475 +1,1122 @@
 'use client'
 
-import { motion } from 'motion/react'
-import { SafeCanvas } from '@/components/WebGLManager'
-import { OrbitControls, Float, Sphere, Box, Text3D, Environment } from '@react-three/drei'
-import { Code, Database, Cloud, Brain, Users, Zap, Award, Target, Coffee, BookOpen, Lightbulb } from 'lucide-react'
-import { ScrollProgress, RevealOnScroll, StaggerContainer, StaggerItem } from '@/components/ScrollAnimations'
-import { useRef, Suspense } from 'react'
-import { useFrame } from '@react-three/fiber'
+import { useEffect, useRef, useState } from 'react'
+import { motion, useInView } from 'motion/react'
+import Link from 'next/link'
 import { useTheme } from '@/components/ThemeProvider'
+import {
+  ArrowRight,
+  ArrowUpRight,
+  Briefcase,
+  CalendarDays,
+  Cloud,
+  Code,
+  Cpu,
+  Database,
+  Github,
+  GraduationCap,
+  Layers,
+  Linkedin,
+  Mail,
+  MapPin,
+  Star,
+  Target,
+  Terminal,
+  Zap,
+} from 'lucide-react'
 
-function DataVisualization3D() {
-  const groupRef = useRef()
-  const { theme } = useTheme()
-  
-  useFrame((state) => {
-    if (groupRef.current) {
-      groupRef.current.rotation.y = state.clock.elapsedTime * 0.2
-      groupRef.current.rotation.x = Math.sin(state.clock.elapsedTime * 0.3) * 0.1
-    }
-  })
+/* eslint-disable @next/next/no-page-custom-font */
 
-  // Create data nodes representing different aspects of data engineering
-  const dataNodes = [
-    { position: [0, 2, 0], color: '#4B7BEC', scale: 0.8 },
-    { position: [-2, 0, 0], color: '#FF6F61', scale: 0.6 },
-    { position: [2, 0, 0], color: '#28A745', scale: 0.7 },
-    { position: [0, -1.5, 1], color: '#FFA500', scale: 0.5 },
-    { position: [-1, 1, -1], color: '#9966CC', scale: 0.6 },
-    { position: [1, -0.5, -1], color: '#20B2AA', scale: 0.5 },
-  ]
+const COLORS = {
+  yellow: '#ffe14d',
+  coral: '#ff5757',
+  blue: '#3d5afe',
+  lime: '#c6ff00',
+  mint: '#98ffc8',
+  lavender: '#c3b1e1',
+  peach: '#ffc9a9',
+}
+
+const MARQUEE_TEXT = 'ABOUT PAGE \u2605 SYSTEM THINKER \u2605 DATA ENGINEER \u2605 BUILDER \u2605 '
+
+const PRINCIPLES = [
+  {
+    title: 'Reliability First',
+    description: 'Pipelines are only useful when teams can trust them every morning.',
+    icon: Database,
+    color: COLORS.yellow,
+  },
+  {
+    title: 'Cloud With Purpose',
+    description: 'I only add tools that solve a real bottleneck, not trends.',
+    icon: Cloud,
+    color: COLORS.blue,
+    textColor: '#fff',
+  },
+  {
+    title: 'Automate Repetition',
+    description: 'If a task happens twice, it should be codified and monitored.',
+    icon: Zap,
+    color: COLORS.lime,
+  },
+]
+
+const JOURNEY = [
+  {
+    year: '2025 - NOW',
+    role: 'Data Engineer',
+    company: 'Inatax Jakarta',
+    description:
+      'Building and maintaining production data pipelines using Airflow, Docker, Python, and SQL for cloud and on-prem workflows.',
+    icon: Briefcase,
+    color: COLORS.yellow,
+  },
+  {
+    year: '2024 - 2025',
+    role: 'Business Analyst Intern',
+    company: 'PT Bank Central Asia Tbk',
+    description:
+      'Partnered with stakeholders to translate business needs into measurable process improvements and data-backed decisions.',
+    icon: Target,
+    color: COLORS.blue,
+    textColor: '#fff',
+  },
+  {
+    year: '2021 - 2025',
+    role: 'B.Sc. Computer Science',
+    company: 'Bina Nusantara University',
+    description:
+      'Graduated Magna Cum Laude while sharpening foundations in software engineering, databases, and systems thinking.',
+    icon: GraduationCap,
+    color: COLORS.lime,
+  },
+]
+
+const NOW_BUILDING = [
+  { label: 'dbt + Snowflake', color: COLORS.mint, rotation: -2, icon: Layers },
+  { label: 'Spark Streaming', color: COLORS.coral, rotation: 2, icon: Cpu },
+  { label: 'Terraform IaC', color: COLORS.lavender, rotation: -1, icon: Terminal },
+  { label: 'Kafka Events', color: COLORS.peach, rotation: 1, icon: Code },
+]
+
+function BrutalSection({ children, className = '', delay = 0 }) {
+  const ref = useRef(null)
+  const isInView = useInView(ref, { once: true, margin: '-90px' })
 
   return (
-    <group ref={groupRef}>
-      {dataNodes.map((node, index) => (
-        <Float 
-          key={index}
-          speed={2 + index * 0.2} 
-          rotationIntensity={0.3} 
-          floatIntensity={0.8}
-        >
-          <Sphere position={node.position} scale={node.scale}>
-            <meshStandardMaterial 
-              color={node.color}
-              transparent
-              opacity={0.8}
-              emissive={node.color}
-              emissiveIntensity={0.2}
-            />
-          </Sphere>
-        </Float>
-      ))}
-      
-      {/* Connecting lines effect with boxes */}
-      <Float speed={1} rotationIntensity={0.1}>
-        <Box position={[0, 0, 0]} scale={[3, 0.1, 0.1]}>
-          <meshStandardMaterial 
-            color={theme === 'dark' ? '#50A6FF' : '#4B7BEC'}
-            transparent
-            opacity={0.3}
-          />
-        </Box>
-      </Float>
-      
-      <Float speed={1.2} rotationIntensity={0.1}>
-        <Box position={[0, 0, 0]} scale={[0.1, 3, 0.1]} rotation={[0, 0, Math.PI / 2]}>
-          <meshStandardMaterial 
-            color={theme === 'dark' ? '#FF8A5C' : '#FF6F61'}
-            transparent
-            opacity={0.3}
-          />
-        </Box>
-      </Float>
-    </group>
+    <motion.div
+      ref={ref}
+      initial={{ opacity: 0, y: 42 }}
+      animate={isInView ? { opacity: 1, y: 0 } : { opacity: 0, y: 42 }}
+      transition={{ duration: 0.55, delay, ease: [0.22, 1, 0.36, 1] }}
+      className={className}
+    >
+      {children}
+    </motion.div>
+  )
+}
+
+function FocusSticker({ item, index }) {
+  const Icon = item.icon
+
+  return (
+    <motion.div
+      initial={{ opacity: 0, scale: 0.7, rotate: item.rotation * 2 }}
+      whileInView={{ opacity: 1, scale: 1, rotate: item.rotation }}
+      viewport={{ once: true }}
+      transition={{ duration: 0.35, delay: index * 0.05 }}
+      whileHover={{
+        scale: 1.12,
+        rotate: 0,
+        zIndex: 15,
+        transition: { duration: 0.16 },
+      }}
+      style={{
+        background: item.color,
+        border: '3px solid #1a1a1a',
+        boxShadow: '4px 4px 0px #1a1a1a',
+        width: '160px',
+        minHeight: '110px',
+        padding: '14px 12px',
+        display: 'flex',
+        flexDirection: 'column',
+        alignItems: 'center',
+        justifyContent: 'center',
+        gap: '8px',
+        transform: `rotate(${item.rotation}deg)`,
+      }}
+    >
+      <Icon size={24} strokeWidth={2.5} color="#1a1a1a" />
+      <span
+        style={{
+          fontFamily: "'Space Mono', monospace",
+          fontWeight: 700,
+          fontSize: '12px',
+          lineHeight: 1.2,
+          textAlign: 'center',
+          color: '#1a1a1a',
+        }}
+      >
+        {item.label}
+      </span>
+    </motion.div>
   )
 }
 
 export default function AboutPage() {
+  const [mounted, setMounted] = useState(false)
   const { theme } = useTheme()
-  
-  const skills = [
-    { icon: Database, title: 'ETL & Data Pipelines', description: 'Apache Spark, Apache Airflow, Azure Data Factory, real-time data processing', color: 'from-blue-500 to-cyan-500' },
-    { icon: Cloud, title: 'Cloud Architecture', description: 'Azure, GCP, AWS, Terraform, Kubernetes, serverless computing', color: 'from-purple-500 to-pink-500' },
-    { icon: Code, title: 'Programming & Development', description: 'Python, SQL, Scala, PySpark, Apache Kafka, REST APIs', color: 'from-green-500 to-emerald-500' },
-    { icon: Brain, title: 'Analytics & BI', description: 'Looker Studio, Power BI, Tableau, BigQuery, advanced analytics', color: 'from-orange-500 to-red-500' },
-    { icon: Zap, title: 'DevOps & Infrastructure', description: 'Docker, CI/CD, Git, monitoring, performance optimization', color: 'from-indigo-500 to-purple-500' },
-    { icon: Users, title: 'Business Intelligence', description: 'Stakeholder analysis, requirements gathering, data strategy', color: 'from-pink-500 to-rose-500' },
-  ]
+  const isDark = theme === 'dark'
 
-  const journey = [
-    {
-      year: '2021-2025',
-      title: 'Bachelor of Computer Science',
-      company: 'Bina Nusantara University',
-      description: 'Graduated Magna Cum Laude with GPA 3.62/4.00.',
-      icon: BookOpen,
-      type: 'education'
-    },
-    {
-      year: '2024-2025',
-      title: 'Business Analyst Intern',
-      company: 'PT Bank Central Asia Tbk',
-      description: 'Optimized operational processes achieving 20% efficiency improvement. Led stakeholder interviews and business requirements analysis.',
-      icon: Target,
-      type: 'work'
-    },
-    {
-      year: '2022-2024',
-      title: 'HIMTI Relation Expansion Commission Activist',
-      company: 'BINUS University',
-      description: 'Enhanced leadership and communication skills through active participation in technology student community events.',
-      icon: Users,
-      type: 'experience'
-    }
-  ]
+  const pageBg = isDark ? '#0f0f0f' : '#fffdf7'
+  const pageText = isDark ? '#fffdf7' : '#1a1a1a'
+  const cardBg = isDark ? '#1e1e1e' : '#ffffff'
+  const borderColor = isDark ? '#fffdf7' : '#1a1a1a'
+  const shadowColor = isDark ? '#000000' : '#1a1a1a'
+  const stripBg = isDark ? '#1e1e1e' : '#1a1a1a'
 
-  const values = [
-    {
-      icon: Coffee,
-      title: 'Continuous Learning',
-      description: 'Always exploring new technologies and best practices in the rapidly evolving data landscape.'
-    },
-    {
-      icon: Award,
-      title: 'Excellence in Delivery',
-      description: 'Committed to delivering high-quality, scalable solutions that exceed expectations.'
-    },
-    {
-      icon: Users,
-      title: 'Collaborative Approach',
-      description: 'Strong believer in team collaboration and knowledge sharing to achieve common goals.'
-    }
-  ]
+  useEffect(() => {
+    setMounted(true)
+  }, [])
+
+  if (!mounted) return null
 
   return (
     <>
-      <ScrollProgress />
-      <div className="pt-16">
-        {/* Hero Section */}
-        <section className="py-20 px-6">
-          <div className="max-w-7xl mx-auto">
-            <div className="grid lg:grid-cols-12 gap-12 items-center">
-              <div className="lg:col-span-7">
-                <RevealOnScroll direction="left">
-                  <div className="mb-6">
-                    <span className="bg-gradient-to-r from-primary-light to-accent-light dark:from-primary-dark dark:to-accent-dark bg-clip-text text-transparent text-lg font-semibold">
-                      Get to know me
-                    </span>
+      {/* eslint-disable-next-line @next/next/no-page-custom-font */}
+      <link
+        href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=Work+Sans:wght@300;400;500;600;700;800&display=swap"
+        rel="stylesheet"
+      />
+
+      <style jsx global>{`
+        @keyframes marquee-scroll {
+          0% { transform: translateX(0); }
+          100% { transform: translateX(-50%); }
+        }
+        @keyframes blink-cursor {
+          0%, 100% { opacity: 1; }
+          50% { opacity: 0; }
+        }
+        .marquee-track {
+          animation: marquee-scroll 21s linear infinite;
+        }
+        .marquee-track:hover {
+          animation-play-state: paused;
+        }
+        .about-link {
+          transition: all 0.14s ease;
+        }
+        .about-link:hover {
+          transform: translate(-2px, -2px);
+          box-shadow: 6px 6px 0px #1a1a1a !important;
+          background: #1a1a1a !important;
+          color: #ffe14d !important;
+        }
+        .dark .about-link:hover {
+          box-shadow: 6px 6px 0px #000 !important;
+          background: #fffdf7 !important;
+          color: #1a1a1a !important;
+        }
+        .about-card {
+          transition: all 0.16s ease;
+        }
+        .about-card:hover {
+          transform: translate(-3px, -3px) !important;
+          box-shadow: 7px 7px 0px #1a1a1a !important;
+        }
+        .dark .about-card:hover {
+          box-shadow: 7px 7px 0px #000 !important;
+        }
+        .dot-overlay {
+          background-image: radial-gradient(circle, #1a1a1a 1px, transparent 1px);
+          background-size: 24px 24px;
+          opacity: 0.06;
+        }
+        .dark .dot-overlay {
+          background-image: radial-gradient(circle, #fffdf7 1px, transparent 1px);
+          opacity: 0.03;
+        }
+        .cursor-blink {
+          animation: blink-cursor 1s step-end infinite;
+        }
+      `}</style>
+
+      <div
+        style={{
+          background: pageBg,
+          color: pageText,
+          minHeight: '100vh',
+          fontFamily: "'Work Sans', sans-serif",
+          position: 'relative',
+          overflow: 'hidden',
+          transition: 'background 0.3s ease, color 0.3s ease',
+        }}
+        className="pt-16"
+      >
+        <div
+          className="dot-overlay"
+          style={{
+            position: 'fixed',
+            inset: 0,
+            pointerEvents: 'none',
+            zIndex: 1,
+          }}
+        />
+
+        <div
+          style={{
+            background: stripBg,
+            borderBottom: `4px solid ${COLORS.yellow}`,
+            overflow: 'hidden',
+            padding: '10px 0',
+            position: 'relative',
+            zIndex: 10,
+          }}
+        >
+          <div style={{ display: 'flex', width: 'max-content' }} className="marquee-track">
+            {[...Array(8)].map((_, i) => (
+              <span
+                key={i}
+                style={{
+                  fontFamily: "'Space Mono', monospace",
+                  fontWeight: 700,
+                  fontSize: '14px',
+                  color: COLORS.yellow,
+                  whiteSpace: 'nowrap',
+                  letterSpacing: '3px',
+                  textTransform: 'uppercase',
+                  paddingRight: '18px',
+                }}
+              >
+                {MARQUEE_TEXT}
+              </span>
+            ))}
+          </div>
+        </div>
+
+        <div
+          style={{
+            maxWidth: '1200px',
+            margin: '0 auto',
+            padding: '0 20px',
+            position: 'relative',
+            zIndex: 5,
+          }}
+        >
+          <section style={{ padding: '60px 0 46px', position: 'relative' }}>
+            <div
+              style={{
+                position: 'absolute',
+                top: '-32px',
+                right: '-12px',
+                fontFamily: "'Space Mono', monospace",
+                fontWeight: 700,
+                fontSize: 'clamp(96px, 17vw, 220px)',
+                letterSpacing: '-6px',
+                lineHeight: 1,
+                color: pageText,
+                opacity: isDark ? 0.06 : 0.04,
+                pointerEvents: 'none',
+                userSelect: 'none',
+              }}
+            >
+              02
+            </div>
+
+            <div
+              style={{
+                display: 'grid',
+                gridTemplateColumns: '1fr',
+                gap: '32px',
+                position: 'relative',
+                zIndex: 2,
+              }}
+              className="md:!grid-cols-[1.08fr_0.92fr]"
+            >
+              <BrutalSection>
+                <div>
+                  <div
+                    style={{
+                      display: 'inline-flex',
+                      alignItems: 'center',
+                      gap: '6px',
+                      background: COLORS.coral,
+                      border: '3px solid #1a1a1a',
+                      padding: '6px 12px',
+                      fontFamily: "'Space Mono', monospace",
+                      fontWeight: 700,
+                      fontSize: '12px',
+                      color: '#1a1a1a',
+                      letterSpacing: '1px',
+                      textTransform: 'uppercase',
+                      boxShadow: '3px 3px 0px #1a1a1a',
+                      marginBottom: '20px',
+                    }}
+                  >
+                    <MapPin size={14} strokeWidth={3} color="#1a1a1a" />
+                    ABOUT / PROFILE
                   </div>
-                  
-                  <h1 className="text-4xl md:text-6xl lg:text-7xl font-heading font-bold mb-8 leading-tight">
-                    <span className="block text-gray-900 dark:text-white">Transforming</span>
-                    <span className="block bg-gradient-to-r from-primary-light via-blue-600 to-accent-light dark:from-primary-dark dark:via-blue-400 dark:to-accent-dark bg-clip-text text-transparent">
-                      Data into Insights
+
+                  <h1
+                    style={{
+                      fontFamily: "'Space Mono', monospace",
+                      fontWeight: 700,
+                      fontSize: 'clamp(34px, 6.5vw, 66px)',
+                      lineHeight: 0.98,
+                      letterSpacing: '-2px',
+                      marginBottom: '20px',
+                    }}
+                  >
+                    <span style={{ display: 'block' }}>I BUILD DATA</span>
+                    <span style={{ display: 'block' }}>
+                      SYSTEMS THAT
+                      <span
+                        style={{
+                          display: 'inline-block',
+                          marginLeft: '10px',
+                          background: COLORS.yellow,
+                          color: '#1a1a1a',
+                          border: '3px solid #1a1a1a',
+                          padding: '0 8px',
+                          transform: 'rotate(1deg)',
+                        }}
+                      >
+                        LAST
+                      </span>
                     </span>
                   </h1>
-                  
-                  <div className="space-y-6 text-lg text-gray-600 dark:text-gray-300 leading-relaxed">
-                    <p>
-                      I&apos;m a passionate <strong className="text-primary-light dark:text-primary-dark">Data Engineer</strong> and 
-                      <strong className="text-primary-light dark:text-primary-dark"> Business Intelligence Specialist</strong> with 
-                      a proven track record of building robust, scalable data solutions that drive business growth.
-                    </p>
-                    
-                    <p>
-                      My expertise spans the entire data ecosystem - from real-time ingestion with 
-                      <strong className="text-accent-light dark:text-accent-dark"> Apache Kafka</strong> and 
-                      <strong className="text-accent-light dark:text-accent-dark"> Apache Spark</strong> to orchestrating 
-                      complex ETL pipelines with <strong className="text-accent-light dark:text-accent-dark">Apache Airflow</strong>. 
-                      I specialize in cloud-native architectures across Azure, GCP, and AWS.
-                    </p>
-                    
-                    <p>
-                      Currently completing my Computer Science degree at 
-                      <strong className="text-primary-light dark:text-primary-dark"> Bina Nusantara University</strong> with 
-                      Magna Cum Laude honors, while gaining real-world experience as a Business Analyst Intern at 
-                      <strong className="text-primary-light dark:text-primary-dark"> Bank Central Asia</strong>.
-                    </p>
-                  </div>
-                </RevealOnScroll>
-              </div>
 
-              <div className="lg:col-span-5">
-                <RevealOnScroll direction="right" delay={0.2}>
-                  <div className="h-96 relative rounded-2xl overflow-hidden bg-gradient-to-br from-blue-50 to-indigo-100 dark:from-gray-800 dark:to-gray-700">
-                    <SafeCanvas camera={{ position: [0, 0, 6], fov: 60 }}>
-                      <Suspense fallback={null}>
-                        <ambientLight intensity={0.4} />
-                        <directionalLight position={[10, 10, 5]} intensity={0.6} />
-                        <Environment preset="sunset" background={false} />
-                        <DataVisualization3D />
-                        <OrbitControls 
-                          enableZoom={false} 
-                          enablePan={false} 
-                          autoRotate 
-                          autoRotateSpeed={0.5}
-                        />
-                      </Suspense>
-                    </SafeCanvas>
+                  <div
+                    style={{
+                      display: 'flex',
+                      flexWrap: 'wrap',
+                      gap: '8px',
+                      marginBottom: '18px',
+                    }}
+                  >
+                    {[
+                      { label: 'DATA ENGINEER', color: COLORS.lime },
+                      { label: 'PIPELINE BUILDER', color: COLORS.blue, textColor: '#fff' },
+                      { label: 'PROBLEM SOLVER', color: COLORS.peach },
+                    ].map((chip) => (
+                      <div
+                        key={chip.label}
+                        style={{
+                          background: chip.color,
+                          color: chip.textColor || '#1a1a1a',
+                          border: '3px solid #1a1a1a',
+                          boxShadow: '3px 3px 0px #1a1a1a',
+                          padding: '6px 12px',
+                          fontFamily: "'Space Mono', monospace",
+                          fontWeight: 700,
+                          fontSize: '12px',
+                          letterSpacing: '1px',
+                        }}
+                      >
+                        {chip.label}
+                      </div>
+                    ))}
                   </div>
-                </RevealOnScroll>
+
+                  <p
+                    style={{
+                      fontSize: '17px',
+                      lineHeight: 1.75,
+                      opacity: 0.92,
+                      maxWidth: '640px',
+                      marginBottom: '14px',
+                    }}
+                  >
+                    I focus on turning raw operational data into dependable products that teams can
+                    act on. My day-to-day work sits at the intersection of data engineering,
+                    architecture, and delivery.
+                  </p>
+
+                  <p
+                    style={{
+                      fontSize: '16px',
+                      lineHeight: 1.7,
+                      opacity: 0.78,
+                      maxWidth: '610px',
+                      marginBottom: '24px',
+                    }}
+                  >
+                    The goal is simple: move from fragile scripts to stable systems. That means clean
+                    ingestion, orchestration discipline, observability, and practical cloud choices.
+                  </p>
+
+                  <div style={{ display: 'flex', flexWrap: 'wrap', gap: '10px' }}>
+                    <Link
+                      href="/projects"
+                      className="about-link"
+                      style={{
+                        display: 'inline-flex',
+                        alignItems: 'center',
+                        gap: '8px',
+                        background: cardBg,
+                        color: pageText,
+                        border: `3px solid ${borderColor}`,
+                        boxShadow: `4px 4px 0px ${shadowColor}`,
+                        padding: '10px 18px',
+                        fontFamily: "'Space Mono', monospace",
+                        fontWeight: 700,
+                        fontSize: '13px',
+                        textDecoration: 'none',
+                        letterSpacing: '1px',
+                      }}
+                    >
+                      VIEW PROJECTS
+                      <ArrowUpRight size={14} strokeWidth={3} />
+                    </Link>
+
+                    <Link
+                      href="/contact"
+                      className="about-link"
+                      style={{
+                        display: 'inline-flex',
+                        alignItems: 'center',
+                        gap: '8px',
+                        background: COLORS.yellow,
+                        color: '#1a1a1a',
+                        border: '3px solid #1a1a1a',
+                        boxShadow: '4px 4px 0px #1a1a1a',
+                        padding: '10px 18px',
+                        fontFamily: "'Space Mono', monospace",
+                        fontWeight: 700,
+                        fontSize: '13px',
+                        textDecoration: 'none',
+                        letterSpacing: '1px',
+                      }}
+                    >
+                      LET&apos;S CONNECT
+                      <ArrowRight size={14} strokeWidth={3} />
+                    </Link>
+                  </div>
+                </div>
+              </BrutalSection>
+
+              <BrutalSection delay={0.2}>
+                <div style={{ display: 'grid', gap: '14px' }}>
+                  <motion.div
+                    whileHover={{ rotate: 0, scale: 1.02 }}
+                    style={{
+                      background: cardBg,
+                      border: `4px solid ${borderColor}`,
+                      boxShadow: `6px 6px 0px ${shadowColor}`,
+                      transform: 'rotate(1.3deg)',
+                      overflow: 'hidden',
+                    }}
+                  >
+                    <div
+                      style={{
+                        background: '#1a1a1a',
+                        color: COLORS.yellow,
+                        padding: '10px 14px',
+                        fontFamily: "'Space Mono', monospace",
+                        fontWeight: 700,
+                        fontSize: '12px',
+                        letterSpacing: '1px',
+                      }}
+                    >
+                      DATA_SNAPSHOT.JSON
+                    </div>
+                    <div
+                      style={{
+                        padding: '14px',
+                        display: 'grid',
+                        gap: '12px',
+                      }}
+                    >
+                      <div
+                        style={{
+                          display: 'grid',
+                          gridTemplateColumns: '1fr 1fr',
+                          gap: '8px',
+                        }}
+                      >
+                        {[
+                          { value: '2+', label: 'YEARS EXP' },
+                          { value: '3', label: 'CORE ROLES' },
+                          { value: '7 mos', label: 'INATAX TENURE' },
+                          { value: 'FEB 2026', label: 'FULL-TIME START' },
+                        ].map((item) => (
+                          <div
+                            key={item.label}
+                            style={{
+                              border: `2px solid ${borderColor}`,
+                              padding: '8px',
+                              background: isDark ? '#232323' : '#fffdf7',
+                              boxShadow: `2px 2px 0px ${shadowColor}`,
+                            }}
+                          >
+                            <div
+                              style={{
+                                fontFamily: "'Space Mono', monospace",
+                                fontWeight: 700,
+                                fontSize: '13px',
+                                lineHeight: 1.2,
+                              }}
+                            >
+                              {item.value}
+                            </div>
+                            <div
+                              style={{
+                                fontFamily: "'Space Mono', monospace",
+                                fontWeight: 700,
+                                fontSize: '10px',
+                                letterSpacing: '0.6px',
+                                opacity: 0.6,
+                                marginTop: '4px',
+                              }}
+                            >
+                              {item.label}
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+
+                      <div
+                        style={{
+                          border: `3px solid ${borderColor}`,
+                          boxShadow: `3px 3px 0px ${shadowColor}`,
+                          padding: '10px',
+                          fontFamily: "'Space Mono', monospace",
+                          fontSize: '11px',
+                          lineHeight: 1.55,
+                        }}
+                      >
+                        <div style={{ marginBottom: '8px' }}>
+                          <Briefcase size={12} style={{ display: 'inline', marginRight: '6px' }} />
+                          INATAX JAKARTA
+                        </div>
+                        <div style={{ opacity: 0.75, marginBottom: '4px' }}>
+                          Data Engineer (Full-time) | Feb 2026 - Present
+                        </div>
+                        <div style={{ opacity: 0.75, marginBottom: '10px' }}>
+                          Data Engineer (Contract) | Aug 2025 - Feb 2026
+                        </div>
+                        <div style={{ marginBottom: '8px' }}>
+                          <Target size={12} style={{ display: 'inline', marginRight: '6px' }} />
+                          PT BANK CENTRAL ASIA TBK
+                        </div>
+                        <div style={{ opacity: 0.75 }}>
+                          Business Analyst Intern | Feb 2024 - Feb 2025
+                        </div>
+                      </div>
+
+                      <div
+                        style={{
+                          display: 'flex',
+                          flexWrap: 'wrap',
+                          gap: '8px',
+                          fontFamily: "'Space Mono', monospace",
+                          fontSize: '10px',
+                          fontWeight: 700,
+                          letterSpacing: '0.8px',
+                        }}
+                      >
+                        {[
+                          { label: 'PYTHON', color: COLORS.yellow },
+                          { label: 'SQL', color: COLORS.lime },
+                          { label: 'AIRFLOW', color: COLORS.mint },
+                          { label: 'DATA ENGINEERING', color: COLORS.peach },
+                        ].map((skill) => (
+                          <span
+                            key={skill.label}
+                            style={{
+                              background: skill.color,
+                              color: '#1a1a1a',
+                              border: '2px solid #1a1a1a',
+                              boxShadow: '2px 2px 0px #1a1a1a',
+                              padding: '4px 8px',
+                            }}
+                          >
+                            {skill.label}
+                          </span>
+                        ))}
+                      </div>
+                    </div>
+                  </motion.div>
+
+                  <div
+                    style={{
+                      display: 'flex',
+                      gap: '10px',
+                      flexWrap: 'wrap',
+                    }}
+                  >
+                    {[
+                      {
+                        label: 'GITHUB',
+                        href: 'https://github.com/idabaguspurwa',
+                        icon: Github,
+                      },
+                      {
+                        label: 'LINKEDIN',
+                        href: 'https://linkedin.com/in/idabaguspurwa',
+                        icon: Linkedin,
+                      },
+                      {
+                        label: 'EMAIL',
+                        href: 'mailto:ida.adiputra@outlook.com',
+                        icon: Mail,
+                      },
+                    ].map((item) => (
+                      <a
+                        key={item.label}
+                        href={item.href}
+                        target={item.label === 'EMAIL' ? undefined : '_blank'}
+                        rel={item.label === 'EMAIL' ? undefined : 'noopener noreferrer'}
+                        className="about-link"
+                        style={{
+                          display: 'inline-flex',
+                          alignItems: 'center',
+                          gap: '7px',
+                          background: cardBg,
+                          color: pageText,
+                          border: `3px solid ${borderColor}`,
+                          boxShadow: `4px 4px 0px ${shadowColor}`,
+                          padding: '8px 12px',
+                          fontFamily: "'Space Mono', monospace",
+                          fontWeight: 700,
+                          fontSize: '11px',
+                          textDecoration: 'none',
+                          letterSpacing: '1px',
+                        }}
+                      >
+                        <item.icon size={13} strokeWidth={2.8} />
+                        {item.label}
+                      </a>
+                    ))}
+                  </div>
+                </div>
+              </BrutalSection>
+            </div>
+          </section>
+
+          <div
+            style={{
+              borderTop: `4px solid ${borderColor}`,
+              borderBottom: `4px solid ${borderColor}`,
+              padding: '8px 0',
+              margin: '2px 0 52px',
+              display: 'flex',
+              justifyContent: 'space-between',
+            }}
+          >
+            {[...Array(20)].map((_, i) => (
+              <Star key={i} size={12} fill={pageText} color={pageText} style={{ opacity: 0.3 }} />
+            ))}
+          </div>
+
+          <section style={{ position: 'relative', marginBottom: '68px' }}>
+            <BrutalSection>
+              <div
+                style={{
+                  display: 'inline-block',
+                  background: COLORS.blue,
+                  color: '#fff',
+                  border: '3px solid #1a1a1a',
+                  boxShadow: '3px 3px 0px #1a1a1a',
+                  padding: '6px 16px',
+                  fontFamily: "'Space Mono', monospace",
+                  fontWeight: 700,
+                  fontSize: '14px',
+                  letterSpacing: '2px',
+                  marginBottom: '12px',
+                  transform: 'rotate(1deg)',
+                }}
+              >
+                OPERATING_MANUAL
               </div>
+            </BrutalSection>
+
+            <BrutalSection delay={0.06}>
+              <div
+                className="about-card"
+                style={{
+                  background: cardBg,
+                  border: `4px solid ${borderColor}`,
+                  boxShadow: `5px 5px 0px ${shadowColor}`,
+                  overflow: 'hidden',
+                }}
+              >
+                <div
+                  style={{
+                    background: '#1a1a1a',
+                    color: COLORS.lime,
+                    fontFamily: "'Space Mono', monospace",
+                    fontWeight: 700,
+                    fontSize: '13px',
+                    padding: '10px 16px',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'space-between',
+                    letterSpacing: '1px',
+                  }}
+                >
+                  <span>
+                    <Terminal size={14} style={{ display: 'inline', marginRight: '8px', verticalAlign: 'middle' }} />
+                    about.md
+                  </span>
+                  <span style={{ opacity: 0.55 }}>- STABLE VERSION -</span>
+                </div>
+
+                <div
+                  style={{
+                    padding: '24px',
+                    fontFamily: "'Space Mono', monospace",
+                    fontSize: '13px',
+                    lineHeight: 1.82,
+                  }}
+                >
+                  <p style={{ opacity: 0.45, marginBottom: '6px' }}>{'// philosophy'}</p>
+                  <p style={{ marginBottom: '14px' }}>
+                    I enjoy solving messy operational problems with clean technical systems. The
+                    best outcome is invisible reliability where teams stop worrying about the
+                    pipeline and focus on decisions.
+                  </p>
+
+                  <p style={{ opacity: 0.45, marginBottom: '6px' }}>{'// approach'}</p>
+                  <p style={{ marginBottom: '14px' }}>
+                    My workflow usually starts with mapping bottlenecks, then designing a delivery
+                    path with clear ownership, observability, and rollback strategy from day one.
+                  </p>
+
+                  <p style={{ opacity: 0.45, marginBottom: '6px' }}>{'// stack'}</p>
+                  <p style={{ marginBottom: '14px' }}>
+                    <span style={{ background: COLORS.yellow, color: '#1a1a1a', padding: '0 4px', border: '1px solid #1a1a1a' }}>
+                      Python + SQL
+                    </span>
+                    {' '}for core processing,
+                    <span style={{ background: COLORS.mint, color: '#1a1a1a', padding: '0 4px', border: '1px solid #1a1a1a' }}>
+                      {' '}Airflow
+                    </span>
+                    {' '}for orchestration, and
+                    <span style={{ background: COLORS.lavender, color: '#1a1a1a', padding: '0 4px', border: '1px solid #1a1a1a' }}>
+                      {' '}cloud services
+                    </span>
+                    {' '}when scaling and resilience become priorities.
+                  </p>
+
+                  <p style={{ opacity: 0.45, marginBottom: '6px' }}>{'// current mindset'}</p>
+                  <p>
+                    Build fewer things. Build stronger things.
+                    <span className="cursor-blink" style={{ marginLeft: '4px' }}>
+                      _
+                    </span>
+                  </p>
+                </div>
+              </div>
+            </BrutalSection>
+          </section>
+
+          <section style={{ position: 'relative', marginBottom: '68px' }}>
+            <BrutalSection>
+              <div
+                style={{
+                  display: 'inline-block',
+                  background: COLORS.coral,
+                  border: '3px solid #1a1a1a',
+                  boxShadow: '3px 3px 0px #1a1a1a',
+                  padding: '6px 16px',
+                  fontFamily: "'Space Mono', monospace",
+                  fontWeight: 700,
+                  fontSize: '14px',
+                  letterSpacing: '2px',
+                  marginBottom: '10px',
+                  transform: 'rotate(-1deg)',
+                  color: '#1a1a1a',
+                }}
+              >
+                JOURNEY.LOG
+              </div>
+            </BrutalSection>
+
+            <BrutalSection delay={0.08}>
+              <h2
+                style={{
+                  fontFamily: "'Space Mono', monospace",
+                  fontWeight: 700,
+                  fontSize: 'clamp(28px, 5vw, 46px)',
+                  letterSpacing: '-1px',
+                  lineHeight: 1.1,
+                  marginBottom: '24px',
+                }}
+              >
+                Timeline Of Work And Learning
+              </h2>
+            </BrutalSection>
+
+            <div style={{ display: 'grid', gap: '14px' }}>
+              {JOURNEY.map((item, index) => (
+                <BrutalSection key={item.role} delay={0.1 + index * 0.05}>
+                  <div
+                    className="about-card md:!grid-cols-[220px_1fr]"
+                    style={{
+                      background: cardBg,
+                      border: `4px solid ${borderColor}`,
+                      boxShadow: `5px 5px 0px ${shadowColor}`,
+                      display: 'grid',
+                      gridTemplateColumns: '1fr',
+                    }}
+                  >
+                    <div
+                      style={{
+                        background: item.color,
+                        color: item.textColor || '#1a1a1a',
+                        borderBottom: '4px solid #1a1a1a',
+                        padding: '16px',
+                        fontFamily: "'Space Mono', monospace",
+                        display: 'grid',
+                        gap: '8px',
+                      }}
+                      className="md:!border-b-0 md:!border-r-[4px] md:!border-r-[#1a1a1a]"
+                    >
+                      <div
+                        style={{
+                          fontSize: '12px',
+                          fontWeight: 700,
+                          letterSpacing: '1px',
+                          display: 'inline-flex',
+                          alignItems: 'center',
+                          gap: '6px',
+                        }}
+                      >
+                        <CalendarDays size={14} strokeWidth={2.8} />
+                        {item.year}
+                      </div>
+                      <item.icon size={20} strokeWidth={2.4} />
+                    </div>
+
+                    <div style={{ padding: '18px 18px 20px' }}>
+                      <h3
+                        style={{
+                          fontFamily: "'Space Mono', monospace",
+                          fontWeight: 700,
+                          fontSize: '22px',
+                          letterSpacing: '-0.5px',
+                          marginBottom: '6px',
+                        }}
+                      >
+                        {item.role}
+                      </h3>
+                      <p
+                        style={{
+                          fontFamily: "'Space Mono', monospace",
+                          fontWeight: 700,
+                          fontSize: '13px',
+                          letterSpacing: '1px',
+                          opacity: 0.65,
+                          textTransform: 'uppercase',
+                          marginBottom: '10px',
+                        }}
+                      >
+                        {item.company}
+                      </p>
+                      <p style={{ fontSize: '15px', lineHeight: 1.7, opacity: 0.88 }}>
+                        {item.description}
+                      </p>
+                    </div>
+                  </div>
+                </BrutalSection>
+              ))}
+            </div>
+          </section>
+
+          <section style={{ position: 'relative', marginBottom: '74px' }}>
+            <BrutalSection>
+              <div
+                style={{
+                  display: 'inline-block',
+                  background: COLORS.yellow,
+                  border: '3px solid #1a1a1a',
+                  boxShadow: '3px 3px 0px #1a1a1a',
+                  padding: '6px 16px',
+                  fontFamily: "'Space Mono', monospace",
+                  fontWeight: 700,
+                  fontSize: '14px',
+                  letterSpacing: '2px',
+                  marginBottom: '10px',
+                  transform: 'rotate(1deg)',
+                  color: '#1a1a1a',
+                }}
+              >
+                HOW_I_WORK
+              </div>
+            </BrutalSection>
+
+            <div
+              style={{
+                display: 'grid',
+                gridTemplateColumns: 'repeat(auto-fit, minmax(260px, 1fr))',
+                gap: '18px',
+                marginBottom: '34px',
+              }}
+            >
+              {PRINCIPLES.map((item, index) => (
+                <BrutalSection key={item.title} delay={0.1 + index * 0.06}>
+                  <div
+                    className="about-card"
+                    style={{
+                      background: item.color,
+                      color: item.textColor || '#1a1a1a',
+                      border: '4px solid #1a1a1a',
+                      boxShadow: '5px 5px 0px #1a1a1a',
+                      padding: '22px',
+                      height: '100%',
+                    }}
+                  >
+                    <item.icon size={30} strokeWidth={2.5} style={{ marginBottom: '12px' }} />
+                    <h3
+                      style={{
+                        fontFamily: "'Space Mono', monospace",
+                        fontWeight: 700,
+                        fontSize: '20px',
+                        lineHeight: 1.2,
+                        marginBottom: '10px',
+                      }}
+                    >
+                      {item.title}
+                    </h3>
+                    <p style={{ fontSize: '14px', lineHeight: 1.65, opacity: 0.9 }}>
+                      {item.description}
+                    </p>
+                  </div>
+                </BrutalSection>
+              ))}
+            </div>
+
+            <BrutalSection delay={0.24}>
+              <div
+                style={{
+                  background: cardBg,
+                  border: `4px solid ${borderColor}`,
+                  boxShadow: `5px 5px 0px ${shadowColor}`,
+                  padding: '22px',
+                }}
+              >
+                <div
+                  style={{
+                    fontFamily: "'Space Mono', monospace",
+                    fontWeight: 700,
+                    letterSpacing: '1px',
+                    fontSize: '14px',
+                    marginBottom: '16px',
+                    textTransform: 'uppercase',
+                  }}
+                >
+                  Currently Exploring
+                </div>
+                <div
+                  style={{
+                    display: 'flex',
+                    flexWrap: 'wrap',
+                    gap: '14px',
+                    justifyContent: 'center',
+                  }}
+                >
+                  {NOW_BUILDING.map((item, index) => (
+                    <FocusSticker key={item.label} item={item} index={index} />
+                  ))}
+                </div>
+              </div>
+            </BrutalSection>
+          </section>
+
+          <section style={{ marginBottom: '56px' }}>
+            <BrutalSection>
+              <div
+                style={{
+                  background: '#1a1a1a',
+                  border: `4px solid ${borderColor}`,
+                  boxShadow: `6px 6px 0px ${shadowColor}`,
+                  padding: '34px 22px',
+                  textAlign: 'center',
+                }}
+              >
+                <h3
+                  style={{
+                    fontFamily: "'Space Mono', monospace",
+                    fontWeight: 700,
+                    fontSize: 'clamp(24px, 4vw, 34px)',
+                    lineHeight: 1.2,
+                    color: COLORS.yellow,
+                    marginBottom: '14px',
+                  }}
+                >
+                  BUILDING A NEW DATA PRODUCT OR PIPELINE?
+                </h3>
+                <p
+                  style={{
+                    color: '#fff',
+                    opacity: 0.78,
+                    maxWidth: '680px',
+                    margin: '0 auto 20px',
+                    fontSize: '16px',
+                    lineHeight: 1.7,
+                  }}
+                >
+                  I&apos;m open to discussing data engineering roles, architecture projects, and
+                  collaborations where reliable execution matters.
+                </p>
+                <a
+                  href="mailto:ida.adiputra@outlook.com"
+                  style={{
+                    display: 'inline-flex',
+                    alignItems: 'center',
+                    gap: '10px',
+                    background: COLORS.lime,
+                    color: '#1a1a1a',
+                    border: '3px solid #1a1a1a',
+                    boxShadow: '4px 4px 0px #0b0b0b',
+                    padding: '12px 24px',
+                    fontFamily: "'Space Mono', monospace",
+                    fontWeight: 700,
+                    fontSize: '14px',
+                    letterSpacing: '1px',
+                    textDecoration: 'none',
+                  }}
+                >
+                  GET IN TOUCH
+                  <ArrowRight size={16} strokeWidth={3} />
+                </a>
+              </div>
+            </BrutalSection>
+          </section>
+
+          <div
+            style={{
+              borderTop: `4px solid ${borderColor}`,
+              borderBottom: `4px solid ${borderColor}`,
+              overflow: 'hidden',
+              padding: '12px 0',
+              marginBottom: '36px',
+            }}
+          >
+            <div style={{ display: 'flex', width: 'max-content' }} className="marquee-track">
+              {[...Array(10)].map((_, i) => (
+                <span
+                  key={i}
+                  style={{
+                    fontFamily: "'Space Mono', monospace",
+                    fontWeight: 700,
+                    fontSize: '30px',
+                    color: pageText,
+                    whiteSpace: 'nowrap',
+                    letterSpacing: '4px',
+                    textTransform: 'uppercase',
+                    paddingRight: '24px',
+                    opacity: 0.08,
+                  }}
+                >
+                  PIPELINES {'\u2605'} CLOUD {'\u2605'} SQL {'\u2605'} AUTOMATION {'\u2605'} ETL {'\u2605'} RELIABILITY {'\u2605'}{' '}
+                </span>
+              ))}
             </div>
           </div>
-        </section>
-
-        {/* Skills Section */}
-        <section className="py-20 px-6 bg-gray-50 dark:bg-gray-900">
-          <div className="max-w-7xl mx-auto">
-            <RevealOnScroll direction="up">
-              <div className="text-center mb-16">
-                <h2 className="text-3xl md:text-4xl font-heading font-bold mb-6">
-                  Skills & Expertise
-                </h2>
-                <p className="text-lg text-gray-600 dark:text-gray-300 max-w-3xl mx-auto">
-                  My comprehensive expertise spans data engineering, cloud architecture, and business intelligence - 
-                  enabling me to design and implement end-to-end data solutions that drive business value.
-                </p>
-              </div>
-            </RevealOnScroll>
-
-            <StaggerContainer>
-              <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
-                {skills.map((skill, index) => (
-                  <StaggerItem key={index}>
-                    <motion.div
-                      className="group bg-white dark:bg-gray-800 p-8 rounded-2xl shadow-lg hover:shadow-2xl transition-all duration-500"
-                      whileHover={{ y: -8, scale: 1.02 }}
-                      whileTap={{ scale: 0.98 }}
-                    >
-                      <div className={`w-16 h-16 rounded-xl bg-gradient-to-br ${skill.color} p-0.5 mb-6`}>
-                        <div className="w-full h-full bg-white dark:bg-gray-800 rounded-xl flex items-center justify-center">
-                          <skill.icon className="w-8 h-8 text-gray-700 dark:text-gray-300" />
-                        </div>
-                      </div>
-                      
-                      <h3 className="text-xl font-semibold text-gray-900 dark:text-white mb-3 group-hover:text-primary-light dark:group-hover:text-primary-dark transition-colors">
-                        {skill.title}
-                      </h3>
-                      
-                      <p className="text-gray-600 dark:text-gray-300 leading-relaxed">
-                        {skill.description}
-                      </p>
-                    </motion.div>
-                  </StaggerItem>
-                ))}
-              </div>
-            </StaggerContainer>
-          </div>
-        </section>
-
-        {/* Journey Section */}
-        <section className="py-20 px-6">
-          <div className="max-w-7xl mx-auto">
-            <RevealOnScroll direction="up">
-              <div className="text-center mb-16">
-                <h2 className="text-3xl md:text-4xl font-heading font-bold mb-6">
-                  My Journey
-                </h2>
-                <p className="text-lg text-gray-600 dark:text-gray-300 max-w-3xl mx-auto">
-                  From academic excellence to professional experience, here&apos;s how I&apos;ve built my expertise 
-                  in data engineering and business intelligence.
-                </p>
-              </div>
-            </RevealOnScroll>
-
-            <StaggerContainer>
-              <div className="space-y-8">
-                {journey.map((item, index) => (
-                  <StaggerItem key={index}>
-                    <motion.div
-                      className="flex flex-col md:flex-row gap-6 p-8 bg-white dark:bg-gray-800 rounded-2xl shadow-lg hover:shadow-2xl transition-all duration-500"
-                      whileHover={{ y: -4, scale: 1.01 }}
-                    >
-                      <div className="flex-shrink-0">
-                        <div className={`w-16 h-16 rounded-2xl flex items-center justify-center ${
-                          item.type === 'education' ? 'bg-gradient-to-br from-blue-100 to-blue-200 dark:from-blue-900 dark:to-blue-800' :
-                          item.type === 'work' ? 'bg-gradient-to-br from-green-100 to-green-200 dark:from-green-900 dark:to-green-800' :
-                          item.type === 'experience' ? 'bg-gradient-to-br from-purple-100 to-purple-200 dark:from-purple-900 dark:to-purple-800' :
-                          'bg-gradient-to-br from-orange-100 to-orange-200 dark:from-orange-900 dark:to-orange-800'
-                        }`}>
-                          <item.icon className={`w-8 h-8 ${
-                            item.type === 'education' ? 'text-blue-600 dark:text-blue-400' :
-                            item.type === 'work' ? 'text-green-600 dark:text-green-400' :
-                            item.type === 'experience' ? 'text-purple-600 dark:text-purple-400' :
-                            'text-orange-600 dark:text-orange-400'
-                          }`} />
-                        </div>
-                      </div>
-                      
-                      <div className="flex-grow">
-                        <div className="flex flex-col md:flex-row md:items-center md:justify-between mb-3">
-                          <h3 className="text-xl font-bold text-gray-900 dark:text-white">{item.title}</h3>
-                          <span className="text-sm font-medium px-3 py-1 bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300 rounded-full">
-                            {item.year}
-                          </span>
-                        </div>
-                        <p className="text-lg font-semibold text-primary-light dark:text-primary-dark mb-3">{item.company}</p>
-                        <p className="text-gray-600 dark:text-gray-300 leading-relaxed">{item.description}</p>
-                      </div>
-                    </motion.div>
-                  </StaggerItem>
-                ))}
-              </div>
-            </StaggerContainer>
-          </div>
-        </section>
-
-        {/* Certifications Section */}
-        <section className="py-20 px-6 bg-white dark:bg-gray-800">
-          <div className="max-w-7xl mx-auto">
-            <RevealOnScroll direction="up">
-              <div className="text-center mb-16">
-                <h2 className="text-3xl md:text-4xl font-heading font-bold mb-6">
-                  Professional Certifications
-                </h2>
-                <p className="text-lg text-gray-600 dark:text-gray-300 max-w-3xl mx-auto">
-                  Continuous learning and professional development through industry-recognized certifications.
-                </p>
-              </div>
-            </RevealOnScroll>
-
-            <StaggerContainer>
-              <div className="grid md:grid-cols-3 gap-8">
-                <StaggerItem>
-                  <motion.div
-                    className="bg-gradient-to-br from-blue-50 to-blue-100 dark:from-blue-900/20 dark:to-blue-800/20 p-8 rounded-2xl border border-blue-200 dark:border-blue-800 relative overflow-hidden"
-                    whileHover={{ scale: 1.05, y: -5 }}
-                  >
-                    {/* Certification Badge */}
-                    <div className="absolute top-4 right-4">
-                      <div className="bg-blue-500 text-white text-xs px-3 py-1 rounded-full font-medium">
-                        Completed
-                      </div>
-                    </div>
-                    
-                    <div className="w-16 h-16 bg-gradient-to-br from-blue-500 to-blue-600 rounded-2xl flex items-center justify-center mb-6">
-                      <Award className="w-8 h-8 text-white" />
-                    </div>
-                    <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-4">
-                      GitHub Foundations
-                    </h3>
-                    <p className="text-gray-600 dark:text-gray-300 mb-4">
-                      Comprehensive understanding of Git version control, GitHub workflows, and collaborative development practices.
-                    </p>
-                    <div className="space-y-2 mb-4">
-                      <div className="text-sm text-blue-600 dark:text-blue-400">• Git Fundamentals</div>
-                      <div className="text-sm text-blue-600 dark:text-blue-400">• GitHub Workflows</div>
-                      <div className="text-sm text-blue-600 dark:text-blue-400">• Collaborative Development</div>
-                    </div>
-                    <div className="text-xs text-gray-500 dark:text-gray-400 flex items-center gap-2">
-                      <span>Issued: 2025</span>
-                      <span>•</span>
-                      <a href="https://www.credly.com/go/Ezg1jF96" target="_blank" rel="noopener noreferrer" className="text-blue-600 dark:text-blue-400 hover:underline flex items-center gap-1">
-                        <svg className="w-3 h-3" fill="currentColor" viewBox="0 0 20 20">
-                          <path d="M11 3a1 1 0 100 2h2.586l-6.293 6.293a1 1 0 101.414 1.414L15 6.414V9a1 1 0 102 0V4a1 1 0 00-1-1h-5z" />
-                          <path d="M5 5a2 2 0 00-2 2v8a2 2 0 002 2h8a2 2 0 002-2v-3a1 1 0 10-2 0v3H5V7h3a1 1 0 000-2H5z" />
-                        </svg>
-                        View Credential
-                      </a>
-                    </div>
-                  </motion.div>
-                </StaggerItem>
-
-                <StaggerItem>
-                  <motion.div
-                    className="bg-gradient-to-br from-green-50 to-green-100 dark:from-green-900/20 dark:to-green-800/20 p-8 rounded-2xl border border-green-200 dark:border-green-800 relative overflow-hidden"
-                    whileHover={{ scale: 1.05, y: -5 }}
-                  >
-                    {/* Certification Badge */}
-                    <div className="absolute top-4 right-4">
-                      <div className="bg-green-500 text-white text-xs px-3 py-1 rounded-full font-medium">
-                        In Progress
-                      </div>
-                    </div>
-                    
-                    <div className="w-16 h-16 bg-gradient-to-br from-green-500 to-green-600 rounded-2xl flex items-center justify-center mb-6">
-                      <Cloud className="w-8 h-8 text-white" />
-                    </div>
-                    <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-4">
-                      Azure Data Engineer Associate
-                    </h3>
-                    <p className="text-gray-600 dark:text-gray-300 mb-4">
-                      Advanced certification in Azure data services, ETL pipelines, and data platform architecture.
-                    </p>
-                    <div className="space-y-2 mb-4">
-                      <div className="text-sm text-green-600 dark:text-green-400">• Azure Data Factory</div>
-                      <div className="text-sm text-green-600 dark:text-green-400">• Azure Databricks</div>
-                      <div className="text-sm text-green-600 dark:text-green-400">• Data Lake & Synapse</div>
-                    </div>
-                    <div className="text-xs text-gray-500 dark:text-gray-400">
-                      Expected: Q1 2026 • DP-203
-                    </div>
-                  </motion.div>
-                </StaggerItem>
-
-                <StaggerItem>
-                  <motion.div
-                    className="bg-gradient-to-br from-purple-50 to-purple-100 dark:from-purple-900/20 dark:to-purple-800/20 p-8 rounded-2xl border border-purple-200 dark:border-purple-800 relative overflow-hidden"
-                    whileHover={{ scale: 1.05, y: -5 }}
-                  >
-                    {/* Certification Badge */}
-                    <div className="absolute top-4 right-4">
-                      <div className="bg-purple-500 text-white text-xs px-3 py-1 rounded-full font-medium">
-                        Planned
-                      </div>
-                    </div>
-                    
-                    <div className="w-16 h-16 bg-gradient-to-br from-purple-500 to-purple-600 rounded-2xl flex items-center justify-center mb-6">
-                      <Database className="w-8 h-8 text-white" />
-                    </div>
-                    <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-4">
-                      GCP Professional Data Engineer
-                    </h3>
-                    <p className="text-gray-600 dark:text-gray-300 mb-4">
-                      Professional-level certification in Google Cloud data engineering and analytics services.
-                    </p>
-                    <div className="space-y-2 mb-4">
-                      <div className="text-sm text-purple-600 dark:text-purple-400">• BigQuery & Dataflow</div>
-                      <div className="text-sm text-purple-600 dark:text-purple-400">• Pub/Sub & Dataproc</div>
-                      <div className="text-sm text-purple-600 dark:text-purple-400">• Cloud Functions & APIs</div>
-                    </div>
-                    <div className="text-xs text-gray-500 dark:text-gray-400">
-                      Target: Q3 2024 • Professional Level
-                    </div>
-                  </motion.div>
-                </StaggerItem>
-              </div>
-            </StaggerContainer>
-          </div>
-        </section>
-
-        {/* Values Section */}
-        <section className="py-20 px-6 bg-gradient-to-br from-blue-50 to-indigo-100 dark:from-gray-900 dark:to-gray-800">
-          <div className="max-w-7xl mx-auto">
-            <RevealOnScroll direction="up">
-              <div className="text-center mb-16">
-                <h2 className="text-3xl md:text-4xl font-heading font-bold mb-6">
-                  What Drives Me
-                </h2>
-                <p className="text-lg text-gray-600 dark:text-gray-300 max-w-3xl mx-auto">
-                  The core values that guide my approach to data engineering and professional development.
-                </p>
-              </div>
-            </RevealOnScroll>
-
-            <StaggerContainer>
-              <div className="grid md:grid-cols-3 gap-8">
-                {values.map((value, index) => (
-                  <StaggerItem key={index}>
-                    <motion.div
-                      className="text-center p-8 bg-white dark:bg-gray-800 rounded-2xl shadow-lg hover:shadow-2xl transition-all duration-500 h-full flex flex-col"
-                      whileHover={{ y: -8, scale: 1.05 }}
-                    >
-                      <div className="w-20 h-20 mx-auto mb-6 bg-gradient-to-br from-primary-light to-accent-light dark:from-primary-dark dark:to-accent-dark rounded-2xl flex items-center justify-center">
-                        <value.icon className="w-10 h-10 text-white" />
-                      </div>
-                      
-                      <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-4">
-                        {value.title}
-                      </h3>
-                      
-                      <p className="text-gray-600 dark:text-gray-300 leading-relaxed flex-grow">
-                        {value.description}
-                      </p>
-                    </motion.div>
-                  </StaggerItem>
-                ))}
-              </div>
-            </StaggerContainer>
-          </div>
-        </section>
+        </div>
       </div>
     </>
   )
