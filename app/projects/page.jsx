@@ -1,7 +1,7 @@
 'use client'
 
 import { useState } from 'react'
-import { motion } from 'framer-motion'
+import { motion } from 'motion/react'
 import { SafeCanvas } from '@/components/WebGLManager'
 import { OrbitControls, Float, Box, Sphere, Cylinder, Torus } from '@react-three/drei'
 import { ExternalLink, Github, Star, Calendar, Users, Zap, Database, Cloud, Code, Brain, Smartphone, Eye, Palette, BarChart3 } from 'lucide-react'

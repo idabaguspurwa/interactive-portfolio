@@ -19,11 +19,6 @@ const nextConfig = {
     minimumCacheTTL: 60,
   },
   
-  // Performance optimizations
-  experimental: {
-    optimizeServerReact: true,
-  },
-  
   // Compiler optimizations
   compiler: {
     removeConsole: process.env.NODE_ENV === 'production',
@@ -55,9 +50,9 @@ const nextConfig = {
           chunks: 'all',
           priority: 25,
         },
-        framer: {
-          test: /[\\/]node_modules[\\/]framer-motion[\\/]/,
-          name: 'framer-vendor',
+        motion: {
+          test: /[\\/]node_modules[\\/]motion[\\/]/,
+          name: 'motion-vendor',
           chunks: 'all',
           priority: 20,
         },

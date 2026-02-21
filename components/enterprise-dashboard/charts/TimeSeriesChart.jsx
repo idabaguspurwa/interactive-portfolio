@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useRef, useEffect, useState, lazy, Suspense } from 'react';
-import { motion } from 'framer-motion';
+import { motion } from 'motion/react';
 import { Activity } from 'lucide-react';
 
 // Lazy load heavy charting libraries
