@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState } from 'react';
-import { motion } from 'framer-motion';
+import { motion } from 'motion/react';
 import { Calendar, Filter, GitBranch, Activity, RefreshCw, X } from 'lucide-react';
 import { Button } from '@/components/ui/Button';
 

@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useRef, useEffect, useState } from 'react';
-import { motion } from 'framer-motion';
+import { motion } from 'motion/react';
 import * as Plot from "@observablehq/plot";
 import * as d3 from "d3";
 import { Clock, Calendar } from 'lucide-react';

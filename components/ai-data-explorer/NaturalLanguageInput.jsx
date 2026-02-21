@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useRef, useEffect } from 'react'
-import { motion, AnimatePresence } from 'framer-motion'
+import { motion, AnimatePresence } from 'motion/react'
 import { Send, Sparkles, Lightbulb, Clock, TrendingUp, Database } from 'lucide-react'
 
 const SUGGESTED_QUESTIONS = [

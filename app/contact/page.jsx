@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { motion } from "framer-motion";
+import { motion } from "motion/react";
 import { SafeCanvas } from "@/components/WebGLManager";
 import { OrbitControls, Float, Sphere, Torus, Box } from "@react-three/drei";
 import {

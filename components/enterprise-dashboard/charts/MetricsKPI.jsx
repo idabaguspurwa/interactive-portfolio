@@ -1,7 +1,7 @@
 "use client";
 
 import React from 'react';
-import { motion } from 'framer-motion';
+import { motion } from 'motion/react';
 import { TrendingUp, TrendingDown, Activity, GitCommit, GitPullRequest, AlertCircle } from 'lucide-react';
 
 export function MetricsKPI({ data, filters, theme, realtimeData, expanded = false }) {

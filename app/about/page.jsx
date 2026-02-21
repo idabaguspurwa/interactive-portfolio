@@ -1,6 +1,6 @@
 'use client'
 
-import { motion } from 'framer-motion'
+import { motion } from 'motion/react'
 import { SafeCanvas } from '@/components/WebGLManager'
 import { OrbitControls, Float, Sphere, Box, Text3D, Environment } from '@react-three/drei'
 import { Code, Database, Cloud, Brain, Users, Zap, Award, Target, Coffee, BookOpen, Lightbulb } from 'lucide-react'

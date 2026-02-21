@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useEffect, useRef } from 'react'
-import { motion } from 'framer-motion'
+import { motion } from 'motion/react'
 import * as Plot from "@observablehq/plot"
 // Import only specific D3 functions to reduce bundle size
 import { select, selectAll, create, pie, arc, scaleOrdinal, schemeCategory10, sum } from "d3"
