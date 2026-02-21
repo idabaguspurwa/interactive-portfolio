@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { motion, AnimatePresence } from 'framer-motion'
+import { motion, AnimatePresence } from 'motion/react'
 import { RevealOnScroll } from '@/components/ScrollAnimations'
 import { PerformancePanel } from '@/components/PerformancePanel'
 import { ArrowLeft, Database, Zap, BarChart3, Github, Activity, RefreshCw, Users, TrendingUp, Download, AlertCircle, Code, Sparkles } from 'lucide-react'
